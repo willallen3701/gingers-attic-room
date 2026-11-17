@@ -278,7 +278,9 @@ kbd { padding: 0 4px; border: 1px solid #cbb385; border-bottom-width: 2px; borde
 
 /* ---------- items: add button, status badges, row actions ---------- */
 .additem { width: 100%; margin-bottom: 12px; }
-.ibadge { display: inline-block; margin-left: 4px; padding: 1px 6px; border-radius: 8px; font: 11px/1.4 var(--type); white-space: nowrap; }
+.ibadge { display: block; align-self: flex-start; max-width: 100%; box-sizing: border-box; overflow: hidden; text-overflow: ellipsis; padding: 1px 6px; border-radius: 8px; font: 11px/1.4 var(--type); white-space: nowrap; }
+.itemrow { align-items: flex-start; }
+.itemrow .mini { flex: none; margin-top: 2px; }
 .ibadge.wait { background: #f5e6c4; color: #6b4a12; }
 .ibadge.bad { background: #f6d6cf; color: #8a2b1a; }
 .ibadge.sold { background: #e4dcd2; color: #4a3b2e; }
@@ -292,11 +294,13 @@ kbd { padding: 0 4px; border: 1px solid #cbb385; border-bottom-width: 2px; borde
 /* ---------- add / edit item sheet ---------- */
 .sheethost { display: contents; }
 .sheet {
-  position: fixed; inset: 0; z-index: 9000; display: grid; place-items: center; padding: 16px;
+  position: fixed; inset: 0; z-index: 9000; display: grid; place-items: start center; padding: 16px;
   background: rgba(29, 22, 18, .55); font-family: var(--serif); color: var(--ink);
 }
+/* Pinned to the top and capped: the embed can be taller than the visitor's window, so the
+   buttons must not sit below what they can see (the page also scrolls the embed into view). */
 .sheetcard {
-  width: min(980px, 100%); max-height: calc(100vh - 32px); display: flex; flex-direction: column; overflow: hidden;
+  width: min(980px, 100%); max-height: min(calc(100vh - 32px), 700px); display: flex; flex-direction: column; overflow: hidden;
   background: var(--paper); border: 1px solid #cdb88c; border-radius: 10px; box-shadow: 0 18px 50px rgba(0,0,0,.35); outline: none;
 }
 .sheethead { display: flex; align-items: center; gap: 14px; padding: 12px 16px; border-bottom: 1px dashed #cdb88c; background: #f7efdc; }

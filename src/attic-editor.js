@@ -493,6 +493,11 @@ export class AtticEditor extends HTMLElement {
         request: (type, payload) => this.#request(type, payload),
         toast: (t) => this.#toast(t),
         onSaved: (it, info) => this.#onItemSaved(it, info),
+        onAgreed: () => {
+          this.#meta.sellerAgreed = true;
+        },
+        // The editor is tall; ask the Wix page to scroll so the sheet (pinned to the top) is in view.
+        onOpen: () => this.#bridge.emit('scroll-into-view', {}),
       });
     }
     this.#sheet.open({ item, agreed: !!this.#meta.sellerAgreed || !!this.#meta.agreedThisVisit });
@@ -547,7 +552,7 @@ export class AtticEditor extends HTMLElement {
         return `
         <li class="itemrow${!inRoom && placeable ? ' src' : ''}" ${!inRoom && placeable ? `data-src-kind="item" data-src-id="${esc(it.id)}"` : ''}>
           <span class="thumb"><img src="${esc(it.image)}" alt="" draggable="false"></span>
-          <span class="txt"><span class="nm">${esc(it.title)}</span><span class="dim">${it.status === 'sold' ? 'Sold' : esc(money(it.price))} ${this.#itemBadge(it)}</span>
+          <span class="txt"><span class="nm">${esc(it.title)}</span><span class="dim">${it.status === 'sold' ? 'Sold' : esc(money(it.price))}</span>${this.#itemBadge(it)}
             <span class="rowacts">
               ${it.status !== 'sold' ? `<button class="lnk" type="button" data-act="edit-item" data-id="${esc(it.id)}">Edit</button>` : ''}
               ${canDelete ? (asking

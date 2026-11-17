@@ -42,11 +42,16 @@ export class ItemSheet {
   #unsub = null;
   #paint = null; // canvas state while brushing
 
-  constructor({ host, request, toast, onSaved, agreementSrc = 'data/agreement.json' }) {
+  #onAgreed;
+  #onOpen;
+
+  constructor({ host, request, toast, onSaved, onAgreed = () => {}, onOpen = () => {}, agreementSrc = 'data/agreement.json' }) {
     this.#host = host;
     this.#request = request;
     this.#toast = toast;
     this.#onSaved = onSaved;
+    this.#onAgreed = onAgreed;
+    this.#onOpen = onOpen;
     this.#agreementSrc = agreementSrc;
     host.addEventListener('click', (e) => this.#onClick(e));
     host.addEventListener('change', (e) => this.#onChange(e));
@@ -83,7 +88,8 @@ export class ItemSheet {
     else this.#step = item ? 'details' : 'photo';
     if (!item) warmUp();
     this.#render();
-    this.#host.querySelector('.sheetcard')?.focus();
+    this.#host.querySelector('.sheetcard')?.focus({ preventScroll: true });
+    this.#onOpen();
   }
 
   close() {
@@ -324,6 +330,7 @@ export class ItemSheet {
       return;
     }
     this.#agreed = true;
+    this.#onAgreed();
     this.#step = this.#item ? 'details' : 'photo';
     this.#render();
   }

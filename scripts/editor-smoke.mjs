@@ -256,6 +256,10 @@ try {
   check('the new item says it is waiting for Ginger', (await evaluate(`[...${S}.querySelectorAll('.itemrow')].find((r) => r.textContent.includes('Smoke Test Stoneware Vase'))?.querySelector('.ibadge')?.textContent ?? ''`)) === 'Waiting for Ginger');
   await click(await rectOf('.itemrow:last-of-type [data-act="place"]'));
   check('placing it draws it faded until approved', (await count('.room.edit .item.unapproved')) >= 1);
+  await evaluate(`[...${S}.querySelectorAll('.itemrow')].find((r) => r.textContent.includes('Smoke Test Stoneware Vase')).querySelector('[data-act="edit-item"]').click()`);
+  const editOpened = await waitFor(`!!${S}.querySelector('.itemform')`, 4000);
+  check('Edit right after agreeing goes straight to the details (no second agreement)', editOpened && !(await evaluate(`!!${S}.querySelector('.agreebox')`)));
+  check('the edit form keeps the saved values', (await evaluate(`${S}.querySelector('.itemform [name="title"]').value`)) === 'Smoke Test Stoneware Vase');
 } catch (e) {
   console.error('ERROR', e.message);
   results.push({ name: 'harness', ok: false });
