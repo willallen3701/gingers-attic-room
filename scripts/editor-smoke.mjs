@@ -90,8 +90,10 @@ try {
     }
   };
   await send('Runtime.enable');
-  for (let i = 0; i < 40; i++) {
-    if (await evaluate(`!!${S}?.querySelector('.room.edit .item')`)) break;
+  // The page (or the local server) can still be starting: tolerate a missing element, and reload once halfway.
+  for (let i = 0; i < 80; i++) {
+    if (i === 40) await send('Page.reload').catch(() => {});
+    if (await evaluate(`!!document.querySelector('attic-editor')?.shadowRoot?.querySelector('.room.edit .item')`).catch(() => false)) break;
     await sleep(250);
   }
   await sleep(500);
@@ -194,11 +196,66 @@ try {
   for (let i = 0; i < 3; i++) await click(await rectOf('[data-wiz="next"]'));
   const step4 = await text('.bubble.wizard h3');
   const soon = await text('.bubble.wizard .soon');
-  check('step 4 of the guide is the "coming next" upload step', step4 === 'Add your items' && !!soon, step4);
+  check('step 4 of the guide is the live "Add your items" step', step4 === 'Add your items' && !soon, step4);
+  check('step 4 opens the My Items tab with an Add button', (await evaluate(`${S}.querySelector('.tab[aria-selected="true"]').dataset.tab`)) === 'items' && (await count('[data-act="add-item"]')) === 1);
   await click(await rectOf('[data-wiz="next"]'));
-  check('step 5 switches to the My Items tab', (await evaluate(`${S}.querySelector('.tab[aria-selected="true"]').dataset.tab`)) === 'items');
+  check('step 5 is placing items', (await text('.bubble.wizard h3')) === 'Place your items');
   await click(await rectOf('[data-wiz="finish"]'));
   check('Skip the tour closes the guide and reports wizard-done', !(await evaluate(`!!${S}.querySelector('.bubble.wizard')`)) && (await evaluate('window.__events.includes("wizard-done")')));
+
+  // 12. Add an item: agreement -> photo -> automatic cutout -> erase brush -> details -> send.
+  // Standalone, the editor answers the requests itself, so nothing leaves the browser.
+  const waitFor = async (expr, ms) => {
+    for (let t = 0; t < ms; t += 250) {
+      if (await evaluate(expr)) return true;
+      await sleep(250);
+    }
+    return false;
+  };
+  await send('Page.navigate', { url: `http://localhost:${port}/editor.html?coach=0&tab=items` });
+  await waitFor(`!!${S}?.querySelector('[data-act="add-item"]')`, 10000);
+  await click(await rectOf('[data-act="add-item"]'));
+  check('the first item asks for the seller agreement', await waitFor(`!!${S}.querySelector('.agreebox h3')`, 8000));
+  await evaluate(`${S}.querySelector('[data-agree="check"]').click()`);
+  await click(await rectOf('[data-sheet="agree"]'));
+  check('agreeing moves on to the photo step', await waitFor(`!!${S}.querySelector('[data-file="main"]')`, 5000));
+  await evaluate(`(async () => {
+    const c = document.createElement('canvas'); c.width = 900; c.height = 700;
+    const x = c.getContext('2d'); x.fillStyle = '#e9e2d3'; x.fillRect(0, 0, 900, 700);
+    x.fillStyle = '#5b3a1e'; x.beginPath(); x.ellipse(450, 430, 170, 200, 0, 0, Math.PI * 2); x.fill(); x.fillRect(400, 130, 100, 130);
+    const blob = await new Promise((r) => c.toBlob(r, 'image/png'));
+    const input = ${S}.querySelector('[data-file="main"]');
+    const dt = new DataTransfer(); dt.items.add(new File([blob], 'vase.png', { type: 'image/png' }));
+    input.files = dt.files; input.dispatchEvent(new Event('change', { bubbles: true }));
+  })()`);
+  const t0 = Date.now();
+  const gotCanvas = await waitFor(`!!${S}.querySelector('.cutcanvas')`, 300000);
+  const cutSecs = Math.round((Date.now() - t0) / 1000);
+  const share = gotCanvas ? await evaluate(`(() => { const c = ${S}.querySelector('.cutcanvas'); const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data; let k = 0; for (let i = 3; i < d.length; i += 4) if (d[i] > 128) k++; return k / (d.length / 4); })()`) : null;
+  const note = await text('.sheetbody .note');
+  check('the automatic cutout removes the background', share !== null && share > 0.08 && share < 0.5, `${share === null ? 'no canvas' : Math.round(share * 100) + '% kept'}, ${cutSecs} s${note ? `; note: ${note}` : ''}`);
+  const cv = await rectOf('.cutcanvas');
+  const alphaAt = (fx, fy) => evaluate(`(() => { const c = ${S}.querySelector('.cutcanvas'); return c.getContext('2d').getImageData(Math.round(c.width * ${fx}), Math.round(c.height * ${fy}), 1, 1).data[3]; })()`);
+  const aBefore = await alphaAt(0.5, 0.62);
+  await drag({ x: cv.l + cv.w * 0.42, y: cv.t + cv.h * 0.62 }, { x: cv.l + cv.w * 0.58, y: cv.t + cv.h * 0.62 }, 10);
+  const aAfter = await alphaAt(0.5, 0.62);
+  check('the Erase brush clears what it paints over', aBefore > 200 && aAfter < 30, `${aBefore} -> ${aAfter}`);
+  await click(await rectOf('[data-go="details"]'));
+  check('Looks good opens the details form with the cutout preview', await waitFor(`!!${S}.querySelector('.itemform') && !!${S}.querySelector('.cutprev img')`, 5000));
+  await evaluate(`(() => {
+    const f = ${S}.querySelector('.itemform');
+    const set = (n, v) => { const el = f.querySelector('[name="' + n + '"]'); el.value = v; el.dispatchEvent(new Event('input', { bubbles: true })); };
+    set('title', 'Smoke Test Stoneware Vase'); set('description', 'Brown glazed stoneware vase. No chips.');
+    set('category', 'glass-ceramics'); set('era', '1970s'); set('heightIn', '11'); set('widthIn', '7'); set('weightLb', '2'); set('weightOz', '4');
+    set('price', '45'); set('quantity', '1'); set('shippingPrice', '12');
+    f.querySelector('[name="condition"][value="very-good"]').checked = true;
+  })()`);
+  await click(await rectOf('.itemform [type="submit"]'));
+  const sentOk = await waitFor(`!${S}.querySelector('.sheet') && [...${S}.querySelectorAll('.itemrow .nm')].some((n) => n.textContent === 'Smoke Test Stoneware Vase')`, 10000);
+  check('Send adds the item to the crate', sentOk);
+  check('the new item says it is waiting for Ginger', (await evaluate(`[...${S}.querySelectorAll('.itemrow')].find((r) => r.textContent.includes('Smoke Test Stoneware Vase'))?.querySelector('.badge')?.textContent ?? ''`)) === 'Waiting for Ginger');
+  await click(await rectOf('.itemrow:last-of-type [data-act="place"]'));
+  check('placing it draws it faded until approved', (await count('.room.edit .item.unapproved')) >= 1);
 } catch (e) {
   console.error('ERROR', e.message);
   results.push({ name: 'harness', ok: false });

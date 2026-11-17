@@ -1,0 +1,108 @@
+{
+  "version": "2026-11-17",
+  "title": "Ginger's Attic Seller Agreement",
+  "status": "DRAFT for the owner's review. This is not legal advice; have it checked before real sellers sign up.",
+  "intro": "Ginger's Attic is a virtual antique mall. You decorate a booth, list your own items, and we sell them for you through the Ginger's Attic store on consignment. By ticking \"I agree\" you accept these terms.",
+  "sections": [
+    {
+      "h": "1. How consignment works",
+      "p": [
+        "You keep ownership of your items until they sell. Ginger's Attic lists and sells them for you through its online store, and shoppers pay Ginger's Attic.",
+        "You must own every item you list (or have the owner's permission to sell it) and have the right to sell it."
+      ]
+    },
+    {
+      "h": "2. Honest listings",
+      "p": [
+        "Use real photos of the actual item, not stock images. Describe it honestly: give its measurements, choose the right condition, and mention chips, cracks, repairs, missing parts and replaced pieces.",
+        "If an item is a reproduction, a reissue or you aren't sure of its age, say so. Pick \"Unknown\" for the era rather than guessing."
+      ]
+    },
+    {
+      "h": "3. Approval",
+      "p": [
+        "Ginger reviews every new item before shoppers can see it, and may decline or remove any listing at any time.",
+        "Price and quantity changes go live straight away. Changes to photos, the title, the description or the details go back for review; the approved version stays up meanwhile."
+      ]
+    },
+    {
+      "h": "4. Fees",
+      "p": [
+        "Ginger's Attic keeps a 15% commission on each item's sale price. The shipping price you set for an item is passed to you to cover postage."
+      ]
+    },
+    {
+      "h": "5. Payouts",
+      "p": [
+        "Payouts are made once a month for items that have been delivered. An item counts as delivered once you've marked it shipped and either 14 days have passed or Ginger has confirmed delivery.",
+        "Ginger's Attic will ask you how you'd like to be paid before your first payout."
+      ]
+    },
+    {
+      "h": "6. Shipping",
+      "p": [
+        "When an item sells you'll get an email and see the order on your My Sales page. Ship it within 3 business days, packed well enough to survive the trip, and add the tracking number on My Sales.",
+        "You set the shipping price for each item, or mark it \"local pickup only\". Insured shipping is strongly recommended for anything fragile or over $100."
+      ]
+    },
+    {
+      "h": "7. All sales final",
+      "p": [
+        "Shoppers can't return items because they changed their mind. If an item doesn't arrive, or is significantly not as described, Ginger's Attic may refund the buyer; that sale isn't paid out, or is taken off your next payout if it was already paid."
+      ]
+    },
+    {
+      "h": "8. Keeping your booth accurate",
+      "p": [
+        "If you sell an item somewhere else, lower its quantity or take it down at once. If you can't fill an order, tell Ginger straight away. Repeated cancellations can lead to your booth being closed."
+      ]
+    },
+    {
+      "h": "9. Taxes",
+      "p": [
+        "Ginger's Attic collects sales tax on store sales where the law requires it. You're responsible for your own income taxes on what you earn."
+      ]
+    },
+    {
+      "h": "10. Your photos and words",
+      "p": [
+        "You keep the rights to your photos and descriptions. You let Ginger's Attic display, crop, cut out the background of, and share them to list and promote your items and your booth."
+      ]
+    },
+    {
+      "h": "11. Prohibited items",
+      "p": [
+        "Don't list anything on the prohibited items list below. Ginger may remove such items without notice, and repeated attempts can close your booth."
+      ]
+    },
+    {
+      "h": "12. Ending the agreement",
+      "p": [
+        "You can close your booth at any time, and Ginger's Attic can close it if these terms aren't followed. Orders already placed must still be shipped, and completed sales are still paid out."
+      ]
+    },
+    {
+      "h": "13. Changes",
+      "p": [
+        "If these terms change, you'll be asked to agree to the new version before adding more items."
+      ]
+    }
+  ],
+  "prohibitedIntro": "These can't be sold at Ginger's Attic, even as antiques:",
+  "prohibited": [
+    "Firearms, ammunition, gun parts, explosives, fireworks, and weapons such as switchblades or brass knuckles",
+    "Ivory, tortoiseshell, rhino horn, and parts of endangered or protected animals (including feathers and taxidermy of protected species)",
+    "Human remains, including skulls, bones, hair and teeth",
+    "Hazardous materials: asbestos items, mercury, radioactive items (other than ordinary uranium glass), pesticides and chemicals",
+    "Recalled or unsafe children's items: cribs, car seats, baby walkers, toys with lead paint sold for children's use",
+    "Alcohol, tobacco, vaping products, drugs, drug paraphernalia, prescription medicine and medical devices",
+    "Food and anything perishable",
+    "Live animals and plants",
+    "Counterfeits, fakes, and reproductions sold as originals",
+    "Stolen goods, and archaeological or cultural artifacts without lawful provenance",
+    "Hate-group items, including Nazi and KKK memorabilia",
+    "Adult or sexually explicit material",
+    "Currency, coins or stamps that are forgeries, and live tickets or gift cards",
+    "Items that copy someone else's trademark or artwork without permission"
+  ]
+}

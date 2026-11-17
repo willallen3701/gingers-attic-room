@@ -76,8 +76,10 @@ export function itemsHtml(layout, opts = {}) {
     .map(({ item, size, x, top, z }) => {
       const sold = item.status === 'sold';
       const label = `${item.title}, ${sold ? 'sold' : money(item.price)}`;
+      // In the editor, items Ginger hasn't approved yet are drawn faded with a dashed outline.
+      const unapproved = opts.edit && (item.status === 'pending' || item.status === 'rejected');
       return (
-        `<button class="item mount-${esc(item.mount)}${sold ? ' sold' : ''}${opts.edit ? ' movable' : ''}${stateCls(item.id, opts)}" type="button" ` +
+        `<button class="item mount-${esc(item.mount)}${sold ? ' sold' : ''}${unapproved ? ' unapproved' : ''}${opts.edit ? ' movable' : ''}${stateCls(item.id, opts)}" type="button" ` +
         `data-kind="item" data-id="${esc(item.id)}" aria-label="${esc(label)}" style="${box(x, top, size.w, size.h, z)}">` +
         `<span class="contact"></span><img src="${esc(item.image)}" alt="" draggable="false"></button>`
       );

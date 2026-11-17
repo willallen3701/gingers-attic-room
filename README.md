@@ -77,8 +77,29 @@ The booth can include `decor[]` and `room.placeables[]`. View mode draws them, a
 - `load-editor` {booth (draft already applied), library?, meta:{isFirstVisit, boothStatus:'new'|'live', hasUnopenedChanges, lastSavedAt, maxPlaced:40}, uploads:[{id, kind, src, approved, tileIn?}]}
 - `save-result` {ok, savedAt, message?}
 - `open-result` {ok, openedAt, message?}
-- `upload-result` {ok, requestId, upload?:{id, kind, src, approved, tileIn?}, message?}
+- `upload-result` {ok, requestId, upload?:{id, kind, src, approved, rejected?, tileIn?}, message?}
 - `info-result` {ok, message?}
+- `need-login` {message}: the visitor closed the Wix log-in window; the editor shows a Log in button (sends `login-request`).
+
+**Items (Phase 3).** Shown only when `meta.itemsEnabled` is true (always in standalone), so the room app can go live on
+GitHub Pages before the Wix site code that answers these. Every request carries a `requestId` that its answer repeats;
+no answer within 90 s counts as a failure.
+
+| App -> page | Page -> app |
+|---|---|
+| `accept-agreement` {requestId, version} | `agreement-result` {requestId, ok, message?} |
+| `upload-item-image` {requestId, role:'cutout'\|'photo', dataUrl} (cutout: WebP/PNG with alpha; photo: JPEG; each at most 600 KB) | `item-image-result` {requestId, ok, file?:{id, url}, message?} |
+| `submit-item` {requestId, itemId\|null, listing:{title, description, price, quantity, category, condition, era, eraNote, mount, heightIn, widthIn, depthIn\|null, weightLb, localPickupOnly, shippingPrice\|null, cutout:{id, url, aspect, w, h}\|null, photos:[{id, url}]}} | `item-result` {requestId, ok, item?, review?:'new'\|'all'\|'some'\|'none', message?} |
+| `delete-item` {requestId, itemId} | `delete-item-result` {requestId, ok, itemId?, message?} |
+
+`load-editor` meta also carries `itemsEnabled`, `sellerAgreed` and `agreementVersion`; the seller's items carry `status`
+(`pending`, `approved`, `rejected`, `sold`), `rejectionNote`, `pendingEdit` and `photoFiles`. The agreement text is
+`data/agreement.json`. Background removal runs in a worker (`src/cutout-worker.js`) with the model in `assets/models/`
+(see `src/cutout-spec.js` and CREDITS.md).
+
+### Approvals (`<attic-approvals>`, `approvals.html`)
+**Out:** `ready` {mode:'approvals'}, `refresh-queue` {requestId}, `review` {requestId, action:'approve-item'|'reject-item'|'approve-upload'|'reject-upload', itemId?, boothId?, uploadId?, note?}
+**In:** `load-queue` {queue:{items, uploads}}, `queue-result` {requestId, ok, queue}, `review-result` {requestId, ok, message?}, `not-admin` {message}
 
 The allowlist covers `https://*.wixsite.com`, `https://*.wix.com` (the editor and preview), `https://gingersattic.com`,
 `https://www.gingersattic.com` and localhost. Override it with the `allowed-origins` attribute (space-separated).

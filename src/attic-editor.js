@@ -17,6 +17,7 @@ import { toDraft, applyDraft, defaultRoom } from './logic/draft.js';
 import { encodePlan, dataUrlBytes, MAX_BYTES, uploadTileIn } from './logic/downscale.js';
 import * as ops from './logic/editops.js';
 import { Bridge } from './bridge.js';
+import { ItemSheet } from './item-sheet.js';
 import {
   esc, money, ensureFonts, roomInnerHtml, placeablesHtml, fixturesHtml, decorHtml, itemsHtml, tagsHtml, paintSurfaces, SIGN_STYLES,
 } from './room-render.js';
@@ -41,11 +42,27 @@ const WIZARD = [
   { tab: 'walls', title: 'Choose your wallpaper', text: 'Pick a pattern for your back wall, paint it a colour, or upload a photo of your own wallpaper.' },
   { tab: 'floor', title: 'Lay your floor', text: 'Wood, tile or lino: choose what suits your booth. You can upload your own too.' },
   { tab: 'fixtures', title: 'Shelves, tables & finishing touches', text: 'Add shelves and tables to hold your treasures. The Lighting and Decor tabs add atmosphere: a window, a clock, a fern.' },
-  { soon: true, title: 'Add your items', text: "Coming next: snap a photo of each item and we'll cut out the background for you. Skip this step for now." },
-  { tab: 'items', title: 'Place your items', text: 'Drag items from your storage crate onto a shelf, a table or the floor. Up to 40 can be out at once.' },
-  { soon: true, title: 'Price & details', text: 'Coming next: set the price, condition, era, size and shipping for each item. Skip this step for now.' },
+  { tab: 'items', title: 'Add your items', text: "Click \"Add an item\": snap a photo, we cut out the background, then you add the price, size and details. Ginger checks each item before shoppers see it." },
+  { tab: 'items', title: 'Place your items', text: 'Drag items from your storage crate onto a shelf, a table or the floor. Up to 40 can be out at once. Items waiting for Ginger show to shoppers once approved.' },
   { target: 'open', title: 'Open your booth', text: 'When it looks right, open it to shoppers. Your changes keep saving as a draft, and you can update the booth any time.' },
 ];
+
+// The guide before Phase 3, kept for a Wix site whose published code can't take items yet
+// (the room app updates on GitHub Pages before the site is republished).
+const WIZARD_NO_ITEMS = [
+  WIZARD[0],
+  WIZARD[1],
+  WIZARD[2],
+  { soon: true, title: 'Add your items', text: "Coming next: snap a photo of each item and we'll cut out the background for you. Skip this step for now." },
+  { tab: 'items', title: 'Place your items', text: 'Drag items from your storage crate onto a shelf, a table or the floor. Up to 40 can be out at once.' },
+  WIZARD[WIZARD.length - 1],
+];
+
+const STATUS_BADGE = {
+  pending: ['wait', 'Waiting for Ginger'],
+  rejected: ['bad', 'Needs changes'],
+  sold: ['sold', 'Sold'],
+};
 
 const FIXTURE_GROUPS = [
   ['shelf', 'Shelves'],
@@ -102,15 +119,28 @@ export class AtticEditor extends HTMLElement {
   #loaded = false;
   #readyTimer = null;
   #waitingLogin = false; // the page said the visitor must log in first
+  #sheet = null;
+  #requests = new Map(); // requestId -> resolve, for request/response messages
+  #confirmDel = null; // item id whose Delete / Take down asks "are you sure?"
+  #simN = 0;
   #libraryPromise = null;
   #narrow = false;
   #ro = null;
   #raf = 0;
 
+  /** Adding items needs Phase 3 site code; the page says so with meta.itemsEnabled (standalone: always on). */
+  get #itemsOn() {
+    return !this.#bridge?.hasParent || !!this.#meta.itemsEnabled;
+  }
+
+  get #steps() {
+    return this.#itemsOn ? WIZARD : WIZARD_NO_ITEMS;
+  }
+
   constructor() {
     super();
     this.#root = this.attachShadow({ mode: 'open' });
-    this.#root.innerHTML = `<style>${roomCss}${editorCss}</style><div class="ed loading"><p class="loadmsg">Opening your booth editor...</p></div>`;
+    this.#root.innerHTML = `<style>${roomCss}${editorCss}</style><div class="ed loading"><p class="loadmsg">Opening your booth editor...</p></div><div class="sheethost"></div>`;
   }
 
   connectedCallback() {
@@ -187,12 +217,18 @@ export class AtticEditor extends HTMLElement {
     this.#save = { ...this.#save, state: this.#meta.lastSavedAt ? 'saved' : 'idle', savedAt: this.#meta.lastSavedAt };
     this.#wizard = this.#meta.isFirstVisit ? 0 : null;
     this.#coach = !this.#meta.isFirstVisit && store.get(COACH_KEY) !== '1';
-    if (this.#wizard !== null) this.#tab = WIZARD[0].tab;
+    if (this.#wizard !== null) this.#tab = this.#steps[0].tab;
     this.#render();
     this.dispatchEvent(new CustomEvent('attic-editor:loaded', { bubbles: true, composed: true }));
   }
 
   #onMessage(m) {
+    if (m.requestId && this.#requests.has(m.requestId)) {
+      const resolve = this.#requests.get(m.requestId);
+      this.#requests.delete(m.requestId);
+      resolve(m);
+      return;
+    }
     switch (m.type) {
       case 'load-editor':
         if (m.booth) this.loadEditor({ booth: m.booth, library: m.library, meta: m.meta, uploads: m.uploads }).catch((e) => this.#fail(`Couldn't open the editor (${e.message}).`));
@@ -390,6 +426,146 @@ export class AtticEditor extends HTMLElement {
     this.#commit({ ...this.#booth, room: next });
   }
 
+  // ================================================================ items: add, edit, delete
+
+  /** Send a request to the page and wait for its *-result (matched by requestId). */
+  #request(type, payload, timeoutMs = 90000) {
+    if (!this.#bridge.hasParent) return this.#simulate(type, payload);
+    const requestId = `rq${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
+    return new Promise((resolve) => {
+      const t = setTimeout(() => {
+        this.#requests.delete(requestId);
+        resolve({ ok: false, message: 'The site took too long to answer. Please try again.' });
+      }, timeoutMs);
+      this.#requests.set(requestId, (m) => {
+        clearTimeout(t);
+        resolve(m);
+      });
+      this.#bridge.emit(type, { requestId, ...payload });
+    });
+  }
+
+  /** Standalone demo (no Wix page): answer requests locally so the whole flow can be tried. */
+  async #simulate(type, p) {
+    await new Promise((r) => setTimeout(r, 250));
+    if (type === 'accept-agreement') return { ok: true };
+    if (type === 'upload-item-image') return { ok: true, file: { id: `local-${++this.#simN}`, url: p.dataUrl } };
+    if (type === 'delete-item') return { ok: true, itemId: p.itemId };
+    if (type === 'submit-item') {
+      const L = p.listing;
+      const old = this.#booth.items.find((i) => i.id === p.itemId);
+      const flat = L.mount === 'flat';
+      const item = {
+        ...(old ?? {}),
+        id: old?.id ?? `new-${++this.#simN}`,
+        title: L.title,
+        description: L.description,
+        price: L.price,
+        quantity: L.quantity,
+        category: L.category,
+        condition: L.condition,
+        era: L.era,
+        eraNote: L.eraNote,
+        mount: L.mount,
+        dims: { h: L.heightIn, w: L.widthIn, d: L.depthIn },
+        heightIn: flat ? undefined : L.heightIn,
+        widthIn: L.widthIn,
+        flat,
+        weightLb: L.weightLb,
+        shippingPrice: L.shippingPrice,
+        localPickupOnly: L.localPickupOnly,
+        image: L.cutout?.url ?? old?.image,
+        aspect: L.cutout?.aspect ?? old?.aspect,
+        photos: L.photos.map((x) => x.url),
+        photoFiles: L.photos,
+        status: old?.status === 'approved' ? 'approved' : 'pending',
+        placement: old?.placement ?? null,
+      };
+      return { ok: true, item };
+    }
+    return { ok: false, message: 'Not available in the demo.' };
+  }
+
+  #openSheet(item = null) {
+    if (!this.#sheet) {
+      this.#sheet = new ItemSheet({
+        host: this.#root.querySelector('.sheethost'),
+        request: (type, payload) => this.#request(type, payload),
+        toast: (t) => this.#toast(t),
+        onSaved: (it, info) => this.#onItemSaved(it, info),
+      });
+    }
+    this.#sheet.open({ item, agreed: !!this.#meta.sellerAgreed || !!this.#meta.agreedThisVisit });
+  }
+
+  #onItemSaved(item, { isNew, review }) {
+    this.#meta.agreedThisVisit = true;
+    const b = this.#booth;
+    const old = b.items.find((i) => i.id === item.id);
+    // The editor's placement (draft) wins over the one stored on the item row.
+    const merged = old ? { ...item, placement: old.placement, sizeTweak: old.sizeTweak } : { ...item, placement: null };
+    this.#booth = { ...b, items: old ? b.items.map((i) => (i.id === item.id ? merged : i)) : [...b.items, merged] };
+    this.#tab = 'items';
+    this.#renderAll();
+    if (isNew) this.#toast('Sent to Ginger! Place it in your booth now; shoppers see it once it is approved.');
+    else if (review === 'none') this.#toast('Saved. The new price and quantity are live.');
+    else this.#toast('Saved. Ginger will check your changes.');
+  }
+
+  async #deleteItem(id) {
+    const it = this.#booth.items.find((i) => i.id === id);
+    if (!it) return;
+    this.#confirmDel = null;
+    const r = await this.#request('delete-item', { itemId: id });
+    if (!r.ok) {
+      this.#renderAll();
+      this.#toast(r.message || "Couldn't remove that item. Please try again.");
+      return;
+    }
+    if (this.#sel?.id === id) this.#sel = null;
+    this.#booth = { ...this.#booth, items: this.#booth.items.filter((i) => i.id !== id) };
+    this.#changed();
+    this.#renderAll();
+    this.#toast(it.status === 'approved' ? 'Taken down. It is no longer for sale.' : 'Item deleted.');
+  }
+
+  #itemBadge(it) {
+    if (it.status === 'approved' && it.pendingEdit) return '<span class="badge wait">Edit waiting for Ginger</span>';
+    const b = STATUS_BADGE[it.status];
+    return b ? `<span class="badge ${b[0]}">${b[1]}</span>` : '';
+  }
+
+  #itemListHtml(items, { placeable = true } = {}) {
+    const max = this.#meta.maxPlaced ?? ROOM.maxPlacedItems;
+    const full = this.#booth.items.filter((i) => i.placement).length >= max;
+    return `<ul class="itemlist">${items
+      .map((it) => {
+        const inRoom = !!it.placement;
+        const canDelete = it.status !== 'sold';
+        const delLabel = it.status === 'approved' ? 'Take down' : 'Delete';
+        const asking = this.#confirmDel === it.id;
+        return `
+        <li class="itemrow${!inRoom && placeable ? ' src' : ''}" ${!inRoom && placeable ? `data-src-kind="item" data-src-id="${esc(it.id)}"` : ''}>
+          <span class="thumb"><img src="${esc(it.image)}" alt="" draggable="false"></span>
+          <span class="txt"><span class="nm">${esc(it.title)}</span><span class="dim">${it.status === 'sold' ? 'Sold' : esc(money(it.price))} ${this.#itemBadge(it)}</span>
+            <span class="rowacts">
+              ${it.status !== 'sold' ? `<button class="lnk" type="button" data-act="edit-item" data-id="${esc(it.id)}">Edit</button>` : ''}
+              ${canDelete ? (asking
+                ? `<button class="lnk danger" type="button" data-act="delete-item-yes" data-id="${esc(it.id)}">${delLabel}: are you sure?</button><button class="lnk" type="button" data-act="delete-item-no">Keep</button>`
+                : `<button class="lnk" type="button" data-act="delete-item" data-id="${esc(it.id)}">${delLabel}</button>`) : ''}
+            </span>
+            ${it.status === 'rejected' && it.rejectionNote ? `<span class="rownote">Ginger: ${esc(it.rejectionNote)}</span>` : ''}
+          </span>
+          ${placeable
+            ? inRoom
+              ? `<button class="mini" type="button" data-act="store" data-id="${esc(it.id)}">Store</button>`
+              : `<button class="mini" type="button" data-act="place" data-id="${esc(it.id)}" ${full ? 'disabled' : ''}>Place</button>`
+            : ''}
+        </li>`;
+      })
+      .join('')}</ul>`;
+  }
+
   // ================================================================ rendering
 
   #fail(text) {
@@ -415,12 +591,19 @@ export class AtticEditor extends HTMLElement {
     if (this.#narrow) {
       ed.className = 'ed narrowmode';
       const L = buildLayout(this.#booth, this.#lib);
+      const items = this.#booth.items;
       ed.innerHTML = `
         <div class="narrowmsg">
           <h2>Arrange your booth on a computer or tablet</h2>
-          <p>The booth editor needs a bigger screen to drag shelves and treasures around. Here's how your booth looks right now.</p>
+          <p>The booth editor needs a bigger screen to drag shelves and treasures around. You can add items from your phone: they wait in your storage crate until you place them.</p>
         </div>
-        <div class="roomframe"><div class="room viewonly">${roomInnerHtml(this.#booth, this.#lib, L)}</div></div>`;
+        ${this.#itemsOn ? `<section class="narrowitems">
+          <button class="primary additem" type="button" data-act="add-item">+ Add an item</button>
+          ${items.length ? this.#itemListHtml(items, { placeable: false }) : '<p class="empty">No items yet.</p>'}
+        </section>` : ''}
+        <div class="roomframe"><div class="room viewonly">${roomInnerHtml(this.#booth, this.#lib, L)}</div></div>
+        <div class="toast" role="status" aria-live="polite"></div>`;
+      ed.querySelector('.narrowitems')?.addEventListener('click', (e) => this.#panelClick(e));
       paintSurfaces(this.#root, this.#booth, this.#lib);
       return;
     }
@@ -468,7 +651,7 @@ export class AtticEditor extends HTMLElement {
   }
 
   #renderTabs() {
-    const wizTab = this.#wizard !== null ? WIZARD[this.#wizard].tab : null;
+    const wizTab = this.#wizard !== null ? this.#steps[this.#wizard].tab : null;
     this.#root.querySelectorAll('.tab').forEach((b) => {
       b.setAttribute('aria-selected', String(b.dataset.tab === this.#tab));
       b.classList.toggle('pulse', b.dataset.tab === wizTab);
@@ -549,8 +732,10 @@ export class AtticEditor extends HTMLElement {
       items: () => this.#itemsPanelHtml(),
       sign: () => this.#signPanelHtml(),
     }[this.#tab]();
+    const keep = body.dataset.tab === this.#tab ? body.scrollTop : 0; // same tab re-rendered: stay put
     body.innerHTML = html;
-    body.scrollTop = 0;
+    body.scrollTop = keep;
+    body.dataset.tab = this.#tab;
   }
 
   #texSwatches(list, cfg, act) {
@@ -569,7 +754,7 @@ export class AtticEditor extends HTMLElement {
       <section>
         <h3>Your own ${kind === 'wall' ? 'wallpaper' : 'floor'}</h3>
         <label class="uploadbtn">${icon('<path d="M12 16V4 M7 9l5-5 5 5 M4 17v3h16v-3"/>')}<span>Upload a photo</span><input type="file" accept="image/*" data-act="upload" data-kind="${kind}"></label>
-        ${mine.length ? `<div class="swatches">${mine.map((u) => `<button class="sw tex${cfg.uploadId === u.id ? ' on' : ''}" type="button" data-act="use-upload" data-id="${esc(u.id)}" style="background-image:url('${esc(u.src)}')"><span>${u.approved ? 'Your photo' : 'Awaiting approval'}</span></button>`).join('')}</div>` : ''}
+        ${mine.length ? `<div class="swatches">${mine.map((u) => `<button class="sw tex${cfg.uploadId === u.id ? ' on' : ''}" type="button" data-act="use-upload" data-id="${esc(u.id)}" style="background-image:url('${esc(u.src)}')"><span>${u.approved ? 'Your photo' : u.rejected ? 'Not approved' : 'Awaiting approval'}</span></button>`).join('')}</div>` : ''}
         ${current ? `
           <div class="seg" role="group" aria-label="How the photo fills the ${kind}">
             <button type="button" data-act="${kind}-mode" data-mode="tile" aria-pressed="${(cfg.mode ?? 'tile') === 'tile'}">Tile (repeat)</button>
@@ -668,24 +853,17 @@ export class AtticEditor extends HTMLElement {
     const placed = items.filter((i) => i.placement);
     const max = this.#meta.maxPlaced ?? ROOM.maxPlacedItems;
     const full = placed.length >= max;
-    const row = (it, inRoom) => `
-      <li class="itemrow${inRoom ? '' : ' src'}" ${inRoom ? '' : `data-src-kind="item" data-src-id="${esc(it.id)}"`}>
-        <span class="thumb"><img src="${esc(it.image)}" alt="" draggable="false"></span>
-        <span class="txt"><span class="nm">${esc(it.title)}</span><span class="dim">${it.status === 'sold' ? 'Sold' : esc(money(it.price))}</span></span>
-        ${inRoom
-          ? `<button class="mini" type="button" data-act="store" data-id="${esc(it.id)}">Store</button>`
-          : `<button class="mini" type="button" data-act="place" data-id="${esc(it.id)}" ${full ? 'disabled' : ''}>Place</button>`}
-      </li>`;
     return `
+      ${this.#itemsOn ? '<button class="primary additem" type="button" data-act="add-item">+ Add an item</button>' : ''}
       <div class="count${full ? ' full' : ''}"><b>${placed.length}</b> of ${max} items out in your booth</div>
       <section class="crate"><h3>${icon('<path d="M3 8h18v12H3z M3 8l3-4h12l3 4 M9 12h6"/>')} Storage crate <small>(${stored.length})</small></h3>
-        ${stored.length ? `<ul class="itemlist">${stored.map((i) => row(i, false)).join('')}</ul>` : '<p class="empty">Your crate is empty: everything is out on display.</p>'}
+        ${stored.length ? this.#itemListHtml(stored) : items.length ? '<p class="empty">Your crate is empty: everything is out on display.</p>' : '<p class="empty">No items yet. Click "Add an item" to photograph your first one.</p>'}
         ${full && stored.length ? '<p class="note">Your booth is full. Store something to make room.</p>' : ''}
       </section>
       <section><h3>In your booth <small>(${placed.length})</small></h3>
-        ${placed.length ? `<ul class="itemlist">${placed.map((i) => row(i, true)).join('')}</ul>` : '<p class="empty">Nothing out yet. Drag items from the crate onto a shelf.</p>'}
+        ${placed.length ? this.#itemListHtml(placed) : '<p class="empty">Nothing out yet. Drag items from the crate onto a shelf.</p>'}
       </section>
-      <p class="foot">Adding new items with photos and prices comes in the next update.</p>`;
+      <p class="foot">${this.#itemsOn ? 'Items marked "Waiting for Ginger" are hidden from shoppers until she approves them.' : 'Adding new items with photos and prices comes in the next update.'}</p>`;
   }
 
   #signPanelHtml() {
@@ -766,12 +944,12 @@ export class AtticEditor extends HTMLElement {
     if (!ov) return;
     if (this.#wizard !== null) {
       const i = this.#wizard;
-      const step = WIZARD[i];
-      const last = i === WIZARD.length - 1;
+      const step = this.#steps[i];
+      const last = i === this.#steps.length - 1;
       ov.innerHTML = `
         <div class="bubble wizard${step.target === 'open' ? ' at-open' : ''}" role="dialog" aria-label="Booth setup guide">
-          <div class="steps">${WIZARD.map((_, n) => `<span class="${n === i ? 'cur' : n < i ? 'done' : ''}"></span>`).join('')}</div>
-          <p class="stepno">Step ${i + 1} of ${WIZARD.length}${step.soon ? ' &middot; <em>coming next</em>' : ''}</p>
+          <div class="steps">${this.#steps.map((_, n) => `<span class="${n === i ? 'cur' : n < i ? 'done' : ''}"></span>`).join('')}</div>
+          <p class="stepno">Step ${i + 1} of ${this.#steps.length}${step.soon ? ' &middot; <em>coming next</em>' : ''}</p>
           <h3>${esc(step.title)}</h3>
           <p>${esc(step.text)}</p>
           ${step.soon ? '<div class="soon">This part arrives in the next update.</div>' : ''}
@@ -797,7 +975,7 @@ export class AtticEditor extends HTMLElement {
   }
 
   #wizardAction(a) {
-    if (a === 'next') this.#wizard = Math.min(WIZARD.length - 1, this.#wizard + 1);
+    if (a === 'next') this.#wizard = Math.min(this.#steps.length - 1, this.#wizard + 1);
     else if (a === 'back') this.#wizard = Math.max(0, this.#wizard - 1);
     else if (a === 'finish' || a === 'open-now') {
       this.#wizard = null;
@@ -806,7 +984,7 @@ export class AtticEditor extends HTMLElement {
       if (a === 'open-now') this.#open();
       else this.#toast('You can come back to this any time. Open your booth when it looks right.');
     }
-    if (this.#wizard !== null && WIZARD[this.#wizard].tab) this.#tab = WIZARD[this.#wizard].tab;
+    if (this.#wizard !== null && this.#steps[this.#wizard].tab) this.#tab = this.#steps[this.#wizard].tab;
     this.#renderTabs();
     this.#renderPanel();
     this.#renderOverlay();
@@ -893,6 +1071,27 @@ export class AtticEditor extends HTMLElement {
         break;
       case 'store':
         this.#commit(ops.storeItem(this.#booth, id).booth);
+        break;
+      case 'add-item':
+        this.#openSheet(null);
+        break;
+      case 'edit-item': {
+        const it = this.#booth.items.find((i) => i.id === id);
+        if (it) this.#openSheet(it);
+        break;
+      }
+      case 'delete-item':
+        this.#confirmDel = id;
+        if (this.#narrow) this.#render();
+        else this.#renderPanel();
+        break;
+      case 'delete-item-no':
+        this.#confirmDel = null;
+        if (this.#narrow) this.#render();
+        else this.#renderPanel();
+        break;
+      case 'delete-item-yes':
+        this.#deleteItem(id);
         break;
       default:
         break;
