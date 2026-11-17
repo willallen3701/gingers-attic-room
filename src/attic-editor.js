@@ -101,6 +101,7 @@ export class AtticEditor extends HTMLElement {
   #coach = false;
   #loaded = false;
   #readyTimer = null;
+  #waitingLogin = false; // the page said the visitor must log in first
   #libraryPromise = null;
   #narrow = false;
   #ro = null;
@@ -159,7 +160,7 @@ export class AtticEditor extends HTMLElement {
   #announceReady() {
     let tries = 0;
     const tick = () => {
-      if (this.#loaded) return;
+      if (this.#loaded || this.#waitingLogin) return;
       this.#bridge.emit('ready', { mode: 'edit' });
       tries += 1;
       if (this.#bridge.hasParent && tries < 20) this.#readyTimer = setTimeout(tick, 1500);
@@ -173,6 +174,7 @@ export class AtticEditor extends HTMLElement {
   async loadEditor({ booth, library, meta = {}, uploads = [] }) {
     const lib = normalizeLibrary(library ?? (await this.#libraryPromise));
     this.#loaded = true;
+    this.#waitingLogin = false;
     clearTimeout(this.#readyTimer);
     this.#lib = lib;
     const room = { ...defaultRoom(lib), ...(booth.room ?? {}) };
@@ -207,9 +209,27 @@ export class AtticEditor extends HTMLElement {
       case 'info-result':
         this.#toast(m.ok ? 'Booth sign saved.' : m.message || "Couldn't save your booth sign.");
         break;
+      case 'need-login':
+        if (!this.#loaded) this.#needLogin(m.message);
+        break;
       default:
         break;
     }
+  }
+
+  // Logged-out visitor: stop asking the page for a booth and offer a Log in button instead.
+  #needLogin(text) {
+    this.#waitingLogin = true;
+    clearTimeout(this.#readyTimer);
+    const ed = this.#root.querySelector('.ed');
+    ed.className = 'ed loading';
+    ed.innerHTML = `<p class="loadmsg" role="alert">${esc(text || 'Log in to set up your booth.')}</p><p class="loadmsg"><button type="button" class="primary loginbtn">Log in</button></p>`;
+    const btn = ed.querySelector('.loginbtn');
+    btn.addEventListener('click', () => {
+      btn.disabled = true;
+      btn.textContent = 'Opening log in...';
+      this.#bridge.emit('login-request', {});
+    });
   }
 
   // ================================================================ edits, history, autosave
