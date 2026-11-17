@@ -2,7 +2,6 @@
 // Message contract: app -> page  ready{mode:'approvals'}, refresh-queue{requestId}, review{requestId, action, itemId?, boothId?, uploadId?, note?}
 //                   page -> app  load-queue{queue}, queue-result{requestId, ok, queue}, review-result{requestId, ok, message}, not-admin{message}
 // Standalone (no parent page) it shows a small demo queue so the layout can be checked.
-import { css as roomCss } from './styles.js';
 import { esc, money, ensureFonts } from './room-render.js';
 import { Bridge } from './bridge.js';
 
@@ -14,7 +13,12 @@ const FIELD_LABEL = {
 };
 
 const css = /* css */ `
-:host { display: block; font-family: var(--serif); color: var(--ink); }
+:host {
+  --plum: #6b3a5c; --plum-dark: #4b2741; --paper: #f3e8d0; --ink: #3a2a1e; --ink-soft: #6d5a48;
+  --serif: "Playfair Display", "Iowan Old Style", Georgia, "Times New Roman", serif;
+  --type: "Special Elite", "Courier Prime", "Courier New", Courier, monospace;
+  display: block; font-family: var(--serif); color: var(--ink);
+}
 .wrap { padding: 16px; background: var(--paper); min-height: 100%; box-sizing: border-box; }
 .head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
 .head h1 { margin: 0; flex: 1; font: 700 26px/1.2 var(--serif); color: var(--plum-dark); }
@@ -88,7 +92,7 @@ export class AtticApprovals extends HTMLElement {
   constructor() {
     super();
     this.#root = this.attachShadow({ mode: 'open' });
-    this.#root.innerHTML = `<style>${roomCss}${css}</style><div class="wrap"><p class="msg">Loading the approval queue...</p></div>`;
+    this.#root.innerHTML = `<style>${css}</style><div class="wrap"><p class="msg">Loading the approval queue...</p></div>`;
   }
 
   connectedCallback() {

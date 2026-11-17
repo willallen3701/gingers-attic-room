@@ -278,10 +278,10 @@ kbd { padding: 0 4px; border: 1px solid #cbb385; border-bottom-width: 2px; borde
 
 /* ---------- items: add button, status badges, row actions ---------- */
 .additem { width: 100%; margin-bottom: 12px; }
-.badge { display: inline-block; margin-left: 4px; padding: 1px 6px; border-radius: 8px; font: 11px/1.4 var(--type); white-space: nowrap; }
-.badge.wait { background: #f5e6c4; color: #6b4a12; }
-.badge.bad { background: #f6d6cf; color: #8a2b1a; }
-.badge.sold { background: #e4dcd2; color: #4a3b2e; }
+.ibadge { display: inline-block; margin-left: 4px; padding: 1px 6px; border-radius: 8px; font: 11px/1.4 var(--type); white-space: nowrap; }
+.ibadge.wait { background: #f5e6c4; color: #6b4a12; }
+.ibadge.bad { background: #f6d6cf; color: #8a2b1a; }
+.ibadge.sold { background: #e4dcd2; color: #4a3b2e; }
 .rowacts { display: flex; flex-wrap: wrap; gap: 2px 10px; }
 .lnk { padding: 0; border: 0; background: none; cursor: pointer; font: 12px var(--type); color: var(--plum); text-decoration: underline; }
 .lnk.danger { color: #a3301c; font-weight: 700; }
@@ -352,7 +352,8 @@ kbd { padding: 0 4px; border: 1px solid #cbb385; border-bottom-width: 2px; borde
 .formside { display: flex; flex-direction: column; gap: 8px; }
 .formside h4 { margin: 8px 0 0; font: 700 14px var(--serif); }
 .cutprev { display: grid; place-items: center; height: 200px; border: 1px solid #d8c59c; border-radius: 6px; background: conic-gradient(#eee 25%, #fff 0 50%, #eee 0 75%, #fff 0) 0 0 / 14px 14px; }
-.cutprev img { max-width: 92%; max-height: 92%; object-fit: contain; }
+.cutprev { overflow: hidden; }
+.cutprev img { max-width: 92%; max-height: 184px; object-fit: contain; }
 .photogrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin: 0; padding: 0; list-style: none; }
 .photogrid li { position: relative; aspect-ratio: 1; border: 1px solid #d8c59c; border-radius: 4px; overflow: hidden; background: #fff; }
 .photogrid img { width: 100%; height: 100%; object-fit: cover; }
@@ -385,6 +386,7 @@ kbd { padding: 0 4px; border: 1px solid #cbb385; border-bottom-width: 2px; borde
   .formcols { grid-template-columns: 1fr; }
   .formside { order: -1; }
   .cutprev { height: 160px; }
+  .cutprev img { max-height: 148px; }
   .cutcanvas { max-height: 46vh; }
 }
 `;

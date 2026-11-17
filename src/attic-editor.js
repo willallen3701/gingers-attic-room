@@ -530,9 +530,9 @@ export class AtticEditor extends HTMLElement {
   }
 
   #itemBadge(it) {
-    if (it.status === 'approved' && it.pendingEdit) return '<span class="badge wait">Edit waiting for Ginger</span>';
+    if (it.status === 'approved' && it.pendingEdit) return '<span class="ibadge wait">Edit waiting for Ginger</span>';
     const b = STATUS_BADGE[it.status];
-    return b ? `<span class="badge ${b[0]}">${b[1]}</span>` : '';
+    return b ? `<span class="ibadge ${b[0]}">${b[1]}</span>` : '';
   }
 
   #itemListHtml(items, { placeable = true } = {}) {

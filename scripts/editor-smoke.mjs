@@ -253,7 +253,7 @@ try {
   await click(await rectOf('.itemform [type="submit"]'));
   const sentOk = await waitFor(`!${S}.querySelector('.sheet') && [...${S}.querySelectorAll('.itemrow .nm')].some((n) => n.textContent === 'Smoke Test Stoneware Vase')`, 10000);
   check('Send adds the item to the crate', sentOk);
-  check('the new item says it is waiting for Ginger', (await evaluate(`[...${S}.querySelectorAll('.itemrow')].find((r) => r.textContent.includes('Smoke Test Stoneware Vase'))?.querySelector('.badge')?.textContent ?? ''`)) === 'Waiting for Ginger');
+  check('the new item says it is waiting for Ginger', (await evaluate(`[...${S}.querySelectorAll('.itemrow')].find((r) => r.textContent.includes('Smoke Test Stoneware Vase'))?.querySelector('.ibadge')?.textContent ?? ''`)) === 'Waiting for Ginger');
   await click(await rectOf('.itemrow:last-of-type [data-act="place"]'));
   check('placing it draws it faded until approved', (await count('.room.edit .item.unapproved')) >= 1);
 } catch (e) {
