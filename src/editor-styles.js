@@ -185,7 +185,9 @@ export const editorCss = /* css */ `
 
 .roomframe {
   position: relative; z-index: 0; isolation: isolate; /* keep the room's own z-indexes below the bubbles */
-  width: min(100%, calc(100vh - 150px)); min-width: 320px; align-self: center;
+  /* 166 px = padding + top bar + gaps + selection bar + frame shadow, with a few px to spare: if the
+     editor is even 1 px taller than its embed, a scrollbar flickers in and out while dragging. */
+  width: min(100%, calc(100vh - 166px)); min-width: 320px; align-self: center;
   border-radius: 4px;
   box-shadow: 0 0 0 1px #b99a66, 0 0 0 5px #e3d1a8, 0 0 0 6px #b99a66, 0 10px 26px rgba(50,30,15,.25);
 }
@@ -207,7 +209,7 @@ export const editorCss = /* css */ `
 }
 .was { position: absolute; z-index: 6; pointer-events: none; border: 2px dashed rgba(107,58,92,.75); border-radius: .3cqw; background: rgba(107,58,92,.07); }
 
-.selbar { min-height: 54px; }
+.selbar { min-height: 56px; box-sizing: border-box; } /* same height selected or idle, so nothing jumps */
 .selbar.idle .hint { font: 12.5px/1.4 var(--type); color: var(--ink-soft); }
 kbd { padding: 0 4px; border: 1px solid #cbb385; border-bottom-width: 2px; border-radius: 3px; background: #fffaf0; font: 11px var(--type); }
 .selbar .thumb { width: 38px; height: 38px; display: grid; place-items: center; border: 1px solid #e0cfa8; border-radius: 4px; background: #fffaf0; }
@@ -284,6 +286,9 @@ kbd { padding: 0 4px; border: 1px solid #cbb385; border-bottom-width: 2px; borde
 .ibadge.wait { background: #f5e6c4; color: #6b4a12; }
 .ibadge.bad { background: #f6d6cf; color: #8a2b1a; }
 .ibadge.sold { background: #e4dcd2; color: #4a3b2e; }
+.ibadge.sale { background: #dcefd6; color: #2f5d2a; }
+.ibadge + .ibadge { margin-top: 2px; }
+.brand .whose { display: block; margin-top: 2px; font: italic 13px/1.3 var(--serif); color: var(--ink-soft); }
 .rowacts { display: flex; flex-wrap: wrap; gap: 2px 10px; }
 .lnk { padding: 0; border: 0; background: none; cursor: pointer; font: 12px var(--type); color: var(--plum); text-decoration: underline; }
 .lnk.danger { color: #a3301c; font-weight: 700; }

@@ -1,4 +1,4 @@
-// <attic-booth> - Ginger's Attic booth room, VIEW mode (Phase 1).
+// <attic-booth> - GingersAttic booth room, VIEW mode (Phase 1).
 // Usage:
 //   <attic-booth booth-src="data/demo-booth.json" library-src="data/library.json" demo></attic-booth>
 //   or element.load(booth, library)
@@ -155,6 +155,7 @@ export class AtticBooth extends HTMLElement {
           ${b.about ? `<p class="about">${esc(b.about)}</p>` : ''}
         </div>
         <div class="controls">
+          ${b.room?.light?.presetId ? '<button class="ctl lights" type="button" aria-pressed="true" title="Turn the booth lighting on or off">&#128161; Lights on</button>' : ''}
           <button class="ctl sound" type="button" aria-pressed="false" title="Ambient sound">&#9835; Sound off</button>
           <button class="ctl zoom-out" type="button" aria-label="Zoom out">&minus;</button>
           <button class="ctl zoom-in" type="button" aria-label="Zoom in">+</button>
@@ -199,6 +200,14 @@ export class AtticBooth extends HTMLElement {
       }),
     );
     shell.querySelector('.sound').addEventListener('click', () => this.#toggleSound());
+    shell.querySelector('.lights')?.addEventListener('click', (e) => {
+      // The light switch: the seller's chosen lighting fades on and off.
+      const btn = e.currentTarget;
+      const on = btn.getAttribute('aria-pressed') !== 'true';
+      btn.setAttribute('aria-pressed', String(on));
+      btn.innerHTML = `&#128161; Lights ${on ? 'on' : 'off'}`;
+      shell.querySelector('.room')?.classList.toggle('lights-off', !on);
+    });
     shell.querySelector('.zoom-in').addEventListener('click', () => this.#applyZoom(this.#zoom + 0.5));
     shell.querySelector('.zoom-out').addEventListener('click', () => this.#applyZoom(this.#zoom - 0.5));
     const vp = shell.querySelector('.viewport');

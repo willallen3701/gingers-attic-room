@@ -2,10 +2,10 @@
   "_note": "Demo booth recreating the mockup. Items, prices and seller are FAKE demo data; photos are licensed (see CREDITS.md / assets-src/LICENSES.md).",
   "id": "booth-demo-ginger",
   "boothNumber": 1,
-  "name": "Ginger's Own Booth",
+  "name": "The GingersAttic Booth",
   "about": "Teacups, brass and little treasures carried down from the attic.",
   "seller": {
-    "displayName": "Ginger",
+    "displayName": "GingersAttic",
     "avatarSrc": null
   },
   "updatedAt": "2026-11-16T12:00:00Z",

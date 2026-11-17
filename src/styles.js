@@ -218,7 +218,9 @@ button { font: inherit; color: inherit; }
 .item.decor:hover img { transform: none; }
 
 /* ---------- light overlays ---------- */
-.light { position: absolute; inset: 0; pointer-events: none; z-index: 3500; }
+.light { position: absolute; inset: 0; pointer-events: none; z-index: 3500; transition: opacity .45s ease; }
+.room.lights-off .light { opacity: 0; }
+@media (prefers-reduced-motion: reduce) { .light { transition: none; } }
 .light .wash { position: absolute; inset: 0; mix-blend-mode: soft-light; }
 .light .panes { position: absolute; mix-blend-mode: soft-light; filter: blur(.35cqw); }
 .light .vignette { position: absolute; inset: 0; mix-blend-mode: multiply;

@@ -147,7 +147,7 @@ export class ItemSheet {
     }
     if (a.error) return `<p class="note">Couldn't load the seller agreement (${esc(a.error)}). Close this and try again.</p>`;
     return `
-      <p class="lede">Before your first item, please read and agree to how selling at Ginger's Attic works.</p>
+      <p class="lede">Before your first item, please read and agree to how selling at GingersAttic works.</p>
       <div class="agreebox" tabindex="0" aria-label="Seller agreement">
         <h3>${esc(a.title)}</h3>
         <p>${esc(a.intro)}</p>
@@ -214,10 +214,10 @@ export class ItemSheet {
     const flat = f.mount === 'flat';
     const cutSrc = this.#newCutout?.dataUrl ?? it?.pendingEdit?.image ?? it?.image ?? '';
     let banner = '';
-    if (it?.status === 'rejected' && it.rejectionNote) banner = `<p class="note warn"><b>Ginger asked for changes:</b> ${esc(it.rejectionNote)}</p>`;
+    if (it?.status === 'rejected' && it.rejectionNote) banner = `<p class="note warn"><b>GingersAttic asked for changes:</b> ${esc(it.rejectionNote)}</p>`;
     else if (it?.status === 'approved') {
-      banner = `<p class="note">Price and quantity changes go live straight away. Other changes go to Ginger for a quick check; your item stays up as it is meanwhile.${it.rejectionNote ? ` <br><b>Last edit not approved:</b> ${esc(it.rejectionNote)}` : ''}</p>`;
-    } else if (it?.status === 'pending') banner = '<p class="note">This item is waiting for Ginger. Changes you make now are checked together.</p>';
+      banner = `<p class="note">Price and quantity changes go live straight away. Other changes go to GingersAttic for a quick check; your item stays up as it is meanwhile.${it.rejectionNote ? ` <br><b>Last edit not approved:</b> ${esc(it.rejectionNote)}` : ''}</p>`;
+    } else if (it?.status === 'pending') banner = '<p class="note">This item is private until it is approved. Changes you make now are checked together.</p>';
     const photoSlots = this.#photos
       .map((p, i) => `<li><img src="${esc(p.dataUrl ?? p.url)}" alt="Extra photo ${i + 1}"><button type="button" class="ph-x" data-photo-remove="${i}" aria-label="Remove photo ${i + 1}">&times;</button></li>`)
       .join('');
@@ -284,7 +284,7 @@ export class ItemSheet {
 
   #submitLabel() {
     const it = this.#item;
-    if (!it) return 'Send to Ginger for approval';
+    if (!it) return 'Send for approval';
     if (it.status !== 'approved') return 'Save and send for approval';
     const v = validateListing(this.#form);
     if (v.ok && !this.#newCutout && !this.#photosChanged() && needsReview(this.#beforeListing(), v.listing).length === 0) return 'Save price & quantity';
@@ -596,7 +596,7 @@ export class ItemSheet {
     const newPhotos = this.#photos.filter((p) => p.dataUrl);
     if (this.#newCutout) lines.push({ key: 'cutout', text: 'Uploading the cutout', state: 'todo' });
     newPhotos.forEach((_, i) => lines.push({ key: `p${i}`, text: `Uploading extra photo ${i + 1} of ${newPhotos.length}`, state: 'todo' }));
-    lines.push({ key: 'details', text: this.#item ? 'Saving your changes' : 'Sending it to Ginger', state: 'todo' });
+    lines.push({ key: 'details', text: this.#item ? 'Saving your changes' : 'Sending it for approval', state: 'todo' });
     this.#sendLines = lines;
     const backTo = 'details';
     this.#step = 'send';

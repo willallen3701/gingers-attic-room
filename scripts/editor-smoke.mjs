@@ -253,13 +253,23 @@ try {
   await click(await rectOf('.itemform [type="submit"]'));
   const sentOk = await waitFor(`!${S}.querySelector('.sheet') && [...${S}.querySelectorAll('.itemrow .nm')].some((n) => n.textContent === 'Smoke Test Stoneware Vase')`, 10000);
   check('Send adds the item to the crate', sentOk);
-  check('the new item says it is waiting for Ginger', (await evaluate(`[...${S}.querySelectorAll('.itemrow')].find((r) => r.textContent.includes('Smoke Test Stoneware Vase'))?.querySelector('.ibadge')?.textContent ?? ''`)) === 'Waiting for Ginger');
+  check('the new item is labelled private until approved', (await evaluate(`[...${S}.querySelectorAll('.itemrow')].find((r) => r.textContent.includes('Smoke Test Stoneware Vase'))?.querySelector('.ibadge')?.textContent ?? ''`)) === 'Private · waiting for approval');
   await click(await rectOf('.itemrow:last-of-type [data-act="place"]'));
   check('placing it draws it faded until approved', (await count('.room.edit .item.unapproved')) >= 1);
   await evaluate(`[...${S}.querySelectorAll('.itemrow')].find((r) => r.textContent.includes('Smoke Test Stoneware Vase')).querySelector('[data-act="edit-item"]').click()`);
   const editOpened = await waitFor(`!!${S}.querySelector('.itemform')`, 4000);
   check('Edit right after agreeing goes straight to the details (no second agreement)', editOpened && !(await evaluate(`!!${S}.querySelector('.agreebox')`)));
   check('the edit form keeps the saved values', (await evaluate(`${S}.querySelector('.itemform [name="title"]').value`)) === 'Smoke Test Stoneware Vase');
+
+  // 13. Regressions from the 2026-11-17 feedback: textured trim draws; selecting doesn't change the page height.
+  await send('Page.navigate', { url: `http://localhost:${port}/editor.html?coach=0&tab=walls` });
+  await waitFor(`!!${S}?.querySelector('.room.edit .item')`, 10000);
+  const trimBg = await evaluate(`getComputedStyle(${S}.querySelector('.room.edit [data-strip]')).backgroundImage`);
+  check('textured trim (baseboard) draws its image', /architecture\//.test(trimBg), trimBg.slice(0, 80));
+  const hBefore = await evaluate('document.documentElement.scrollHeight');
+  await click(await rectOf('.room.edit .item:not(.decor)'));
+  const hAfter = await evaluate('document.documentElement.scrollHeight');
+  check('selecting something keeps the page height (no jumping)', hBefore === hAfter && hAfter <= (await evaluate('innerHeight')), `${hBefore} -> ${hAfter}`);
 } catch (e) {
   console.error('ERROR', e.message);
   results.push({ name: 'harness', ok: false });

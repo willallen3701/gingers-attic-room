@@ -42,7 +42,7 @@ export function stripsHtml(booth, lib) {
     .map((a) => {
       const top = stripTopIn(a);
       const bg = a.src
-        ? `background:url("${esc(a.src)}") left top / auto 100% repeat-x${a.color ? `, ${esc(a.color)}` : ''}`
+        ? `background:url('${esc(a.src)}') left top / auto 100% repeat-x${a.color ? `, ${esc(a.color)}` : ''}`
         : `background:linear-gradient(180deg, ${esc(a.color ?? '#6a4128')}, ${esc(a.color ?? '#6a4128')} 80%, rgba(0,0,0,.35))`;
       const shadow = a.anchor === 'bottom' && (a.offsetIn ?? 0) === 0 ? ' baseboard' : ' strip';
       return `<div class="${shadow.trim()}" data-strip="${esc(a.id)}" style="top:${pct(top)}%;height:${pct(a.heightIn)}%;${bg};z-index:${a.anchor === 'top' ? 945 : 950}"></div>`;
@@ -76,7 +76,7 @@ export function itemsHtml(layout, opts = {}) {
     .map(({ item, size, x, top, z }) => {
       const sold = item.status === 'sold';
       const label = `${item.title}, ${sold ? 'sold' : money(item.price)}`;
-      // In the editor, items Ginger hasn't approved yet are drawn faded with a dashed outline.
+      // In the editor, items GingersAttic hasn't approved yet are drawn faded with a dashed outline.
       const unapproved = opts.edit && (item.status === 'pending' || item.status === 'rejected');
       return (
         `<button class="item mount-${esc(item.mount)}${sold ? ' sold' : ''}${unapproved ? ' unapproved' : ''}${opts.edit ? ' movable' : ''}${stateCls(item.id, opts)}" type="button" ` +

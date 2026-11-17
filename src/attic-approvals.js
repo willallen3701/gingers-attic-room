@@ -1,4 +1,4 @@
-// <attic-approvals> - Ginger's approval queue (hidden "Approvals" page, owner only).
+// <attic-approvals> - GingersAttic approval queue (hidden "Approvals" page, owner only).
 // Message contract: app -> page  ready{mode:'approvals'}, refresh-queue{requestId}, review{requestId, action, itemId?, boothId?, uploadId?, note?}
 //                   page -> app  load-queue{queue}, queue-result{requestId, ok, queue}, review-result{requestId, ok, message}, not-admin{message}
 // Standalone (no parent page) it shows a small demo queue so the layout can be checked.

@@ -167,7 +167,7 @@ export function formFromItem(item) {
   };
 }
 
-/** Which of the changed fields need Ginger's review for an already-approved item. */
+/** Which of the changed fields need GingersAttic's review for an already-approved item. */
 export const INSTANT_FIELDS = Object.freeze(['price', 'quantity']);
 export function needsReview(before, after) {
   const changed = Object.keys(after).filter((k) => JSON.stringify(after[k] ?? null) !== JSON.stringify(before[k] ?? null));

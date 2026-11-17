@@ -1,4 +1,4 @@
-// <attic-editor> - Ginger's Attic booth EDITOR (Phase 2): the seller arranges their own booth.
+// <attic-editor> - GingersAttic booth EDITOR (Phase 2): the seller arranges their own booth.
 // Usage (embedded in Wix): <attic-editor library-src="data/library.json"></attic-editor>; the page sends load-editor.
 // Usage (standalone demo):  <attic-editor booth-src="data/demo-booth.json" library-src="data/library.json"></attic-editor>
 // Attributes: booth-src, library-src, first-visit (standalone: start the wizard), allowed-origins.
@@ -42,8 +42,8 @@ const WIZARD = [
   { tab: 'walls', title: 'Choose your wallpaper', text: 'Pick a pattern for your back wall, paint it a colour, or upload a photo of your own wallpaper.' },
   { tab: 'floor', title: 'Lay your floor', text: 'Wood, tile or lino: choose what suits your booth. You can upload your own too.' },
   { tab: 'fixtures', title: 'Shelves, tables & finishing touches', text: 'Add shelves and tables to hold your treasures. The Lighting and Decor tabs add atmosphere: a window, a clock, a fern.' },
-  { tab: 'items', title: 'Add your items', text: "Click \"Add an item\": snap a photo, we cut out the background, then you add the price, size and details. Ginger checks each item before shoppers see it." },
-  { tab: 'items', title: 'Place your items', text: 'Drag items from your storage crate onto a shelf, a table or the floor. Up to 40 can be out at once. Items waiting for Ginger show to shoppers once approved.' },
+  { tab: 'items', title: 'Add your items', text: "Click \"Add an item\": snap a photo, we cut out the background, then you add the price, size and details. GingersAttic checks each item before shoppers see it." },
+  { tab: 'items', title: 'Place your items', text: 'Drag items from your storage crate onto a shelf, a table or the floor. Up to 40 can be out at once. Items marked Private only show to shoppers once GingersAttic approves them.' },
   { target: 'open', title: 'Open your booth', text: 'When it looks right, open it to shoppers. Your changes keep saving as a draft, and you can update the booth any time.' },
 ];
 
@@ -59,8 +59,9 @@ const WIZARD_NO_ITEMS = [
 ];
 
 const STATUS_BADGE = {
-  pending: ['wait', 'Waiting for Ginger'],
-  rejected: ['bad', 'Needs changes'],
+  pending: ['wait', 'Private · waiting for approval'],
+  rejected: ['bad', 'Private · needs changes'],
+  approved: ['sale', 'For sale'],
   sold: ['sold', 'Sold'],
 };
 
@@ -122,6 +123,7 @@ export class AtticEditor extends HTMLElement {
   #sheet = null;
   #requests = new Map(); // requestId -> resolve, for request/response messages
   #confirmDel = null; // item id whose Delete / Take down asks "are you sure?"
+  #lightsOff = false; // editor preview of the shoppers' light switch (not saved)
   #simN = 0;
   #libraryPromise = null;
   #narrow = false;
@@ -416,7 +418,7 @@ export class AtticEditor extends HTMLElement {
     const up = { ...m.upload, tileIn: m.upload.tileIn ?? pending?.tileIn };
     this.#uploads = [...this.#uploads.filter((u) => u.id !== up.id), up];
     this.#applyUpload(up);
-    this.#toast(up.approved ? 'Uploaded.' : 'Uploaded! Only you can see it until Ginger approves it.');
+    this.#toast(up.approved ? 'Uploaded.' : 'Uploaded! Only you can see it until GingersAttic approves it.');
   }
 
   #applyUpload(up) {
@@ -512,9 +514,9 @@ export class AtticEditor extends HTMLElement {
     this.#booth = { ...b, items: old ? b.items.map((i) => (i.id === item.id ? merged : i)) : [...b.items, merged] };
     this.#tab = 'items';
     this.#renderAll();
-    if (isNew) this.#toast('Sent to Ginger! Place it in your booth now; shoppers see it once it is approved.');
+    if (isNew) this.#toast('Sent for approval! It stays private until GingersAttic approves it; you can place it in your booth now.');
     else if (review === 'none') this.#toast('Saved. The new price and quantity are live.');
-    else this.#toast('Saved. Ginger will check your changes.');
+    else this.#toast('Saved. GingersAttic will check your changes.');
   }
 
   async #deleteItem(id) {
@@ -535,7 +537,7 @@ export class AtticEditor extends HTMLElement {
   }
 
   #itemBadge(it) {
-    if (it.status === 'approved' && it.pendingEdit) return '<span class="ibadge wait">Edit waiting for Ginger</span>';
+    if (it.status === 'approved' && it.pendingEdit) return '<span class="ibadge sale">For sale</span><span class="ibadge wait">Edit waiting for approval</span>';
     const b = STATUS_BADGE[it.status];
     return b ? `<span class="ibadge ${b[0]}">${b[1]}</span>` : '';
   }
@@ -559,7 +561,7 @@ export class AtticEditor extends HTMLElement {
                 ? `<button class="lnk danger" type="button" data-act="delete-item-yes" data-id="${esc(it.id)}">${delLabel}: are you sure?</button><button class="lnk" type="button" data-act="delete-item-no">Keep</button>`
                 : `<button class="lnk" type="button" data-act="delete-item" data-id="${esc(it.id)}">${delLabel}</button>`) : ''}
             </span>
-            ${it.status === 'rejected' && it.rejectionNote ? `<span class="rownote">Ginger: ${esc(it.rejectionNote)}</span>` : ''}
+            ${it.status === 'rejected' && it.rejectionNote ? `<span class="rownote">GingersAttic: ${esc(it.rejectionNote)}</span>` : ''}
           </span>
           ${placeable
             ? inRoom
@@ -615,7 +617,7 @@ export class AtticEditor extends HTMLElement {
     ed.className = 'ed';
     ed.innerHTML = `
       <aside class="panel">
-        <div class="brand"><span class="kicker">Ginger's Attic</span><span class="title">Arrange your booth</span></div>
+        <div class="brand"><span class="kicker">GingersAttic${this.#meta.memberName ? ` &middot; signed in as ${esc(this.#meta.memberName)}` : ''}</span><span class="title">${this.#booth.boothNumber ? `Your booth: No. ${esc(String(this.#booth.boothNumber))}` : 'Arrange your booth'}</span>${this.#booth.name ? `<span class="whose">${esc(this.#booth.name)}</span>` : ''}</div>
         <div class="panelbody">
           <nav class="tabs" role="tablist" aria-label="Booth editor tools">
             ${TABS.map((t) => `<button class="tab" role="tab" type="button" data-tab="${t.id}" aria-selected="false">${icon(t.icon)}<span>${t.label}</span></button>`).join('')}
@@ -765,7 +767,7 @@ export class AtticEditor extends HTMLElement {
             <button type="button" data-act="${kind}-mode" data-mode="tile" aria-pressed="${(cfg.mode ?? 'tile') === 'tile'}">Tile (repeat)</button>
             <button type="button" data-act="${kind}-mode" data-mode="fill" aria-pressed="${cfg.mode === 'fill'}">Fill (one photo)</button>
           </div>
-          ${current.approved === false ? '<p class="note">Only you can see this photo until Ginger approves it. Shoppers see your last approved choice.</p>' : ''}` : ''}
+          ${current.approved === false ? '<p class="note">Only you can see this photo until GingersAttic approves it. Shoppers see your last approved choice.</p>' : ''}` : ''}
       </section>`;
   }
 
@@ -817,7 +819,9 @@ export class AtticEditor extends HTMLElement {
           .map((l) => `<button class="lightopt${cur === l.id ? ' on' : ''}" type="button" data-act="light" data-id="${esc(l.id)}" aria-pressed="${cur === l.id}"><i style="background:${esc(l.wash)}, #e9dcc0"></i><span>${esc(l.name)}</span></button>`)
           .join('')}
       </div></section>
-      ${cur ? `<section><h3>Strength</h3><div class="range"><input type="range" min="20" max="100" step="5" value="${k}" data-act="light-strength" aria-label="Lighting strength"><output>${k}%</output></div></section>` : ''}`;
+      ${cur ? `<section><h3>Strength</h3><div class="range"><input type="range" min="20" max="100" step="5" value="${k}" data-act="light-strength" aria-label="Lighting strength"><output>${k}%</output></div></section>
+      <section><h3>Light switch</h3><p class="note">Shoppers get a &#128161; Lights button in your booth to turn this on and off. Try it here:</p>
+        <button class="toggle${this.#lightsOff ? '' : ' on'}" type="button" data-act="light-preview" aria-pressed="${!this.#lightsOff}">&#128161; Lights ${this.#lightsOff ? 'off' : 'on'}</button></section>` : ''}`;
   }
 
   #srcCard(kind, def, sub) {
@@ -868,7 +872,7 @@ export class AtticEditor extends HTMLElement {
       <section><h3>In your booth <small>(${placed.length})</small></h3>
         ${placed.length ? this.#itemListHtml(placed) : '<p class="empty">Nothing out yet. Drag items from the crate onto a shelf.</p>'}
       </section>
-      <p class="foot">${this.#itemsOn ? 'Items marked "Waiting for Ginger" are hidden from shoppers until she approves them.' : 'Adding new items with photos and prices comes in the next update.'}</p>`;
+      <p class="foot">${this.#itemsOn ? 'Items marked Private are only visible to you until GingersAttic approves them.' : 'Adding new items with photos and prices comes in the next update.'}</p>`;
   }
 
   #signPanelHtml() {
@@ -1079,6 +1083,11 @@ export class AtticEditor extends HTMLElement {
         break;
       case 'add-item':
         this.#openSheet(null);
+        break;
+      case 'light-preview':
+        this.#lightsOff = !this.#lightsOff;
+        this.#root.querySelector('.room.edit')?.classList.toggle('lights-off', this.#lightsOff);
+        this.#renderPanel();
         break;
       case 'edit-item': {
         const it = this.#booth.items.find((i) => i.id === id);
