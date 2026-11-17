@@ -296,7 +296,7 @@ export class AtticBooth extends HTMLElement {
     const sold = item.status === 'sold';
     const fav = this.#favourites.has(id);
     const size = item.dims ? `${item.dims.h} &times; ${item.dims.w} &times; ${item.dims.d} in (H &times; W &times; D)` : '';
-    const ship = item.localPickupOnly ? 'Local pickup only' : item.shippingPrice != null ? `${money(item.shippingPrice)} shipping` : '';
+    const ship = item.localPickupOnly ? 'Local pickup only (arranged with the seller after purchase)' : 'Ships by USPS, calculated at checkout';
     card.innerHTML = `
       <div class="grab" aria-hidden="true"></div>
       <button class="close" type="button" aria-label="Close">&times;</button>

@@ -260,10 +260,8 @@ export class ItemSheet {
               <label class="fld">Quantity<input name="quantity" inputmode="numeric" value="${esc(f.quantity)}">${fieldErr(e, 'quantity')}</label>
             </div>
             <fieldset class="fld"><legend>Shipping</legend>
-              <label class="fld inline">Shipping price ($)<input name="shippingPrice" inputmode="decimal" value="${esc(f.shippingPrice)}" ${f.localPickupOnly ? 'disabled' : ''}></label>
-              <label class="check"><input type="checkbox" name="localPickupOnly" ${f.localPickupOnly ? 'checked' : ''}> Local pickup only (no shipping)</label>
-              ${fieldErr(e, 'shippingPrice')}
-              <p class="dim">You ship within 3 business days of a sale. Price it to cover postage and packing.</p>
+              <p class="dim">USPS works out the shipping price at checkout from the weight and size above, so make them accurate. You ship within 3 business days of a sale.</p>
+              <label class="check"><input type="checkbox" name="localPickupOnly" ${f.localPickupOnly ? 'checked' : ''}> Local pickup only: too big or fragile to mail; the buyer arranges pickup with you</label>
             </fieldset>
           </div>
           <aside class="formside">
@@ -536,7 +534,7 @@ export class ItemSheet {
     if (!form) return;
     const fd = new FormData(form);
     const f = { ...this.#form };
-    for (const k of ['title', 'description', 'category', 'era', 'eraNote', 'heightIn', 'widthIn', 'depthIn', 'weightLb', 'weightOz', 'price', 'quantity', 'shippingPrice']) {
+    for (const k of ['title', 'description', 'category', 'era', 'eraNote', 'heightIn', 'widthIn', 'depthIn', 'weightLb', 'weightOz', 'price', 'quantity']) {
       if (fd.has(k)) f[k] = String(fd.get(k));
     }
     f.condition = fd.get('condition') ?? f.condition;

@@ -18,7 +18,6 @@ const good = {
   weightLb: '1',
   weightOz: '8',
   localPickupOnly: false,
-  shippingPrice: '12',
 };
 
 describe('listing rules', () => {
@@ -39,7 +38,7 @@ describe('listing rules', () => {
   it('accepts a complete listing and normalises it', () => {
     const v = validateListing(good);
     expect(v.ok).toBe(true);
-    expect(v.listing).toMatchObject({ price: 1250.5, quantity: 1, weightLb: 1.5, depthIn: null, shippingPrice: 12, localPickupOnly: false });
+    expect(v.listing).toMatchObject({ price: 1250.5, quantity: 1, weightLb: 1.5, depthIn: null, shippingPrice: null, localPickupOnly: false });
   });
 
   it('reports each missing field', () => {
@@ -48,12 +47,12 @@ describe('listing rules', () => {
     expect(Object.keys(v.errors).sort()).toEqual(['category', 'condition', 'description', 'era', 'heightIn', 'price', 'title', 'weight'].sort());
   });
 
-  it('needs a shipping price unless local pickup only', () => {
-    expect(validateListing({ ...good, shippingPrice: '' }).errors.shippingPrice).toBeTruthy();
-    const pickup = validateListing({ ...good, shippingPrice: '', localPickupOnly: true });
+  it('has no shipping price to enter (USPS at checkout); pickup-only stays', () => {
+    // USPS calculates shipping at checkout: no price to enter, pickup-only still allowed.
+    expect(validateListing(good).errors.shippingPrice).toBeUndefined();
+    const pickup = validateListing({ ...good, localPickupOnly: true });
     expect(pickup.ok).toBe(true);
     expect(pickup.listing.shippingPrice).toBeNull();
-    expect(validateListing({ ...good, shippingPrice: '0' }).listing.shippingPrice).toBe(0);
   });
 
   it('rejects 16 oz or more and fractional quantities', () => {
@@ -64,7 +63,7 @@ describe('listing rules', () => {
   it('round-trips an item into the form (pending edit wins)', () => {
     const item = { title: 'Old', description: 'Old description here', price: 10, quantity: 2, category: 'lighting', condition: 'good', era: '1950s', mount: 'stand', dims: { h: 9, w: 4, d: null }, weightLb: 2.25, shippingPrice: 5, pendingEdit: { title: 'New name' } };
     const f = formFromItem(item);
-    expect(f).toMatchObject({ title: 'New name', price: '10', heightIn: '9', depthIn: '', weightLb: '2', weightOz: '4', shippingPrice: '5' });
+    expect(f).toMatchObject({ title: 'New name', price: '10', heightIn: '9', depthIn: '', weightLb: '2', weightOz: '4' });
     expect(validateListing(f).ok).toBe(true);
   });
 

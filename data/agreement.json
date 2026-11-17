@@ -28,7 +28,7 @@
     {
       "h": "4. Fees",
       "p": [
-        "GingersAttic keeps a 15% commission on each item's sale price. The shipping price you set for an item is passed to you to cover postage."
+        "GingersAttic keeps a 15% commission on each item's sale price. The shipping the buyer pays at checkout (calculated by USPS from the item's weight and size) is passed to you to cover postage."
       ]
     },
     {
@@ -42,7 +42,7 @@
       "h": "6. Shipping",
       "p": [
         "When an item sells you'll get an email and see the order on your My Sales page. Ship it within 3 business days, packed well enough to survive the trip, and add the tracking number on My Sales.",
-        "You set the shipping price for each item, or mark it \"local pickup only\". Insured shipping is strongly recommended for anything fragile or over $100."
+        "Shipping is calculated by USPS at checkout from the weight and size you enter, so measure and weigh carefully. Items too big or fragile to mail can be marked \"local pickup only\"; the buyer then arranges pickup with you. Insured shipping is strongly recommended for anything fragile or over $100."
       ]
     },
     {

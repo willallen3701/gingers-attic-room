@@ -112,8 +112,7 @@ export function validateListing(form) {
   }
 
   const localPickupOnly = !!form.localPickupOnly;
-  const shippingPrice = localPickupOnly ? null : parseNumber(form.shippingPrice);
-  if (!localPickupOnly && !between(shippingPrice, LIMITS.shippingPrice)) errors.shippingPrice = 'Enter a shipping price ($0 for free shipping), or tick local pickup only.';
+  // Shipping is calculated by USPS at checkout from weight and size (2026-11-17), so sellers no longer set a price.
 
   if (Object.keys(errors).length) return { ok: false, errors };
   return {
@@ -134,7 +133,7 @@ export function validateListing(form) {
       depthIn: depthIn === null ? null : round2(depthIn),
       weightLb,
       localPickupOnly,
-      shippingPrice: localPickupOnly ? null : round2(shippingPrice),
+      shippingPrice: null,
     },
   };
 }
@@ -163,7 +162,6 @@ export function formFromItem(item) {
     weightLb: w ? String(lb) : '',
     weightOz: w ? String(oz) : '',
     localPickupOnly: !!src.localPickupOnly,
-    shippingPrice: src.localPickupOnly ? '' : str(src.shippingPrice),
   };
 }
 
