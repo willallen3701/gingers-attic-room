@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ginger's Attic booth editor</title>
+  <style>
+    :root { color-scheme: light; }
+    html, body { margin: 0; min-height: 100%; background: #f3e8d0; }
+    body { font-family: Georgia, "Times New Roman", serif; color: #3a2a1e; }
+  </style>
+</head>
+<body>
+  <!--
+    Embedded on the Wix "My Booth" page: the page sends load-editor via postMessage; the library ships with the app.
+    Opened directly (no parent page): loads the demo booth and simulates saving, so it can be tried on localhost.
+    Standalone-only URL options (for demos and screenshots):
+      ?wizard=0..6        start the setup guide at that step
+      ?tab=walls|floor|light|fixtures|decor|items|sign
+      ?coach=1|0          show / hide the coach marks
+      ?select=kind:id     select something (kind = item|fixture|decor|placeable)
+      ?storage=id,id      put these demo items in the storage crate
+      ?drag=kind:id:dx:dy show a drag in progress (inches)
+  -->
+  <attic-editor library-src="data/library.json"></attic-editor>
+  <script type="module">
+    const el = document.querySelector('attic-editor');
+    const embedded = window.parent !== window;
+    const q = new URLSearchParams(location.search);
+    if (!embedded) {
+      if (q.has('wizard')) el.setAttribute('first-visit', '');
+      el.setAttribute('booth-src', 'data/demo-booth.json');
+      el.addEventListener('attic-editor:loaded', () => {
+        const opts = {};
+        if (q.has('wizard')) opts.wizard = Number(q.get('wizard')) || 0;
+        if (q.has('tab')) opts.tab = q.get('tab');
+        if (q.has('coach')) opts.coach = q.get('coach') === '1';
+        if (q.has('select')) {
+          const [kind, id] = q.get('select').split(':');
+          opts.select = { kind, id };
+        }
+        if (q.has('storage')) opts.storage = q.get('storage').split(',').filter(Boolean);
+        if (q.has('drag')) {
+          const [kind, id, dx, dy] = q.get('drag').split(':');
+          opts.drag = { kind, id, dx: Number(dx), dy: Number(dy) };
+        }
+        el.debugSetup(opts);
+      }, { once: true });
+    }
+    // Define the element only now, so connectedCallback sees booth-src in standalone mode.
+    await import('./src/attic-editor.js');
+  </script>
+</body>
+</html>

@@ -8,10 +8,10 @@
 // dispatches a composed "attic-booth:event" DOM event with the same payload.
 
 import { css } from './styles.js';
-import { ROOM, pct } from './logic/room.js';
 import { buildLayout } from './logic/layout.js';
-import { backgroundFor } from './logic/tile.js';
+import { normalizeLibrary } from './logic/library.js';
 import { isAllowedOrigin, DEFAULT_ALLOWED_ORIGINS } from './logic/origin.js';
+import { esc, money, ensureFonts, roomInnerHtml, paintSurfaces } from './room-render.js';
 
 const NARROW_PX = 600;
 const ZOOM_MIN = 1;
@@ -22,10 +22,6 @@ const ICONS = {
   cart: '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M3 3h2.3l2.6 11.2A2 2 0 0 0 9.8 16H18v-2H9.8l-.4-1.7h8.9a1 1 0 0 0 1-.8L21 6H6.6L6 3.8A1 1 0 0 0 5 3H3zm6.5 15a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm7 0a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3z"/></svg>',
   heart: '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 4.5 6.7 4.5c2 0 3.6 1.1 4.4 2.6h1.8c.8-1.5 2.4-2.6 4.4-2.6 3.7 0 5.8 3.9 4.3 7.3C19.5 16.4 12 21 12 21z"/></svg>',
 };
-
-const esc = (s) =>
-  String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
-const money = (n) => (typeof n === 'number' ? `$${n % 1 ? n.toFixed(2) : n}` : '');
 
 /** 1 s of silence as a WAV data URI: placeholder until real ambience audio is licensed. */
 function silentWav() {
@@ -42,26 +38,6 @@ function silentWav() {
   let bin = '';
   new Uint8Array(buf).forEach((b) => (bin += String.fromCharCode(b)));
   return `data:audio/wav;base64,${btoa(bin)}`;
-}
-
-// @font-face rules inside a shadow root are ignored by browsers, so the Google Fonts stylesheet
-// is added to the document head once (Playfair Display: OFL 1.1, Special Elite: Apache 2.0).
-const FONTS_HREF =
-  'https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Special+Elite&display=swap';
-function ensureFonts() {
-  if (typeof document === 'undefined' || document.querySelector('link[data-attic-fonts]')) return;
-  for (const [rel, href, cross] of [
-    ['preconnect', 'https://fonts.googleapis.com', false],
-    ['preconnect', 'https://fonts.gstatic.com', true],
-    ['stylesheet', FONTS_HREF, false],
-  ]) {
-    const link = document.createElement('link');
-    link.rel = rel;
-    link.href = href;
-    if (cross) link.crossOrigin = 'anonymous';
-    if (rel === 'stylesheet') link.dataset.atticFonts = '';
-    document.head.append(link);
-  }
 }
 
 export class AtticBooth extends HTMLElement {
@@ -143,8 +119,8 @@ export class AtticBooth extends HTMLElement {
     this.#loaded = true;
     clearTimeout(this.#readyTimer);
     this.#booth = booth;
-    this.#library = library;
-    this.#layout = buildLayout(booth, library);
+    this.#library = normalizeLibrary(library);
+    this.#layout = buildLayout(booth, this.#library);
     if (Object.keys(this.#layout.problems).length) {
       console.warn('[attic-booth] placement problems', this.#layout.problems);
     }
@@ -186,167 +162,29 @@ export class AtticBooth extends HTMLElement {
       </header>
       <div class="viewport">
         <div class="room" role="group" aria-label="${esc(b.name)} - booth ${esc(b.boothNumber)}">
-          <div class="wall"></div>
-          <div class="floor"><div class="floor-plane"></div></div>
-          ${this.#archHtml()}
-          <div class="layer">${this.#fixturesHtml()}${this.#itemsHtml()}</div>
-          ${this.#signHtml()}
-          ${this.#lightHtml()}
-          <div class="tags">${this.#tagsHtml()}</div>
+          ${roomInnerHtml(b, lib, L)}
           ${this.hasAttribute('demo') ? '<div class="badge">Demo items &middot; not for sale</div>' : ''}
         </div>
       </div>
       <div class="card" role="dialog" aria-modal="false" aria-labelledby="card-title" hidden></div>
       <div class="toast" role="status" aria-live="polite"></div>`;
 
-    this.#paintSurfaces(lib);
+    paintSurfaces(this.#root, this.#booth, lib);
     this.#wire(shell);
     this.#applyZoom(this.#zoom);
     this.#ro?.disconnect();
     this.#ro = new ResizeObserver(() => {
       shell.classList.toggle('narrow', shell.clientWidth < NARROW_PX);
-      this.#paintSurfaces(lib);
+      paintSurfaces(this.#root, this.#booth, lib);
       if (this.#openId) this.#positionCard();
     });
     this.#ro.observe(shell);
     shell.classList.toggle('narrow', shell.clientWidth < NARROW_PX);
   }
 
-  #archHtml() {
-    const arch = (this.#booth.room?.architecture ?? [])
-      .map((id) => this.#library.architecture?.find((a) => a.id === id))
-      .filter(Boolean);
-    return arch
-      .filter((a) => a.kind === 'baseboard')
-      .map(
-        (a) =>
-          `<div class="baseboard" style="top:${pct(ROOM.wallHeightIn - a.heightIn)}%;height:${pct(a.heightIn)}%;` +
-          `background:linear-gradient(180deg, ${esc(a.color)}, ${esc(a.color)} 80%, rgba(0,0,0,.35));z-index:950"></div>`,
-      )
-      .join('');
-  }
-
-  #fixturesHtml() {
-    return this.#layout.fixtures
-      .map(
-        (f) =>
-          `<div class="fixture" style="left:${pct(f.x)}%;top:${pct(f.y)}%;width:${pct(f.w)}%;height:${pct(f.h)}%;z-index:${f.z}">` +
-          `<img src="${esc(f.def.src)}" alt="" draggable="false"></div>`,
-      )
-      .join('');
-  }
-
-  #itemsHtml() {
-    return this.#layout.items
-      .map(({ item, size, x, top, z }) => {
-        const sold = item.status === 'sold';
-        const label = `${item.title}, ${sold ? 'sold' : money(item.price)}`;
-        return (
-          `<button class="item mount-${esc(item.mount)}${sold ? ' sold' : ''}" type="button" data-id="${esc(item.id)}" ` +
-          `aria-label="${esc(label)}" style="left:${pct(x)}%;top:${pct(top)}%;width:${pct(size.w)}%;height:${pct(size.h)}%;z-index:${z}">` +
-          `<span class="contact"></span><img src="${esc(item.image)}" alt="" draggable="false"></button>`
-        );
-      })
-      .join('');
-  }
-
-  #tagsHtml() {
-    return this.#layout.items
-      .map(({ item, size, x, top }) => {
-        // Hang the tag from the item's upper-right (a rug's right edge; a frame's corner).
-        const ax = x + size.w * (item.mount === 'flat' ? 0.92 : 0.9);
-        const ay = top + (item.mount === 'flat' ? size.h * 0.35 : Math.min(size.h * 0.18, 2.5));
-        const sold = item.status === 'sold';
-        return (
-          `<div class="tag" data-id="${esc(item.id)}" aria-hidden="true" style="left:${pct(ax)}%;top:${pct(ay)}%">` +
-          `<span class="paper">${esc(money(item.price))}</span>${sold ? '<span class="sold">SOLD</span>' : ''}</div>`
-        );
-      })
-      .join('');
-  }
-
-  #signHtml() {
-    const b = this.#booth;
-    const w = 26;
-    const h = 11; // must end above the top of wall art (~12 in)
-    const x = (ROOM.widthIn - w) / 2;
-    return (
-      `<div class="sign" style="left:${pct(x)}%;top:0;width:${pct(w)}%;height:${pct(h)}%">` +
-      `<span class="chain" style="left:18%"></span><span class="chain" style="right:18%"></span>` +
-      `<div class="board"><span class="no">Booth No. ${esc(b.boothNumber)}</span><span class="nm">${esc(b.name)}</span></div></div>`
-    );
-  }
-
-  #lightHtml() {
-    const cfg = this.#booth.room?.light;
-    const preset = cfg && this.#library.lights?.find((l) => l.id === cfg.presetId);
-    if (!preset) return '';
-    const k = Math.max(0, Math.min(1, cfg.intensity ?? 1));
-    let panes = '';
-    if (preset.panes) {
-      const p = preset.panes;
-      const gapPct = 6;
-      const cell = `linear-gradient(${p.color}, ${p.color})`;
-      const bgs = [];
-      const pos = [];
-      const sizes = [];
-      const cw = (100 - gapPct * (p.cols - 1)) / p.cols;
-      const ch = (100 - gapPct * (p.rows - 1)) / p.rows;
-      for (let r = 0; r < p.rows; r++) {
-        for (let c = 0; c < p.cols; c++) {
-          bgs.push(cell);
-          // background-position % is relative to (container - image); convert cell offset accordingly
-          const ox = p.cols > 1 ? ((c * (cw + gapPct)) / (100 - cw)) * 100 : 0;
-          const oy = p.rows > 1 ? ((r * (ch + gapPct)) / (100 - ch)) * 100 : 0;
-          pos.push(`${ox.toFixed(2)}% ${oy.toFixed(2)}%`);
-          sizes.push(`${cw.toFixed(2)}% ${ch.toFixed(2)}%`);
-        }
-      }
-      panes =
-        `<div class="panes" style="left:${pct(p.x)}%;top:${pct(p.y)}%;width:${pct(p.w)}%;height:${pct(p.h)}%;` +
-        `transform:skewX(${p.skewDeg}deg);opacity:${(0.9 * k).toFixed(2)};background-image:${bgs.join(',')};` +
-        `background-position:${pos.join(',')};background-size:${sizes.join(',')};background-repeat:no-repeat"></div>`;
-    }
-    return (
-      `<div class="light" data-preset="${esc(preset.id)}">` +
-      `<div class="wash" style="background:${esc(preset.wash)};opacity:${k.toFixed(2)}"></div>${panes}` +
-      (preset.vignette ? `<div class="vignette" style="opacity:${(preset.vignette * k).toFixed(2)}"></div>` : '') +
-      `</div>`
-    );
-  }
-
-  /** Wallpaper/paint and floor backgrounds depend on the rendered pixel size (tile mode). */
-  #paintSurfaces(lib) {
-    const room = this.#root.querySelector('.room');
-    if (!room) return;
-    const ppi = room.clientWidth / ROOM.widthIn || 1;
-    const wallCfg = this.#booth.room?.wall ?? {};
-    const wall = this.#root.querySelector('.wall');
-    if (wallCfg.type === 'paint') {
-      const paint = lib.paints?.find((p) => p.id === wallCfg.paintId);
-      wall.style.background = paint?.color ?? wallCfg.color ?? '#efe6d2';
-    } else {
-      const tex = this.#texture(lib.wallpapers, wallCfg);
-      if (tex) Object.assign(wall.style, { backgroundImage: `url("${tex.src}")`, ...backgroundFor(tex, wallCfg.mode ?? 'tile', wallCfg.scale ?? 1, ppi) });
-    }
-    const floorCfg = this.#booth.room?.floor ?? {};
-    const tex = this.#texture(lib.floors, floorCfg);
-    const plane = this.#root.querySelector('.floor-plane');
-    if (tex && plane) {
-      Object.assign(plane.style, { backgroundImage: `url("${tex.src}")`, ...backgroundFor(tex, floorCfg.mode ?? 'tile', floorCfg.scale ?? 1, ppi) });
-      if ((floorCfg.mode ?? 'tile') === 'tile') plane.style.backgroundPosition = 'center top';
-    }
-  }
-
-  /** A library texture by id, or a seller upload ({src, tileIn}) passed inline. */
-  #texture(list, cfg) {
-    if (cfg.src) return { src: cfg.src, tileIn: cfg.tileIn ?? { w: 24, h: 24 } };
-    return list?.find((t) => t.id === cfg.textureId) ?? null;
-  }
-
   // ---------------------------------------------------------------- interaction
   #wire(shell) {
-    shell.querySelectorAll('.item').forEach((el) => {
+    shell.querySelectorAll('.item:not(.decor)').forEach((el) => {
       el.addEventListener('click', () => {
         this.#fromSearch = false;
         this.#openCard(el.dataset.id, el);
@@ -396,7 +234,7 @@ export class AtticBooth extends HTMLElement {
     vp.style.touchAction = next > 1 ? 'pan-x pan-y' : 'pan-y';
     vp.scrollLeft = cx * room.clientWidth - vp.clientWidth / 2;
     vp.scrollTop = cy * room.clientHeight - vp.clientHeight / 2;
-    this.#paintSurfaces(this.#library);
+    paintSurfaces(this.#root, this.#booth, this.#library);
     const zi = this.#root.querySelector('.zoom-in');
     const zo = this.#root.querySelector('.zoom-out');
     if (zi) zi.disabled = next >= ZOOM_MAX;

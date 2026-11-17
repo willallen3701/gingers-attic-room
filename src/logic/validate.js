@@ -24,7 +24,7 @@ export function validatePlacement(item, ctx) {
 
   const mountOk =
     (mount === 'wall' && s.kind === 'wall') ||
-    (mount === 'flat' && s.kind === 'floor') ||
+    ((mount === 'flat' || mount === 'floor') && s.kind === 'floor') ||
     (mount === 'stand' && (s.kind === 'line' || s.kind === 'floor'));
   if (!mountOk) errors.push({ code: 'WRONG_MOUNT', mount, surfaceKind: s.kind });
 

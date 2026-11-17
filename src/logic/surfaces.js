@@ -20,6 +20,9 @@ export function worldSurfaces(placedFixtures, fixtureDefs) {
     const def = fixtureDefs[pf.fixtureId];
     if (!def) throw new Error(`Unknown fixture ${pf.fixtureId}`);
     for (const s of def.surfaces) {
+      // Hook lines (coat racks, pegboard hooks) need hanging support, which isn't built yet;
+      // skip them so items never stand on hook tips.
+      if (s.hang) continue;
       lines.push({
         id: `${pf.id}:${s.id}`,
         kind: 'line',

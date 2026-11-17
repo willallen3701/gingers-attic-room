@@ -195,6 +195,28 @@ button { font: inherit; color: inherit; }
   display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; max-width: 100%;
 }
 
+.sign.style-cream .board {
+  background:
+    repeating-linear-gradient(92deg, rgba(255,255,255,.08) 0 .6cqw, rgba(0,0,0,.03) .6cqw 1.1cqw),
+    linear-gradient(180deg, #f4ead2, #e2d1aa);
+  border-color: #7a5a3a; color: var(--plum-dark);
+  box-shadow: 0 .6cqw 1cqw rgba(30,15,5,.35), inset 0 0 0 .25cqw rgba(107,58,92,.35);
+}
+.sign.style-cream .nm { text-shadow: none; }
+.sign.style-brass .board {
+  background: linear-gradient(160deg, #e7cf8a, #b8913f 45%, #8a6a2a 70%, #d9bd73);
+  border-color: #6d5220; color: #3a2a12; border-radius: .3cqw;
+  box-shadow: 0 .6cqw 1cqw rgba(30,15,5,.4), inset 0 0 0 .2cqw rgba(255,245,210,.5);
+}
+.sign.style-brass .nm { text-shadow: 0 .1cqw 0 rgba(255,240,200,.6); }
+
+/* ---------- wall strips, windows/doors, decor ---------- */
+.strip { position: absolute; left: 0; width: 100%; box-shadow: 0 .2cqw .3cqw rgba(20,10,5,.25); }
+.placeable { position: absolute; pointer-events: none; }
+.placeable img { width: 100%; height: 100%; display: block; filter: drop-shadow(0 .3cqw .3cqw rgba(40,25,10,.3)); }
+.item.decor { cursor: default; pointer-events: none; }
+.item.decor:hover img { transform: none; }
+
 /* ---------- light overlays ---------- */
 .light { position: absolute; inset: 0; pointer-events: none; z-index: 3500; }
 .light .wash { position: absolute; inset: 0; mix-blend-mode: soft-light; }

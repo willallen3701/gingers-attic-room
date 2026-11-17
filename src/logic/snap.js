@@ -2,7 +2,8 @@ import { ROOM } from './room.js';
 
 // Snap a dropped item onto the nearest surface it fits on.
 // A placement is { surfaceId, x, y } where x = LEFT edge and y = BASE (bottom edge), in room inches.
-// mount: 'stand' (sits on shelves/tables/floor), 'wall' (hangs on the wall), 'flat' (lies on the floor: rugs).
+// mount: 'stand' (sits on shelves/tables/floor), 'wall' (hangs on the wall), 'flat' (lies on the floor: rugs),
+//        'floor' (stands, but only on the floor: plant pots, coat stands, floor lamps).
 
 const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
 
@@ -10,10 +11,11 @@ const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
  * @param {{x:number, y:number}} drop  where the item's bottom-centre was released (room inches)
  * @param {{w:number, h:number}} size  drawn size in inches
  * @param {Array} surfaces             from worldSurfaces()
- * @param {'stand'|'wall'|'flat'} mount
+ * @param {'stand'|'wall'|'flat'|'floor'} mount
  * @returns {{surfaceId:string, x:number, y:number} | null}  null when nothing can hold the item
  */
 export function snapToSurface(drop, size, surfaces, mount = 'stand') {
+  if (mount === 'floor') return snapToSurface(drop, size, surfaces.filter((s) => s.kind === 'floor'), 'stand');
   const { w, h } = size;
   if (mount === 'wall') {
     const wall = surfaces.find((s) => s.kind === 'wall');

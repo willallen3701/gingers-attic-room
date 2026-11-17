@@ -1,288 +1,2181 @@
 {
-  "_note": "Phase 1 demo library. Wallpapers and floors are licensed textures (see assets-src/LICENSES.md); fixtures are still placeholder SVGs.",
-  "wallpapers": [
+ "_note": "Decor library. Wallpapers, floors, fixtures, decor and architecture are licensed or made for Ginger's Attic (see assets-src/LICENSES.md). Fixture/decor art is rendered front-on, tilted 5 deg down, at real size; surfaces are fixture-local inches (y down from the image top) on the back-top edge of each standing surface; hang:true marks hooks (item hangs below the line). No light preset is a default: rooms start with no light.",
+ "wallpapers": [
+  {
+   "id": "wp-floral-blue",
+   "name": "Blue Vine Trellis",
+   "src": "assets/textures/wallpapers/wp-floral-blue.jpg",
+   "tileIn": {
+    "w": 16.4,
+    "h": 15.5
+   }
+  },
+  {
+   "id": "wp-rose-trellis",
+   "name": "Rose Trellis",
+   "src": "assets/textures/wallpapers/wp-rose-trellis.jpg",
+   "tileIn": {
+    "w": 16.4,
+    "h": 15.5
+   }
+  },
+  {
+   "id": "wp-cabbage-rose",
+   "name": "Cabbage Rose",
+   "src": "assets/textures/wallpapers/wp-cabbage-rose.jpg",
+   "tileIn": {
+    "w": 16.4,
+    "h": 16.3
+   }
+  },
+  {
+   "id": "wp-calico",
+   "name": "Rosebud Calico",
+   "src": "assets/textures/wallpapers/wp-calico.jpg",
+   "tileIn": {
+    "w": 16.4,
+    "h": 11.8
+   }
+  },
+  {
+   "id": "wp-mint-stripe",
+   "name": "Mint Floral Stripe",
+   "src": "assets/textures/wallpapers/wp-mint-stripe.jpg",
+   "tileIn": {
+    "w": 16.4,
+    "h": 12.2
+   }
+  },
+  {
+   "id": "wp-gilded-damask",
+   "name": "Gilded Damask",
+   "src": "assets/textures/wallpapers/wp-gilded-damask.jpg",
+   "tileIn": {
+    "w": 16.4,
+    "h": 14.0
+   }
+  },
+  {
+   "id": "wp-parlour-stripe",
+   "name": "Parlour Stripe",
+   "src": "assets/textures/wallpapers/wp-parlour-stripe.jpg",
+   "tileIn": {
+    "w": 16.4,
+    "h": 18.0
+   }
+  },
+  {
+   "id": "wp-yellow-stripe",
+   "name": "Buttercup Stripe",
+   "src": "assets/textures/wallpapers/wp-yellow-stripe.jpg",
+   "tileIn": {
+    "w": 6,
+    "h": 6
+   }
+  },
+  {
+   "id": "wp-sage-gingham",
+   "name": "Sage Gingham",
+   "src": "assets/textures/wallpapers/wp-sage-gingham.jpg",
+   "tileIn": {
+    "w": 8,
+    "h": 8
+   }
+  }
+ ],
+ "floors": [
+  {
+   "id": "fl-wood-honey",
+   "name": "Honey Oak Planks",
+   "src": "assets/textures/floors/fl-wood-honey.jpg",
+   "tileIn": {
+    "w": 78.3,
+    "h": 78.3
+   }
+  },
+  {
+   "id": "fl-white-tile",
+   "name": "White Tile",
+   "src": "assets/textures/floors/fl-white-tile.jpg",
+   "tileIn": {
+    "w": 74.8,
+    "h": 74.8
+   }
+  },
+  {
+   "id": "fl-wood-light",
+   "name": "Light Maple",
+   "src": "assets/textures/floors/fl-wood-light.jpg",
+   "tileIn": {
+    "w": 78.7,
+    "h": 78.7
+   }
+  },
+  {
+   "id": "fl-wood-dark",
+   "name": "Walnut Boards",
+   "src": "assets/textures/floors/fl-wood-dark.jpg",
+   "tileIn": {
+    "w": 78.7,
+    "h": 78.7
+   }
+  },
+  {
+   "id": "fl-herringbone",
+   "name": "Herringbone Parquet",
+   "src": "assets/textures/floors/fl-herringbone.jpg",
+   "tileIn": {
+    "w": 133.9,
+    "h": 133.9
+   }
+  },
+  {
+   "id": "fl-checker",
+   "name": "Checkerboard Tile",
+   "src": "assets/textures/floors/fl-checker.jpg",
+   "tileIn": {
+    "w": 118.1,
+    "h": 118.1
+   }
+  },
+  {
+   "id": "fl-terracotta",
+   "name": "Victorian Terracotta",
+   "src": "assets/textures/floors/fl-terracotta.jpg",
+   "tileIn": {
+    "w": 84.7,
+    "h": 84.7
+   }
+  },
+  {
+   "id": "fl-octagon-lino",
+   "name": "Octagon Linoleum",
+   "src": "assets/textures/floors/fl-octagon-lino.jpg",
+   "tileIn": {
+    "w": 78.3,
+    "h": 78.3
+   }
+  }
+ ],
+ "paints": [
+  {
+   "id": "paint-cornflower",
+   "name": "Cornflower",
+   "color": "#2f5aa8"
+  },
+  {
+   "id": "paint-buttermilk",
+   "name": "Buttermilk",
+   "color": "#f1e3b3"
+  },
+  {
+   "id": "paint-sage",
+   "name": "Sage",
+   "color": "#a9b79a"
+  },
+  {
+   "id": "paint-dusty-rose",
+   "name": "Dusty Rose",
+   "color": "#c9a29b"
+  },
+  {
+   "id": "paint-plum-parlour",
+   "name": "Plum Parlour",
+   "color": "#6b3a5c"
+  },
+  {
+   "id": "paint-duck-egg",
+   "name": "Duck Egg",
+   "color": "#a9c6c0"
+  },
+  {
+   "id": "paint-mustard",
+   "name": "Mustard",
+   "color": "#c99a2e"
+  },
+  {
+   "id": "paint-terracotta",
+   "name": "Terracotta",
+   "color": "#b8653f"
+  },
+  {
+   "id": "paint-bottle-green",
+   "name": "Bottle Green",
+   "color": "#2f4a3c"
+  },
+  {
+   "id": "paint-oxblood",
+   "name": "Oxblood",
+   "color": "#6a2a2a"
+  },
+  {
+   "id": "paint-parchment",
+   "name": "Parchment",
+   "color": "#ede2c8"
+  },
+  {
+   "id": "paint-slate-blue",
+   "name": "Slate Blue",
+   "color": "#5d7187"
+  },
+  {
+   "id": "paint-jadeite",
+   "name": "Jadeite",
+   "color": "#b9d9c3"
+  }
+ ],
+ "lights": [
+  {
+   "id": "window-afternoon",
+   "name": "Afternoon window",
+   "wash": "linear-gradient(105deg, rgba(255,214,150,0.55) 0%, rgba(255,196,130,0.25) 45%, rgba(70,45,30,0.30) 100%)",
+   "panes": {
+    "x": 4,
+    "y": 8,
+    "w": 44,
+    "h": 60,
+    "cols": 2,
+    "rows": 3,
+    "skewDeg": -14,
+    "color": "rgba(255,240,210,0.75)"
+   },
+   "vignette": 0.35
+  },
+  {
+   "id": "lamp-glow",
+   "name": "Lamp glow",
+   "wash": "radial-gradient(circle at 70% 55%, rgba(255,190,110,0.55), rgba(255,170,90,0.15) 40%, rgba(40,25,20,0.45) 100%)",
+   "panes": null,
+   "vignette": 0.5
+  },
+  {
+   "id": "cool-morning",
+   "name": "Cool morning",
+   "wash": "linear-gradient(180deg, rgba(190,215,255,0.45), rgba(220,230,255,0.15) 60%, rgba(60,70,90,0.2))",
+   "panes": {
+    "x": 70,
+    "y": 6,
+    "w": 40,
+    "h": 55,
+    "cols": 2,
+    "rows": 3,
+    "skewDeg": 10,
+    "color": "rgba(235,245,255,0.6)"
+   },
+   "vignette": 0.25
+  }
+ ],
+ "architecture": [
+  {
+   "id": "baseboard-walnut",
+   "name": "Walnut baseboard",
+   "kind": "strip",
+   "strip": "baseboard",
+   "anchor": "bottom",
+   "offsetIn": 0.0,
+   "position": "bottom",
+   "group": "baseboard",
+   "heightIn": 4.0,
+   "color": "#6a4128",
+   "image": "assets/architecture/baseboard-walnut.webp",
+   "src": "assets/architecture/baseboard-walnut.webp",
+   "tileIn": {
+    "w": 24.0,
+    "h": 4.0
+   }
+  },
+  {
+   "id": "baseboard-white",
+   "name": "White baseboard",
+   "kind": "strip",
+   "strip": "baseboard",
+   "anchor": "bottom",
+   "offsetIn": 0.0,
+   "position": "bottom",
+   "group": "baseboard",
+   "heightIn": 5.0,
+   "color": "#ece6d8",
+   "image": "assets/architecture/baseboard-white.webp",
+   "src": "assets/architecture/baseboard-white.webp",
+   "tileIn": {
+    "w": 24.0,
+    "h": 5.0
+   }
+  },
+  {
+   "id": "crown-walnut",
+   "name": "Crown moulding, walnut",
+   "kind": "strip",
+   "strip": "crown",
+   "anchor": "top",
+   "offsetIn": 0.0,
+   "position": "top",
+   "group": "crown",
+   "heightIn": 6.0,
+   "color": "#6a4128",
+   "image": "assets/architecture/crown-walnut.webp",
+   "src": "assets/architecture/crown-walnut.webp",
+   "tileIn": {
+    "w": 24.0,
+    "h": 6.0
+   }
+  },
+  {
+   "id": "crown-white",
+   "name": "Crown moulding, white",
+   "kind": "strip",
+   "strip": "crown",
+   "anchor": "top",
+   "offsetIn": 0.0,
+   "position": "top",
+   "group": "crown",
+   "heightIn": 6.0,
+   "color": "#ece6d8",
+   "image": "assets/architecture/crown-white.webp",
+   "src": "assets/architecture/crown-white.webp",
+   "tileIn": {
+    "w": 24.0,
+    "h": 6.0
+   }
+  },
+  {
+   "id": "picturerail-walnut",
+   "name": "Picture rail, walnut",
+   "kind": "strip",
+   "strip": "pictureRail",
+   "anchor": "top",
+   "offsetIn": 14.0,
+   "position": "fromTop",
+   "group": "pictureRail",
+   "heightIn": 1.71,
+   "color": "#6a4128",
+   "image": "assets/architecture/picturerail-walnut.webp",
+   "src": "assets/architecture/picturerail-walnut.webp",
+   "tileIn": {
+    "w": 24.0,
+    "h": 1.71
+   }
+  },
+  {
+   "id": "picturerail-white",
+   "name": "Picture rail, white",
+   "kind": "strip",
+   "strip": "pictureRail",
+   "anchor": "top",
+   "offsetIn": 14.0,
+   "position": "fromTop",
+   "group": "pictureRail",
+   "heightIn": 1.71,
+   "color": "#ece6d8",
+   "image": "assets/architecture/picturerail-white.webp",
+   "src": "assets/architecture/picturerail-white.webp",
+   "tileIn": {
+    "w": 24.0,
+    "h": 1.71
+   }
+  },
+  {
+   "id": "beadboard-white",
+   "name": "Beadboard wainscoting, white",
+   "kind": "strip",
+   "strip": "wainscot",
+   "anchor": "bottom",
+   "offsetIn": 0.0,
+   "position": "bottom",
+   "group": "wainscot",
+   "heightIn": 36.0,
+   "color": "#ece6d8",
+   "image": "assets/architecture/beadboard-white.webp",
+   "src": "assets/architecture/beadboard-white.webp",
+   "tileIn": {
+    "w": 24.0,
+    "h": 36.0
+   }
+  },
+  {
+   "id": "wainscot-cream",
+   "name": "Raised-panel wainscoting, cream",
+   "kind": "strip",
+   "strip": "wainscot",
+   "anchor": "bottom",
+   "offsetIn": 0.0,
+   "position": "bottom",
+   "group": "wainscot",
+   "heightIn": 36.0,
+   "color": "#d9cba5",
+   "image": "assets/architecture/wainscot-cream.webp",
+   "src": "assets/architecture/wainscot-cream.webp",
+   "tileIn": {
+    "w": 24.0,
+    "h": 36.0
+   }
+  },
+  {
+   "id": "wainscot-walnut",
+   "name": "Raised-panel wainscoting, walnut",
+   "kind": "strip",
+   "strip": "wainscot",
+   "anchor": "bottom",
+   "offsetIn": 0.0,
+   "position": "bottom",
+   "group": "wainscot",
+   "heightIn": 36.0,
+   "color": "#6a4128",
+   "image": "assets/architecture/wainscot-walnut.webp",
+   "src": "assets/architecture/wainscot-walnut.webp",
+   "tileIn": {
+    "w": 24.0,
+    "h": 36.0
+   }
+  },
+  {
+   "id": "door-glass-oak",
+   "name": "Half-glass door, oak",
+   "kind": "placeable",
+   "category": "door",
+   "mount": "wall",
+   "floorAligned": true,
+   "widthIn": 42.57,
+   "heightIn": 86.0,
+   "image": "assets/architecture/door-glass-oak.webp",
+   "src": "assets/architecture/door-glass-oak.webp"
+  },
+  {
+   "id": "door-panel-walnut",
+   "name": "Panelled door, walnut",
+   "kind": "placeable",
+   "category": "door",
+   "mount": "wall",
+   "floorAligned": true,
+   "widthIn": 42.57,
+   "heightIn": 86.0,
+   "image": "assets/architecture/door-panel-walnut.webp",
+   "src": "assets/architecture/door-panel-walnut.webp"
+  },
+  {
+   "id": "window-sash",
+   "name": "Sash window (6 over 6)",
+   "kind": "placeable",
+   "category": "window",
+   "mount": "wall",
+   "floorAligned": false,
+   "widthIn": 36.43,
+   "heightIn": 58.64,
+   "image": "assets/architecture/window-sash.webp",
+   "src": "assets/architecture/window-sash.webp"
+  },
+  {
+   "id": "window-sash-wide",
+   "name": "Wide sash window",
+   "kind": "placeable",
+   "category": "window",
+   "mount": "wall",
+   "floorAligned": false,
+   "widthIn": 46.43,
+   "heightIn": 58.64,
+   "image": "assets/architecture/window-sash-wide.webp",
+   "src": "assets/architecture/window-sash-wide.webp"
+  }
+ ],
+ "fixtures": [
+  {
+   "id": "shelf-single-24-cream",
+   "name": "Wall shelf, 24 in, cream paint",
+   "category": "shelf",
+   "kind": "shelf",
+   "mount": "wall",
+   "group": "Single wall shelf",
+   "variant": "24 in · Cream paint",
+   "widthIn": 24.0,
+   "heightIn": 6.93,
+   "image": "assets/fixtures/shelf-single-24-cream.webp",
+   "src": "assets/fixtures/shelf-single-24-cream.webp",
+   "boardThicknessIn": 1.8,
+   "surfaces": [
     {
-      "id": "wp-floral-blue",
-      "name": "Blue Vine Trellis",
-      "src": "assets/textures/wallpapers/wp-floral-blue.jpg",
-      "tileIn": {
-        "w": 16.4,
-        "h": 15.5
-      }
-    },
-    {
-      "id": "wp-rose-trellis",
-      "name": "Rose Trellis",
-      "src": "assets/textures/wallpapers/wp-rose-trellis.jpg",
-      "tileIn": {
-        "w": 16.4,
-        "h": 15.5
-      }
-    },
-    {
-      "id": "wp-cabbage-rose",
-      "name": "Cabbage Rose",
-      "src": "assets/textures/wallpapers/wp-cabbage-rose.jpg",
-      "tileIn": {
-        "w": 16.4,
-        "h": 16.3
-      }
-    },
-    {
-      "id": "wp-calico",
-      "name": "Rosebud Calico",
-      "src": "assets/textures/wallpapers/wp-calico.jpg",
-      "tileIn": {
-        "w": 16.4,
-        "h": 11.8
-      }
-    },
-    {
-      "id": "wp-mint-stripe",
-      "name": "Mint Floral Stripe",
-      "src": "assets/textures/wallpapers/wp-mint-stripe.jpg",
-      "tileIn": {
-        "w": 16.4,
-        "h": 12.2
-      }
-    },
-    {
-      "id": "wp-gilded-damask",
-      "name": "Gilded Damask",
-      "src": "assets/textures/wallpapers/wp-gilded-damask.jpg",
-      "tileIn": {
-        "w": 16.4,
-        "h": 14.0
-      }
-    },
-    {
-      "id": "wp-parlour-stripe",
-      "name": "Parlour Stripe",
-      "src": "assets/textures/wallpapers/wp-parlour-stripe.jpg",
-      "tileIn": {
-        "w": 16.4,
-        "h": 18.0
-      }
-    },
-    {
-      "id": "wp-yellow-stripe",
-      "name": "Buttercup Stripe",
-      "src": "assets/textures/wallpapers/wp-yellow-stripe.jpg",
-      "tileIn": {
-        "w": 6,
-        "h": 6
-      }
-    },
-    {
-      "id": "wp-sage-gingham",
-      "name": "Sage Gingham",
-      "src": "assets/textures/wallpapers/wp-sage-gingham.jpg",
-      "tileIn": {
-        "w": 8,
-        "h": 8
-      }
+     "id": "s0",
+     "x1": 0.25,
+     "x2": 23.75,
+     "y": 0.0
     }
-  ],
-  "floors": [
+   ]
+  },
+  {
+   "id": "shelf-single-24-oak",
+   "name": "Wall shelf, 24 in, honey oak",
+   "category": "shelf",
+   "kind": "shelf",
+   "mount": "wall",
+   "group": "Single wall shelf",
+   "variant": "24 in · Honey oak",
+   "widthIn": 24.0,
+   "heightIn": 6.93,
+   "image": "assets/fixtures/shelf-single-24-oak.webp",
+   "src": "assets/fixtures/shelf-single-24-oak.webp",
+   "boardThicknessIn": 1.8,
+   "surfaces": [
     {
-      "id": "fl-wood-honey",
-      "name": "Honey Oak Planks",
-      "src": "assets/textures/floors/fl-wood-honey.jpg",
-      "tileIn": {
-        "w": 78.3,
-        "h": 78.3
-      }
-    },
-    {
-      "id": "fl-white-tile",
-      "name": "White Tile",
-      "src": "assets/textures/floors/fl-white-tile.jpg",
-      "tileIn": {
-        "w": 74.8,
-        "h": 74.8
-      }
-    },
-    {
-      "id": "fl-wood-light",
-      "name": "Light Maple",
-      "src": "assets/textures/floors/fl-wood-light.jpg",
-      "tileIn": {
-        "w": 78.7,
-        "h": 78.7
-      }
-    },
-    {
-      "id": "fl-wood-dark",
-      "name": "Walnut Boards",
-      "src": "assets/textures/floors/fl-wood-dark.jpg",
-      "tileIn": {
-        "w": 78.7,
-        "h": 78.7
-      }
-    },
-    {
-      "id": "fl-herringbone",
-      "name": "Herringbone Parquet",
-      "src": "assets/textures/floors/fl-herringbone.jpg",
-      "tileIn": {
-        "w": 133.9,
-        "h": 133.9
-      }
-    },
-    {
-      "id": "fl-checker",
-      "name": "Checkerboard Tile",
-      "src": "assets/textures/floors/fl-checker.jpg",
-      "tileIn": {
-        "w": 118.1,
-        "h": 118.1
-      }
-    },
-    {
-      "id": "fl-terracotta",
-      "name": "Victorian Terracotta",
-      "src": "assets/textures/floors/fl-terracotta.jpg",
-      "tileIn": {
-        "w": 84.7,
-        "h": 84.7
-      }
-    },
-    {
-      "id": "fl-octagon-lino",
-      "name": "Octagon Linoleum",
-      "src": "assets/textures/floors/fl-octagon-lino.jpg",
-      "tileIn": {
-        "w": 78.3,
-        "h": 78.3
-      }
+     "id": "s0",
+     "x1": 0.25,
+     "x2": 23.75,
+     "y": 0.0
     }
-  ],
-  "paints": [
+   ]
+  },
+  {
+   "id": "shelf-single-24-walnut",
+   "name": "Wall shelf, 24 in, walnut",
+   "category": "shelf",
+   "kind": "shelf",
+   "mount": "wall",
+   "group": "Single wall shelf",
+   "variant": "24 in · Walnut",
+   "widthIn": 24.0,
+   "heightIn": 6.93,
+   "image": "assets/fixtures/shelf-single-24-walnut.webp",
+   "src": "assets/fixtures/shelf-single-24-walnut.webp",
+   "boardThicknessIn": 1.8,
+   "surfaces": [
     {
-      "id": "paint-cornflower",
-      "name": "Cornflower",
-      "color": "#2f5aa8"
-    },
-    {
-      "id": "paint-buttermilk",
-      "name": "Buttermilk",
-      "color": "#f1e3b3"
-    },
-    {
-      "id": "paint-sage",
-      "name": "Sage",
-      "color": "#a9b79a"
+     "id": "s0",
+     "x1": 0.25,
+     "x2": 23.75,
+     "y": 0.0
     }
-  ],
-  "lights": [
+   ]
+  },
+  {
+   "id": "shelf-single-36-cream",
+   "name": "Wall shelf, 36 in, cream paint",
+   "category": "shelf",
+   "kind": "shelf",
+   "mount": "wall",
+   "group": "Single wall shelf",
+   "variant": "36 in · Cream paint",
+   "widthIn": 36.0,
+   "heightIn": 6.93,
+   "image": "assets/fixtures/shelf-single-36-cream.webp",
+   "src": "assets/fixtures/shelf-single-36-cream.webp",
+   "boardThicknessIn": 1.8,
+   "surfaces": [
     {
-      "id": "window-afternoon",
-      "name": "Afternoon window",
-      "wash": "linear-gradient(105deg, rgba(255,214,150,0.55) 0%, rgba(255,196,130,0.25) 45%, rgba(70,45,30,0.30) 100%)",
-      "panes": {
-        "x": 4,
-        "y": 8,
-        "w": 44,
-        "h": 60,
-        "cols": 2,
-        "rows": 3,
-        "skewDeg": -14,
-        "color": "rgba(255,240,210,0.75)"
-      },
-      "vignette": 0.35
-    },
-    {
-      "id": "lamp-glow",
-      "name": "Lamp glow",
-      "wash": "radial-gradient(circle at 70% 55%, rgba(255,190,110,0.55), rgba(255,170,90,0.15) 40%, rgba(40,25,20,0.45) 100%)",
-      "panes": null,
-      "vignette": 0.5
-    },
-    {
-      "id": "cool-morning",
-      "name": "Cool morning",
-      "wash": "linear-gradient(180deg, rgba(190,215,255,0.45), rgba(220,230,255,0.15) 60%, rgba(60,70,90,0.2))",
-      "panes": {
-        "x": 70,
-        "y": 6,
-        "w": 40,
-        "h": 55,
-        "cols": 2,
-        "rows": 3,
-        "skewDeg": 10,
-        "color": "rgba(235,245,255,0.6)"
-      },
-      "vignette": 0.25
+     "id": "s0",
+     "x1": 0.25,
+     "x2": 35.75,
+     "y": 0.0
     }
-  ],
-  "architecture": [
+   ]
+  },
+  {
+   "id": "shelf-single-36-oak",
+   "name": "Wall shelf, 36 in, honey oak",
+   "category": "shelf",
+   "kind": "shelf",
+   "mount": "wall",
+   "group": "Single wall shelf",
+   "variant": "36 in · Honey oak",
+   "widthIn": 36.0,
+   "heightIn": 6.93,
+   "image": "assets/fixtures/shelf-single-36-oak.webp",
+   "src": "assets/fixtures/shelf-single-36-oak.webp",
+   "boardThicknessIn": 1.8,
+   "surfaces": [
     {
-      "id": "baseboard-walnut",
-      "name": "Walnut baseboard",
-      "kind": "baseboard",
-      "heightIn": 4,
-      "color": "#6a4128"
+     "id": "s0",
+     "x1": 0.25,
+     "x2": 35.75,
+     "y": 0.0
+    }
+   ]
+  },
+  {
+   "id": "shelf-single-36-walnut",
+   "name": "Wall shelf, 36 in, walnut",
+   "category": "shelf",
+   "kind": "shelf",
+   "mount": "wall",
+   "group": "Single wall shelf",
+   "variant": "36 in · Walnut",
+   "widthIn": 36.0,
+   "heightIn": 6.93,
+   "image": "assets/fixtures/shelf-single-36-walnut.webp",
+   "src": "assets/fixtures/shelf-single-36-walnut.webp",
+   "boardThicknessIn": 1.8,
+   "surfaces": [
+    {
+     "id": "s0",
+     "x1": 0.25,
+     "x2": 35.75,
+     "y": 0.0
+    }
+   ]
+  },
+  {
+   "id": "shelf-single-48-cream",
+   "name": "Wall shelf, 48 in, cream paint",
+   "category": "shelf",
+   "kind": "shelf",
+   "mount": "wall",
+   "group": "Single wall shelf",
+   "variant": "48 in · Cream paint",
+   "widthIn": 48.0,
+   "heightIn": 6.93,
+   "image": "assets/fixtures/shelf-single-48-cream.webp",
+   "src": "assets/fixtures/shelf-single-48-cream.webp",
+   "boardThicknessIn": 1.8,
+   "surfaces": [
+    {
+     "id": "s0",
+     "x1": 0.25,
+     "x2": 47.75,
+     "y": 0.0
+    }
+   ]
+  },
+  {
+   "id": "shelf-single-48-oak",
+   "name": "Wall shelf, 48 in, honey oak",
+   "category": "shelf",
+   "kind": "shelf",
+   "mount": "wall",
+   "group": "Single wall shelf",
+   "variant": "48 in · Honey oak",
+   "widthIn": 48.0,
+   "heightIn": 6.93,
+   "image": "assets/fixtures/shelf-single-48-oak.webp",
+   "src": "assets/fixtures/shelf-single-48-oak.webp",
+   "boardThicknessIn": 1.8,
+   "surfaces": [
+    {
+     "id": "s0",
+     "x1": 0.25,
+     "x2": 47.75,
+     "y": 0.0
+    }
+   ]
+  },
+  {
+   "id": "shelf-single-48-walnut",
+   "name": "Wall shelf, 48 in, walnut",
+   "category": "shelf",
+   "kind": "shelf",
+   "mount": "wall",
+   "group": "Single wall shelf",
+   "variant": "48 in · Walnut",
+   "widthIn": 48.0,
+   "heightIn": 6.93,
+   "image": "assets/fixtures/shelf-single-48-walnut.webp",
+   "src": "assets/fixtures/shelf-single-48-walnut.webp",
+   "boardThicknessIn": 1.8,
+   "surfaces": [
+    {
+     "id": "s0",
+     "x1": 0.25,
+     "x2": 47.75,
+     "y": 0.0
+    }
+   ]
+  },
+  {
+   "id": "shelf-spice-red",
+   "name": "Red spice shelf",
+   "category": "shelf",
+   "kind": "shelf",
+   "mount": "wall",
+   "group": "Spice shelf",
+   "variant": "Red paint",
+   "widthIn": 20.14,
+   "heightIn": 45.14,
+   "image": "assets/fixtures/shelf-spice-red.webp",
+   "src": "assets/fixtures/shelf-spice-red.webp",
+   "boardThicknessIn": 1.8,
+   "surfaces": [
+    {
+     "id": "s0",
+     "x1": 2.22,
+     "x2": 17.85,
+     "y": 15.21
     },
     {
-      "id": "baseboard-white",
-      "name": "White baseboard",
-      "kind": "baseboard",
-      "heightIn": 5,
-      "color": "#efe9dc"
+     "id": "s1",
+     "x1": 2.23,
+     "x2": 17.85,
+     "y": 26.06
     }
-  ],
-  "fixtures": [
+   ]
+  },
+  {
+   "id": "shelf-stack-2-cream",
+   "name": "2-board wall shelf, cream paint",
+   "category": "shelf",
+   "kind": "shelf",
+   "mount": "wall",
+   "group": "Stacked wall shelf",
+   "variant": "2 boards · Cream paint",
+   "widthIn": 24.0,
+   "heightIn": 13.07,
+   "image": "assets/fixtures/shelf-stack-2-cream.webp",
+   "src": "assets/fixtures/shelf-stack-2-cream.webp",
+   "boardThicknessIn": 1.8,
+   "surfaces": [
     {
-      "id": "shelf-stack-4",
-      "name": "Four-board wall shelf",
-      "kind": "shelf",
-      "src": "assets/placeholder/fixture-shelf-stack-4.svg",
-      "widthIn": 39,
-      "heightIn": 31,
-      "boardThicknessIn": 1.2,
-      "surfaces": [
-        {
-          "id": "s0",
-          "x1": 0.5,
-          "x2": 38.5,
-          "y": 0
-        },
-        {
-          "id": "s1",
-          "x1": 0.5,
-          "x2": 38.5,
-          "y": 8.8
-        },
-        {
-          "id": "s2",
-          "x1": 0.5,
-          "x2": 38.5,
-          "y": 17.6
-        },
-        {
-          "id": "s3",
-          "x1": 0.5,
-          "x2": 38.5,
-          "y": 26.4
-        }
-      ]
+     "id": "s0",
+     "x1": 1.0,
+     "x2": 23.0,
+     "y": 0.0
     },
     {
-      "id": "table-farm-60",
-      "name": "Farmhouse table",
-      "kind": "table",
-      "src": "assets/placeholder/fixture-table-farm-60.svg",
-      "widthIn": 60,
-      "heightIn": 30,
-      "boardThicknessIn": 1.6,
-      "surfaces": [
-        {
-          "id": "top",
-          "x1": 1,
-          "x2": 59,
-          "y": 0
-        }
-      ]
+     "id": "s1",
+     "x1": 1.0,
+     "x2": 23.0,
+     "y": 9.49
     }
-  ]
+   ]
+  },
+  {
+   "id": "shelf-stack-2-oak",
+   "name": "2-board wall shelf, honey oak",
+   "category": "shelf",
+   "kind": "shelf",
+   "mount": "wall",
+   "group": "Stacked wall shelf",
+   "variant": "2 boards · Honey oak",
+   "widthIn": 24.0,
+   "heightIn": 13.07,
+   "image": "assets/fixtures/shelf-stack-2-oak.webp",
+   "src": "assets/fixtures/shelf-stack-2-oak.webp",
+   "boardThicknessIn": 1.8,
+   "surfaces": [
+    {
+     "id": "s0",
+     "x1": 1.0,
+     "x2": 23.0,
+     "y": 0.0
+    },
+    {
+     "id": "s1",
+     "x1": 1.0,
+     "x2": 23.0,
+     "y": 9.49
+    }
+   ]
+  },
+  {
+   "id": "shelf-stack-2-walnut",
+   "name": "2-board wall shelf, walnut",
+   "category": "shelf",
+   "kind": "shelf",
+   "mount": "wall",
+   "group": "Stacked wall shelf",
+   "variant": "2 boards · Walnut",
+   "widthIn": 24.0,
+   "heightIn": 13.07,
+   "image": "assets/fixtures/shelf-stack-2-walnut.webp",
+   "src": "assets/fixtures/shelf-stack-2-walnut.webp",
+   "boardThicknessIn": 1.8,
+   "surfaces": [
+    {
+     "id": "s0",
+     "x1": 1.0,
+     "x2": 23.0,
+     "y": 0.0
+    },
+    {
+     "id": "s1",
+     "x1": 1.0,
+     "x2": 23.0,
+     "y": 9.49
+    }
+   ]
+  },
+  {
+   "id": "shelf-stack-3-cream",
+   "name": "3-board wall shelf, cream paint",
+   "category": "shelf",
+   "kind": "shelf",
+   "mount": "wall",
+   "group": "Stacked wall shelf",
+   "variant": "3 boards · Cream paint",
+   "widthIn": 30.0,
+   "heightIn": 21.57,
+   "image": "assets/fixtures/shelf-stack-3-cream.webp",
+   "src": "assets/fixtures/shelf-stack-3-cream.webp",
+   "boardThicknessIn": 1.8,
+   "surfaces": [
+    {
+     "id": "s0",
+     "x1": 1.0,
+     "x2": 29.0,
+     "y": 0.0
+    },
+    {
+     "id": "s1",
+     "x1": 1.0,
+     "x2": 29.0,
+     "y": 8.99
+    },
+    {
+     "id": "s2",
+     "x1": 1.0,
+     "x2": 29.0,
+     "y": 17.99
+    }
+   ]
+  },
+  {
+   "id": "shelf-stack-3-oak",
+   "name": "3-board wall shelf, honey oak",
+   "category": "shelf",
+   "kind": "shelf",
+   "mount": "wall",
+   "group": "Stacked wall shelf",
+   "variant": "3 boards · Honey oak",
+   "widthIn": 30.0,
+   "heightIn": 21.57,
+   "image": "assets/fixtures/shelf-stack-3-oak.webp",
+   "src": "assets/fixtures/shelf-stack-3-oak.webp",
+   "boardThicknessIn": 1.8,
+   "surfaces": [
+    {
+     "id": "s0",
+     "x1": 1.0,
+     "x2": 29.0,
+     "y": 0.0
+    },
+    {
+     "id": "s1",
+     "x1": 1.0,
+     "x2": 29.0,
+     "y": 8.99
+    },
+    {
+     "id": "s2",
+     "x1": 1.0,
+     "x2": 29.0,
+     "y": 17.99
+    }
+   ]
+  },
+  {
+   "id": "shelf-stack-3-walnut",
+   "name": "3-board wall shelf, walnut",
+   "category": "shelf",
+   "kind": "shelf",
+   "mount": "wall",
+   "group": "Stacked wall shelf",
+   "variant": "3 boards · Walnut",
+   "widthIn": 30.0,
+   "heightIn": 21.57,
+   "image": "assets/fixtures/shelf-stack-3-walnut.webp",
+   "src": "assets/fixtures/shelf-stack-3-walnut.webp",
+   "boardThicknessIn": 1.8,
+   "surfaces": [
+    {
+     "id": "s0",
+     "x1": 1.0,
+     "x2": 29.0,
+     "y": 0.0
+    },
+    {
+     "id": "s1",
+     "x1": 1.0,
+     "x2": 29.0,
+     "y": 8.99
+    },
+    {
+     "id": "s2",
+     "x1": 1.0,
+     "x2": 29.0,
+     "y": 17.99
+    }
+   ]
+  },
+  {
+   "id": "shelf-stack-4-cream",
+   "name": "4-board wall shelf, cream paint",
+   "category": "shelf",
+   "kind": "shelf",
+   "mount": "wall",
+   "group": "Stacked wall shelf",
+   "variant": "4 boards · Cream paint",
+   "widthIn": 39.0,
+   "heightIn": 30.0,
+   "image": "assets/fixtures/shelf-stack-4-cream.webp",
+   "src": "assets/fixtures/shelf-stack-4-cream.webp",
+   "boardThicknessIn": 1.8,
+   "surfaces": [
+    {
+     "id": "s0",
+     "x1": 1.0,
+     "x2": 38.0,
+     "y": 0.0
+    },
+    {
+     "id": "s1",
+     "x1": 1.0,
+     "x2": 38.0,
+     "y": 8.79
+    },
+    {
+     "id": "s2",
+     "x1": 1.0,
+     "x2": 38.0,
+     "y": 17.59
+    },
+    {
+     "id": "s3",
+     "x1": 1.0,
+     "x2": 38.0,
+     "y": 26.39
+    }
+   ]
+  },
+  {
+   "id": "shelf-stack-4-walnut",
+   "name": "4-board wall shelf, walnut",
+   "category": "shelf",
+   "kind": "shelf",
+   "mount": "wall",
+   "group": "Stacked wall shelf",
+   "variant": "4 boards · Walnut",
+   "widthIn": 39.0,
+   "heightIn": 30.0,
+   "image": "assets/fixtures/shelf-stack-4-walnut.webp",
+   "src": "assets/fixtures/shelf-stack-4-walnut.webp",
+   "boardThicknessIn": 1.8,
+   "surfaces": [
+    {
+     "id": "s0",
+     "x1": 1.0,
+     "x2": 38.0,
+     "y": 0.0
+    },
+    {
+     "id": "s1",
+     "x1": 1.0,
+     "x2": 38.0,
+     "y": 8.79
+    },
+    {
+     "id": "s2",
+     "x1": 1.0,
+     "x2": 38.0,
+     "y": 17.59
+    },
+    {
+     "id": "s3",
+     "x1": 1.0,
+     "x2": 38.0,
+     "y": 26.39
+    }
+   ]
+  },
+  {
+   "id": "shelf-stack-4",
+   "name": "4-board wall shelf, honey oak",
+   "category": "shelf",
+   "kind": "shelf",
+   "mount": "wall",
+   "group": "Stacked wall shelf",
+   "variant": "4 boards · Honey oak",
+   "widthIn": 39.0,
+   "heightIn": 30.0,
+   "image": "assets/fixtures/shelf-stack-4.webp",
+   "src": "assets/fixtures/shelf-stack-4.webp",
+   "boardThicknessIn": 1.2,
+   "surfaces": [
+    {
+     "id": "s0",
+     "x1": 0.5,
+     "x2": 38.5,
+     "y": 0
+    },
+    {
+     "id": "s1",
+     "x1": 0.5,
+     "x2": 38.5,
+     "y": 8.8
+    },
+    {
+     "id": "s2",
+     "x1": 0.5,
+     "x2": 38.5,
+     "y": 17.6
+    },
+    {
+     "id": "s3",
+     "x1": 0.5,
+     "x2": 38.5,
+     "y": 26.4
+    }
+   ]
+  },
+  {
+   "id": "table-console-carved",
+   "name": "Carved console table",
+   "category": "table",
+   "kind": "table",
+   "mount": "floor",
+   "group": "Console table",
+   "variant": "Ebonised",
+   "widthIn": 60.71,
+   "heightIn": 38.29,
+   "image": "assets/fixtures/table-console-carved.webp",
+   "src": "assets/fixtures/table-console-carved.webp",
+   "boardThicknessIn": 1.4,
+   "surfaces": [
+    {
+     "id": "s0",
+     "x1": 4.58,
+     "x2": 56.16,
+     "y": 0.0
+    }
+   ]
+  },
+  {
+   "id": "table-farm-48",
+   "name": "Farmhouse table, 48 in",
+   "category": "table",
+   "kind": "table",
+   "mount": "floor",
+   "group": "Farmhouse table",
+   "variant": "48 in · Honey oak",
+   "widthIn": 48.0,
+   "heightIn": 32.57,
+   "image": "assets/fixtures/table-farm-48.webp",
+   "src": "assets/fixtures/table-farm-48.webp",
+   "boardThicknessIn": 1.4,
+   "surfaces": [
+    {
+     "id": "top",
+     "x1": 0.25,
+     "x2": 47.75,
+     "y": 0.0
+    }
+   ]
+  },
+  {
+   "id": "table-farm-60-walnut",
+   "name": "Farmhouse table, 60 in, walnut",
+   "category": "table",
+   "kind": "table",
+   "mount": "floor",
+   "group": "Farmhouse table",
+   "variant": "60 in · Walnut",
+   "widthIn": 60.0,
+   "heightIn": 32.57,
+   "image": "assets/fixtures/table-farm-60-walnut.webp",
+   "src": "assets/fixtures/table-farm-60-walnut.webp",
+   "boardThicknessIn": 1.4,
+   "surfaces": [
+    {
+     "id": "top",
+     "x1": 0.25,
+     "x2": 59.75,
+     "y": 0.0
+    }
+   ]
+  },
+  {
+   "id": "table-farm-60",
+   "name": "Farmhouse table, 60 in",
+   "category": "table",
+   "kind": "table",
+   "mount": "floor",
+   "group": "Farmhouse table",
+   "variant": "60 in · Honey oak",
+   "widthIn": 60.0,
+   "heightIn": 32.57,
+   "image": "assets/fixtures/table-farm-60.webp",
+   "src": "assets/fixtures/table-farm-60.webp",
+   "boardThicknessIn": 1.6,
+   "surfaces": [
+    {
+     "id": "top",
+     "x1": 1,
+     "x2": 59,
+     "y": 0
+    }
+   ]
+  },
+  {
+   "id": "table-farm-72",
+   "name": "Farmhouse table, 72 in",
+   "category": "table",
+   "kind": "table",
+   "mount": "floor",
+   "group": "Farmhouse table",
+   "variant": "72 in · Honey oak",
+   "widthIn": 72.0,
+   "heightIn": 32.57,
+   "image": "assets/fixtures/table-farm-72.webp",
+   "src": "assets/fixtures/table-farm-72.webp",
+   "boardThicknessIn": 1.4,
+   "surfaces": [
+    {
+     "id": "top",
+     "x1": 0.25,
+     "x2": 71.75,
+     "y": 0.0
+    }
+   ]
+  },
+  {
+   "id": "pedestal-36",
+   "name": "Pedestal, 36 in",
+   "category": "table",
+   "kind": "table",
+   "mount": "floor",
+   "group": "Pedestal",
+   "variant": "36 in · Cream",
+   "widthIn": 16.0,
+   "heightIn": 37.14,
+   "image": "assets/fixtures/pedestal-36.webp",
+   "src": "assets/fixtures/pedestal-36.webp",
+   "boardThicknessIn": 1.4,
+   "surfaces": [
+    {
+     "id": "top",
+     "x1": 1.75,
+     "x2": 14.25,
+     "y": 0.21
+    }
+   ]
+  },
+  {
+   "id": "pedestal-42",
+   "name": "Pedestal, 42 in",
+   "category": "table",
+   "kind": "table",
+   "mount": "floor",
+   "group": "Pedestal",
+   "variant": "42 in · Cream",
+   "widthIn": 16.0,
+   "heightIn": 43.14,
+   "image": "assets/fixtures/pedestal-42.webp",
+   "src": "assets/fixtures/pedestal-42.webp",
+   "boardThicknessIn": 1.4,
+   "surfaces": [
+    {
+     "id": "top",
+     "x1": 1.75,
+     "x2": 14.25,
+     "y": 0.21
+    }
+   ]
+  },
+  {
+   "id": "stand-plant-short",
+   "name": "Plant stand, short",
+   "category": "table",
+   "kind": "table",
+   "mount": "floor",
+   "group": "Plant stand",
+   "variant": "24 in",
+   "widthIn": 12.07,
+   "heightIn": 24.86,
+   "image": "assets/fixtures/stand-plant-short.webp",
+   "src": "assets/fixtures/stand-plant-short.webp",
+   "boardThicknessIn": 1.4,
+   "surfaces": [
+    {
+     "id": "s0",
+     "x1": 1.9,
+     "x2": 10.19,
+     "y": 0.14
+    }
+   ]
+  },
+  {
+   "id": "stand-plant-tall",
+   "name": "Plant stand, tall",
+   "category": "table",
+   "kind": "table",
+   "mount": "floor",
+   "group": "Plant stand",
+   "variant": "30 in",
+   "widthIn": 15.14,
+   "heightIn": 31.07,
+   "image": "assets/fixtures/stand-plant-tall.webp",
+   "src": "assets/fixtures/stand-plant-tall.webp",
+   "boardThicknessIn": 1.4,
+   "surfaces": [
+    {
+     "id": "s0",
+     "x1": 2.25,
+     "x2": 12.86,
+     "y": 0.14
+    }
+   ]
+  },
+  {
+   "id": "table-side-blue",
+   "name": "Blue painted side table",
+   "category": "table",
+   "kind": "table",
+   "mount": "floor",
+   "group": "Side table",
+   "variant": "Blue paint",
+   "widthIn": 19.86,
+   "heightIn": 25.71,
+   "image": "assets/fixtures/table-side-blue.webp",
+   "src": "assets/fixtures/table-side-blue.webp",
+   "boardThicknessIn": 1.4,
+   "surfaces": [
+    {
+     "id": "s0",
+     "x1": 1.44,
+     "x2": 18.42,
+     "y": 0.0
+    }
+   ]
+  },
+  {
+   "id": "table-side-oak",
+   "name": "Two-tier side table",
+   "category": "table",
+   "kind": "table",
+   "mount": "floor",
+   "group": "Side table",
+   "variant": "Light oak",
+   "widthIn": 21.64,
+   "heightIn": 23.07,
+   "image": "assets/fixtures/table-side-oak.webp",
+   "src": "assets/fixtures/table-side-oak.webp",
+   "boardThicknessIn": 1.4,
+   "surfaces": [
+    {
+     "id": "s0",
+     "x1": 1.22,
+     "x2": 20.43,
+     "y": 0.0
+    },
+    {
+     "id": "s1",
+     "x1": 2.42,
+     "x2": 19.23,
+     "y": 7.78
+    },
+    {
+     "id": "s2",
+     "x1": 2.42,
+     "x2": 19.23,
+     "y": 19.54
+    }
+   ]
+  },
+  {
+   "id": "table-side-carved",
+   "name": "Carved side table",
+   "category": "table",
+   "kind": "table",
+   "mount": "floor",
+   "group": "Side table",
+   "variant": "Ebonised",
+   "widthIn": 22.36,
+   "heightIn": 28.79,
+   "image": "assets/fixtures/table-side-carved.webp",
+   "src": "assets/fixtures/table-side-carved.webp",
+   "boardThicknessIn": 1.4,
+   "surfaces": [
+    {
+     "id": "s0",
+     "x1": 1.93,
+     "x2": 20.49,
+     "y": 0.0
+    }
+   ]
+  },
+  {
+   "id": "table-work-rustic",
+   "name": "Rustic work table",
+   "category": "table",
+   "kind": "table",
+   "mount": "floor",
+   "group": "Work table",
+   "variant": "Weathered",
+   "widthIn": 52.21,
+   "heightIn": 34.29,
+   "image": "assets/fixtures/table-work-rustic.webp",
+   "src": "assets/fixtures/table-work-rustic.webp",
+   "boardThicknessIn": 1.4,
+   "surfaces": [
+    {
+     "id": "s0",
+     "x1": 2.07,
+     "x2": 50.17,
+     "y": 0.0
+    }
+   ]
+  },
+  {
+   "id": "table-writing",
+   "name": "Writing table",
+   "category": "table",
+   "kind": "table",
+   "mount": "floor",
+   "group": "Writing table",
+   "variant": "Warm wood",
+   "widthIn": 44.64,
+   "heightIn": 33.57,
+   "image": "assets/fixtures/table-writing.webp",
+   "src": "assets/fixtures/table-writing.webp",
+   "boardThicknessIn": 1.4,
+   "surfaces": [
+    {
+     "id": "s0",
+     "x1": 2.06,
+     "x2": 42.6,
+     "y": 0.0
+    }
+   ]
+  },
+  {
+   "id": "cabinet-apothecary",
+   "name": "Apothecary drawers",
+   "category": "cabinet",
+   "kind": "cabinet",
+   "mount": "floor",
+   "group": "Apothecary drawers",
+   "variant": "Warm wood",
+   "widthIn": 67.5,
+   "heightIn": 45.71,
+   "image": "assets/fixtures/cabinet-apothecary.webp",
+   "src": "assets/fixtures/cabinet-apothecary.webp",
+   "boardThicknessIn": 1.8,
+   "surfaces": [
+    {
+     "id": "s1",
+     "x1": 4.43,
+     "x2": 63.1,
+     "y": 0.32
+    }
+   ]
+  },
+  {
+   "id": "bookcase-white",
+   "name": "White bookcase",
+   "category": "cabinet",
+   "kind": "cabinet",
+   "mount": "floor",
+   "group": "Bookcase",
+   "variant": "White paint",
+   "widthIn": 33.57,
+   "heightIn": 70.07,
+   "image": "assets/fixtures/bookcase-white.webp",
+   "src": "assets/fixtures/bookcase-white.webp",
+   "boardThicknessIn": 1.8,
+   "surfaces": [
+    {
+     "id": "s0",
+     "x1": 1.51,
+     "x2": 32.07,
+     "y": 0.0
+    },
+    {
+     "id": "s1",
+     "x1": 3.82,
+     "x2": 29.76,
+     "y": 9.9
+    },
+    {
+     "id": "s2",
+     "x1": 3.82,
+     "x2": 29.76,
+     "y": 19.28
+    },
+    {
+     "id": "s3",
+     "x1": 3.82,
+     "x2": 29.76,
+     "y": 28.66
+    },
+    {
+     "id": "s4",
+     "x1": 3.82,
+     "x2": 29.76,
+     "y": 38.05
+    },
+    {
+     "id": "s5",
+     "x1": 3.82,
+     "x2": 29.76,
+     "y": 47.43
+    },
+    {
+     "id": "s6",
+     "x1": 3.82,
+     "x2": 29.76,
+     "y": 56.81
+    },
+    {
+     "id": "s7",
+     "x1": 3.82,
+     "x2": 29.76,
+     "y": 64.8
+    }
+   ]
+  },
+  {
+   "id": "bookcase-rustic",
+   "name": "Rustic bookcase",
+   "category": "cabinet",
+   "kind": "cabinet",
+   "mount": "floor",
+   "group": "Bookcase",
+   "variant": "Weathered grey",
+   "widthIn": 46.0,
+   "heightIn": 70.43,
+   "image": "assets/fixtures/bookcase-rustic.webp",
+   "src": "assets/fixtures/bookcase-rustic.webp",
+   "boardThicknessIn": 1.8,
+   "surfaces": [
+    {
+     "id": "s0",
+     "x1": 2.64,
+     "x2": 43.34,
+     "y": 0.0
+    },
+    {
+     "id": "s1",
+     "x1": 4.42,
+     "x2": 41.55,
+     "y": 13.34
+    },
+    {
+     "id": "s2",
+     "x1": 4.42,
+     "x2": 41.55,
+     "y": 26.24
+    },
+    {
+     "id": "s3",
+     "x1": 4.42,
+     "x2": 41.55,
+     "y": 36.78
+    },
+    {
+     "id": "s4",
+     "x1": 4.42,
+     "x2": 41.55,
+     "y": 46.41
+    },
+    {
+     "id": "s5",
+     "x1": 4.42,
+     "x2": 41.55,
+     "y": 55.73
+    },
+    {
+     "id": "s6",
+     "x1": 4.42,
+     "x2": 41.55,
+     "y": 65.21
+    }
+   ]
+  },
+  {
+   "id": "hutch-china-54",
+   "name": "China hutch, 54 in",
+   "category": "cabinet",
+   "kind": "cabinet",
+   "mount": "floor",
+   "group": "China hutch",
+   "variant": "54 in",
+   "widthIn": 54.14,
+   "heightIn": 61.07,
+   "image": "assets/fixtures/hutch-china-54.webp",
+   "src": "assets/fixtures/hutch-china-54.webp",
+   "boardThicknessIn": 1.8,
+   "surfaces": [
+    {
+     "id": "s1",
+     "x1": 3.8,
+     "x2": 50.33,
+     "y": 35.0
+    }
+   ]
+  },
+  {
+   "id": "hutch-china-64",
+   "name": "China hutch, 64 in",
+   "category": "cabinet",
+   "kind": "cabinet",
+   "mount": "floor",
+   "group": "China hutch",
+   "variant": "64 in",
+   "widthIn": 63.64,
+   "heightIn": 71.86,
+   "image": "assets/fixtures/hutch-china-64.webp",
+   "src": "assets/fixtures/hutch-china-64.webp",
+   "boardThicknessIn": 1.8,
+   "surfaces": [
+    {
+     "id": "s1",
+     "x1": 4.38,
+     "x2": 59.3,
+     "y": 41.18
+    }
+   ]
+  },
+  {
+   "id": "hutch-blue",
+   "name": "Blue cottage hutch",
+   "category": "cabinet",
+   "kind": "cabinet",
+   "mount": "floor",
+   "group": "Cottage hutch",
+   "variant": "Blue paint",
+   "widthIn": 27.5,
+   "heightIn": 72.07,
+   "image": "assets/fixtures/hutch-blue.webp",
+   "src": "assets/fixtures/hutch-blue.webp",
+   "boardThicknessIn": 1.8,
+   "surfaces": [
+    {
+     "id": "s1",
+     "x1": 3.97,
+     "x2": 23.5,
+     "y": 10.5
+    },
+    {
+     "id": "s2",
+     "x1": 3.97,
+     "x2": 23.5,
+     "y": 18.59
+    },
+    {
+     "id": "s3",
+     "x1": 3.97,
+     "x2": 23.5,
+     "y": 27.21
+    },
+    {
+     "id": "s4",
+     "x1": 3.91,
+     "x2": 23.57,
+     "y": 38.56
+    }
+   ]
+  },
+  {
+   "id": "cupboard-carved",
+   "name": "Carved cupboard",
+   "category": "cabinet",
+   "kind": "cabinet",
+   "mount": "floor",
+   "group": "Cupboard",
+   "variant": "Dark wood",
+   "widthIn": 50.79,
+   "heightIn": 71.79,
+   "image": "assets/fixtures/cupboard-carved.webp",
+   "src": "assets/fixtures/cupboard-carved.webp",
+   "boardThicknessIn": 1.8,
+   "surfaces": [
+    {
+     "id": "s0",
+     "x1": 3.23,
+     "x2": 47.53,
+     "y": 0.0
+    }
+   ]
+  },
+  {
+   "id": "dresser-chippy",
+   "name": "Chippy white sideboard",
+   "category": "cabinet",
+   "kind": "cabinet",
+   "mount": "floor",
+   "group": "Dresser",
+   "variant": "White paint",
+   "widthIn": 47.0,
+   "heightIn": 48.14,
+   "image": "assets/fixtures/dresser-chippy.webp",
+   "src": "assets/fixtures/dresser-chippy.webp",
+   "boardThicknessIn": 1.8,
+   "surfaces": [
+    {
+     "id": "s0",
+     "x1": 2.07,
+     "x2": 44.97,
+     "y": 0.0
+    }
+   ]
+  },
+  {
+   "id": "dresser-carved",
+   "name": "Carved chest of drawers",
+   "category": "cabinet",
+   "kind": "cabinet",
+   "mount": "floor",
+   "group": "Dresser",
+   "variant": "Dark wood",
+   "widthIn": 47.29,
+   "heightIn": 49.5,
+   "image": "assets/fixtures/dresser-carved.webp",
+   "src": "assets/fixtures/dresser-carved.webp",
+   "boardThicknessIn": 1.8,
+   "surfaces": [
+    {
+     "id": "s0",
+     "x1": 2.64,
+     "x2": 44.66,
+     "y": 0.0
+    }
+   ]
+  },
+  {
+   "id": "case-glass-24",
+   "name": "Glass curio case, 24 in",
+   "category": "cabinet",
+   "kind": "cabinet",
+   "mount": "floor",
+   "group": "Glass display case",
+   "variant": "24 in · Walnut",
+   "widthIn": 24.79,
+   "heightIn": 60.93,
+   "image": "assets/fixtures/case-glass-24.webp",
+   "src": "assets/fixtures/case-glass-24.webp",
+   "boardThicknessIn": 1.8,
+   "surfaces": [
+    {
+     "id": "g0",
+     "x1": 1.9,
+     "x2": 22.9,
+     "y": 41.64
+    },
+    {
+     "id": "g1",
+     "x1": 1.9,
+     "x2": 22.9,
+     "y": 28.44
+    },
+    {
+     "id": "g2",
+     "x1": 1.9,
+     "x2": 22.9,
+     "y": 15.24
+    },
+    {
+     "id": "floor",
+     "x1": 1.9,
+     "x2": 22.9,
+     "y": 54.84
+    },
+    {
+     "id": "top",
+     "x1": 0.65,
+     "x2": 24.15,
+     "y": 0.0
+    }
+   ]
+  },
+  {
+   "id": "case-glass-36",
+   "name": "Glass display case, 36 in",
+   "category": "cabinet",
+   "kind": "cabinet",
+   "mount": "floor",
+   "group": "Glass display case",
+   "variant": "36 in · Walnut",
+   "widthIn": 36.79,
+   "heightIn": 67.07,
+   "image": "assets/fixtures/case-glass-36.webp",
+   "src": "assets/fixtures/case-glass-36.webp",
+   "boardThicknessIn": 1.8,
+   "surfaces": [
+    {
+     "id": "g0",
+     "x1": 1.9,
+     "x2": 34.9,
+     "y": 46.13
+    },
+    {
+     "id": "g1",
+     "x1": 1.9,
+     "x2": 34.9,
+     "y": 31.43
+    },
+    {
+     "id": "g2",
+     "x1": 1.9,
+     "x2": 34.9,
+     "y": 16.74
+    },
+    {
+     "id": "floor",
+     "x1": 1.9,
+     "x2": 34.9,
+     "y": 60.82
+    },
+    {
+     "id": "top",
+     "x1": 0.65,
+     "x2": 36.15,
+     "y": 0.0
+    }
+   ]
+  },
+  {
+   "id": "case-counter-48",
+   "name": "Glass shop counter, 48 in",
+   "category": "cabinet",
+   "kind": "cabinet",
+   "mount": "floor",
+   "group": "Shop counter",
+   "variant": "48 in · Oak",
+   "widthIn": 48.79,
+   "heightIn": 39.71,
+   "image": "assets/fixtures/case-counter-48.webp",
+   "src": "assets/fixtures/case-counter-48.webp",
+   "boardThicknessIn": 1.8,
+   "surfaces": [
+    {
+     "id": "g0",
+     "x1": 1.9,
+     "x2": 46.9,
+     "y": 9.57
+    },
+    {
+     "id": "floor",
+     "x1": 1.9,
+     "x2": 46.9,
+     "y": 17.09
+    },
+    {
+     "id": "top",
+     "x1": 0.65,
+     "x2": 48.15,
+     "y": 0.0
+    }
+   ]
+  },
+  {
+   "id": "coatrack-24",
+   "name": "Coat rack, 3 hooks",
+   "category": "hanger",
+   "kind": "hanger",
+   "mount": "wall",
+   "group": "Coat rack",
+   "variant": "24 in · 3 hooks",
+   "widthIn": 24.0,
+   "heightIn": 5.5,
+   "image": "assets/fixtures/coatrack-24.webp",
+   "src": "assets/fixtures/coatrack-24.webp",
+   "boardThicknessIn": 1.3,
+   "surfaces": [
+    {
+     "id": "h0",
+     "x1": 3.3,
+     "x2": 4.7,
+     "y": 2.64,
+     "hang": true
+    },
+    {
+     "id": "h1",
+     "x1": 11.3,
+     "x2": 12.7,
+     "y": 2.64,
+     "hang": true
+    },
+    {
+     "id": "h2",
+     "x1": 19.3,
+     "x2": 20.7,
+     "y": 2.64,
+     "hang": true
+    }
+   ]
+  },
+  {
+   "id": "coatrack-36",
+   "name": "Coat rack with hat shelf",
+   "category": "hanger",
+   "kind": "hanger",
+   "mount": "wall",
+   "group": "Coat rack",
+   "variant": "36 in · 5 hooks + shelf",
+   "widthIn": 37.0,
+   "heightIn": 10.43,
+   "image": "assets/fixtures/coatrack-36.webp",
+   "src": "assets/fixtures/coatrack-36.webp",
+   "boardThicknessIn": 1.3,
+   "surfaces": [
+    {
+     "id": "s0",
+     "x1": 0.25,
+     "x2": 36.75,
+     "y": 0.0
+    },
+    {
+     "id": "h0",
+     "x1": 3.4,
+     "x2": 4.8,
+     "y": 7.53,
+     "hang": true
+    },
+    {
+     "id": "h1",
+     "x1": 10.6,
+     "x2": 12.0,
+     "y": 7.53,
+     "hang": true
+    },
+    {
+     "id": "h2",
+     "x1": 17.8,
+     "x2": 19.2,
+     "y": 7.53,
+     "hang": true
+    },
+    {
+     "id": "h3",
+     "x1": 25.0,
+     "x2": 26.4,
+     "y": 7.53,
+     "hang": true
+    },
+    {
+     "id": "h4",
+     "x1": 32.2,
+     "x2": 33.6,
+     "y": 7.53,
+     "hang": true
+    }
+   ]
+  },
+  {
+   "id": "pegboard-24x36",
+   "name": "Pegboard, 24 x 36 in",
+   "category": "hanger",
+   "kind": "hanger",
+   "mount": "wall",
+   "group": "Pegboard",
+   "variant": "24 x 36 in",
+   "widthIn": 24.0,
+   "heightIn": 35.93,
+   "image": "assets/fixtures/pegboard-24x36.webp",
+   "src": "assets/fixtures/pegboard-24x36.webp",
+   "boardThicknessIn": 1.3,
+   "surfaces": [
+    {
+     "id": "s0",
+     "x1": 1.75,
+     "x2": 19.25,
+     "y": 22.27
+    },
+    {
+     "id": "s1",
+     "x1": 4.75,
+     "x2": 22.25,
+     "y": 9.36
+    },
+    {
+     "id": "h0",
+     "x1": 5.4,
+     "x2": 6.6,
+     "y": 28.0,
+     "hang": true
+    },
+    {
+     "id": "h1",
+     "x1": 11.4,
+     "x2": 12.6,
+     "y": 28.0,
+     "hang": true
+    },
+    {
+     "id": "h2",
+     "x1": 17.4,
+     "x2": 18.6,
+     "y": 28.0,
+     "hang": true
+    }
+   ]
+  },
+  {
+   "id": "pegboard-36x24",
+   "name": "Pegboard, 36 x 24 in",
+   "category": "hanger",
+   "kind": "hanger",
+   "mount": "wall",
+   "group": "Pegboard",
+   "variant": "36 x 24 in",
+   "widthIn": 36.0,
+   "heightIn": 24.0,
+   "image": "assets/fixtures/pegboard-36x24.webp",
+   "src": "assets/fixtures/pegboard-36x24.webp",
+   "boardThicknessIn": 1.3,
+   "surfaces": [
+    {
+     "id": "s0",
+     "x1": 6.25,
+     "x2": 23.75,
+     "y": 13.18
+    },
+    {
+     "id": "h0",
+     "x1": 6.6,
+     "x2": 7.8,
+     "y": 18.44,
+     "hang": true
+    },
+    {
+     "id": "h1",
+     "x1": 13.8,
+     "x2": 15.0,
+     "y": 18.44,
+     "hang": true
+    },
+    {
+     "id": "h2",
+     "x1": 21.0,
+     "x2": 22.2,
+     "y": 18.44,
+     "hang": true
+    },
+    {
+     "id": "h3",
+     "x1": 28.2,
+     "x2": 29.4,
+     "y": 18.44,
+     "hang": true
+    }
+   ]
+  },
+  {
+   "id": "ledge-picture-36",
+   "name": "Picture ledge, 36 in",
+   "category": "hanger",
+   "kind": "hanger",
+   "mount": "wall",
+   "group": "Picture ledge",
+   "variant": "36 in · Walnut",
+   "widthIn": 36.0,
+   "heightIn": 4.93,
+   "image": "assets/fixtures/ledge-picture-36.webp",
+   "src": "assets/fixtures/ledge-picture-36.webp",
+   "boardThicknessIn": 1.3,
+   "surfaces": [
+    {
+     "id": "s0",
+     "x1": 0.25,
+     "x2": 35.75,
+     "y": 1.54
+    }
+   ]
+  },
+  {
+   "id": "ledge-picture-48",
+   "name": "Picture ledge, 48 in",
+   "category": "hanger",
+   "kind": "hanger",
+   "mount": "wall",
+   "group": "Picture ledge",
+   "variant": "48 in · Walnut",
+   "widthIn": 48.0,
+   "heightIn": 4.93,
+   "image": "assets/fixtures/ledge-picture-48.webp",
+   "src": "assets/fixtures/ledge-picture-48.webp",
+   "boardThicknessIn": 1.3,
+   "surfaces": [
+    {
+     "id": "s0",
+     "x1": 0.25,
+     "x2": 47.75,
+     "y": 1.54
+    }
+   ]
+  },
+  {
+   "id": "rail-plate-36",
+   "name": "Plate rail, 36 in",
+   "category": "hanger",
+   "kind": "hanger",
+   "mount": "wall",
+   "group": "Plate rail",
+   "variant": "36 in · Walnut",
+   "widthIn": 36.0,
+   "heightIn": 4.64,
+   "image": "assets/fixtures/rail-plate-36.webp",
+   "src": "assets/fixtures/rail-plate-36.webp",
+   "boardThicknessIn": 1.3,
+   "surfaces": [
+    {
+     "id": "s0",
+     "x1": 0.25,
+     "x2": 35.75,
+     "y": 0.38
+    }
+   ]
+  },
+  {
+   "id": "rail-plate-48",
+   "name": "Plate rail, 48 in",
+   "category": "hanger",
+   "kind": "hanger",
+   "mount": "wall",
+   "group": "Plate rail",
+   "variant": "48 in · Walnut",
+   "widthIn": 48.0,
+   "heightIn": 4.64,
+   "image": "assets/fixtures/rail-plate-48.webp",
+   "src": "assets/fixtures/rail-plate-48.webp",
+   "boardThicknessIn": 1.3,
+   "surfaces": [
+    {
+     "id": "s0",
+     "x1": 0.25,
+     "x2": 47.75,
+     "y": 0.38
+    }
+   ]
+  }
+ ],
+ "decor": [
+  {
+   "id": "clock-grandfather",
+   "name": "Grandfather clock",
+   "category": "clock",
+   "mount": "floor",
+   "heightIn": 82.93,
+   "widthIn": 23.43,
+   "aspect": 0.2825,
+   "image": "assets/decor/clock-grandfather.webp",
+   "src": "assets/decor/clock-grandfather.webp"
+  },
+  {
+   "id": "clock-wall",
+   "name": "Walnut wall clock",
+   "category": "clock",
+   "mount": "wall",
+   "heightIn": 14.86,
+   "widthIn": 14.79,
+   "aspect": 0.9953,
+   "image": "assets/decor/clock-wall.webp",
+   "src": "assets/decor/clock-wall.webp"
+  },
+  {
+   "id": "candelabra-brass",
+   "name": "Brass candelabra",
+   "category": "lighting",
+   "mount": "stand",
+   "heightIn": 15.93,
+   "widthIn": 10.29,
+   "aspect": 0.646,
+   "image": "assets/decor/candelabra-brass.webp",
+   "src": "assets/decor/candelabra-brass.webp"
+  },
+  {
+   "id": "lamp-floor-fringe",
+   "name": "Fringed floor lamp",
+   "category": "lighting",
+   "mount": "floor",
+   "heightIn": 62.64,
+   "widthIn": 18.43,
+   "aspect": 0.2942,
+   "image": "assets/decor/lamp-floor-fringe.webp",
+   "src": "assets/decor/lamp-floor-fringe.webp"
+  },
+  {
+   "id": "lamp-oil",
+   "name": "Painted oil lamp",
+   "category": "lighting",
+   "mount": "stand",
+   "heightIn": 25.43,
+   "widthIn": 6.93,
+   "aspect": 0.2725,
+   "image": "assets/decor/lamp-oil.webp",
+   "src": "assets/decor/lamp-oil.webp"
+  },
+  {
+   "id": "lantern-hanging",
+   "name": "Hanging lantern",
+   "category": "lighting",
+   "mount": "wall",
+   "heightIn": 26.14,
+   "widthIn": 17.07,
+   "aspect": 0.653,
+   "image": "assets/decor/lantern-hanging.webp",
+   "src": "assets/decor/lantern-hanging.webp",
+   "anchor": "ceiling"
+  },
+  {
+   "id": "mirror-ornate",
+   "name": "Gilt arched mirror",
+   "category": "mirror",
+   "mount": "wall",
+   "heightIn": 29.14,
+   "widthIn": 19.14,
+   "aspect": 0.6568,
+   "image": "assets/decor/mirror-ornate.webp",
+   "src": "assets/decor/mirror-ornate.webp"
+  },
+  {
+   "id": "plant-fern",
+   "name": "Boston fern in a clay pot",
+   "category": "plant",
+   "mount": "stand",
+   "heightIn": 19.21,
+   "widthIn": 26.0,
+   "aspect": 1.3535,
+   "image": "assets/decor/plant-fern.webp",
+   "src": "assets/decor/plant-fern.webp"
+  },
+  {
+   "id": "plant-philodendron",
+   "name": "Philodendron in a clay pot",
+   "category": "plant",
+   "mount": "stand",
+   "heightIn": 34.14,
+   "widthIn": 27.57,
+   "aspect": 0.8076,
+   "image": "assets/decor/plant-philodendron.webp",
+   "src": "assets/decor/plant-philodendron.webp"
+  },
+  {
+   "id": "plant-succulent",
+   "name": "Small succulent",
+   "category": "plant",
+   "mount": "stand",
+   "heightIn": 10.5,
+   "widthIn": 6.64,
+   "aspect": 0.6324,
+   "image": "assets/decor/plant-succulent.webp",
+   "src": "assets/decor/plant-succulent.webp"
+  },
+  {
+   "id": "plant-urn-tree",
+   "name": "Potted tree in a terracotta urn",
+   "category": "plant",
+   "mount": "floor",
+   "heightIn": 53.64,
+   "widthIn": 23.14,
+   "aspect": 0.4314,
+   "image": "assets/decor/plant-urn-tree.webp",
+   "src": "assets/decor/plant-urn-tree.webp"
+  },
+  {
+   "id": "curtains-lace",
+   "name": "Sheer cream curtains",
+   "category": "textile",
+   "mount": "wall",
+   "heightIn": 87.57,
+   "widthIn": 60.93,
+   "aspect": 0.6958,
+   "image": "assets/decor/curtains-lace.webp",
+   "src": "assets/decor/curtains-lace.webp"
+  },
+  {
+   "id": "curtains-velvet",
+   "name": "Plum velvet curtains",
+   "category": "textile",
+   "mount": "wall",
+   "heightIn": 87.64,
+   "widthIn": 60.93,
+   "aspect": 0.6952,
+   "image": "assets/decor/curtains-velvet.webp",
+   "src": "assets/decor/curtains-velvet.webp"
+  }
+ ]
 }

@@ -21,16 +21,14 @@
       "mode": "tile",
       "scale": 1
     },
-    "light": {
-      "presetId": "window-afternoon",
-      "intensity": 0.8
-    },
+    "light": null,
     "architecture": [
       "baseboard-walnut"
     ],
     "sign": {
       "style": "wood"
-    }
+    },
+    "placeables": []
   },
   "fixtures": [
     {
@@ -502,5 +500,6 @@
         "y": 112
       }
     }
-  ]
+  ],
+  "decor": []
 }
