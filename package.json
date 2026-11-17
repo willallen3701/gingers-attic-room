@@ -1,0 +1,15 @@
+{
+  "name": "gingers-attic-room",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Ginger's Attic booth room: <attic-booth> web component (view mode, Phase 1 demo).",
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "serve": "node scripts/serve.mjs",
+    "shots": "node scripts/screenshot.mjs"
+  },
+  "devDependencies": {
+    "vitest": "5.1.0"
+  }
+}

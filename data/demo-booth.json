@@ -1,0 +1,506 @@
+{
+  "_note": "Demo booth recreating the mockup. Items, prices and seller are FAKE demo data; photos are licensed (see CREDITS.md / assets-src/LICENSES.md).",
+  "id": "booth-demo-ginger",
+  "boothNumber": 1,
+  "name": "Ginger's Own Booth",
+  "about": "Teacups, brass and little treasures carried down from the attic.",
+  "seller": {
+    "displayName": "Ginger",
+    "avatarSrc": null
+  },
+  "updatedAt": "2026-11-16T12:00:00Z",
+  "room": {
+    "wall": {
+      "type": "wallpaper",
+      "textureId": "wp-floral-blue",
+      "mode": "tile",
+      "scale": 1
+    },
+    "floor": {
+      "textureId": "fl-wood-honey",
+      "mode": "tile",
+      "scale": 1
+    },
+    "light": {
+      "presetId": "window-afternoon",
+      "intensity": 0.8
+    },
+    "architecture": [
+      "baseboard-walnut"
+    ],
+    "sign": {
+      "style": "wood"
+    }
+  },
+  "fixtures": [
+    {
+      "id": "fx1",
+      "fixtureId": "shelf-stack-4",
+      "x": 3,
+      "y": 12.2
+    },
+    {
+      "id": "fx2",
+      "fixtureId": "shelf-stack-4",
+      "x": 78.5,
+      "y": 12.2
+    },
+    {
+      "id": "fx3",
+      "fixtureId": "table-farm-60",
+      "x": 58,
+      "y": 65.5
+    }
+  ],
+  "items": [
+    {
+      "id": "it-genie-lamp",
+      "title": "Bronze Oil Lamp",
+      "description": "Roman-style bronze oil lamp with a heart-shaped handle and a lidded fill hole.",
+      "price": 38,
+      "shippingPrice": 9,
+      "localPickupOnly": false,
+      "condition": "Good, dark patina",
+      "era": "Antique",
+      "dims": {
+        "h": 6,
+        "w": 13,
+        "d": 5
+      },
+      "weightLb": 1.2,
+      "category": "Brass & metal",
+      "quantity": 1,
+      "status": "approved",
+      "image": "assets/items/it-genie-lamp.png",
+      "aspect": 1.2529,
+      "heightIn": 6,
+      "mount": "stand",
+      "placement": {
+        "surfaceId": "fx1:s0",
+        "x": 13,
+        "y": 12.2
+      }
+    },
+    {
+      "id": "it-teacup-mint",
+      "title": "Lotus Teacup & Leaf Saucer",
+      "description": "Pink lotus-petal cup with a gilded interior, sitting on a green leaf saucer.",
+      "price": 18,
+      "shippingPrice": 7,
+      "localPickupOnly": false,
+      "condition": "Excellent",
+      "era": "Early 1900s",
+      "dims": {
+        "h": 3.2,
+        "w": 5,
+        "d": 5
+      },
+      "weightLb": 0.6,
+      "category": "China & glass",
+      "quantity": 1,
+      "status": "approved",
+      "image": "assets/items/it-teacup-mint.png",
+      "aspect": 1.6495,
+      "heightIn": 3.2,
+      "mount": "stand",
+      "placement": {
+        "surfaceId": "fx1:s2",
+        "x": 9,
+        "y": 29.8
+      }
+    },
+    {
+      "id": "it-teacup-black",
+      "title": "Black & Gold Cup and Saucer",
+      "description": "Black-ground porcelain painted with gilt chinoiserie scenes.",
+      "price": 22,
+      "shippingPrice": 7,
+      "localPickupOnly": false,
+      "condition": "Very good",
+      "era": "1800s",
+      "dims": {
+        "h": 3.2,
+        "w": 5,
+        "d": 5
+      },
+      "weightLb": 0.6,
+      "category": "China & glass",
+      "quantity": 1,
+      "status": "approved",
+      "image": "assets/items/it-teacup-black.png",
+      "aspect": 1.6714,
+      "heightIn": 3.2,
+      "mount": "stand",
+      "placement": {
+        "surfaceId": "fx1:s2",
+        "x": 16,
+        "y": 29.8
+      }
+    },
+    {
+      "id": "it-teacup-gold",
+      "title": "Cream & Gold Teacup",
+      "description": "White porcelain with a wide gold rim and a gilded laurel sprig.",
+      "price": 20,
+      "shippingPrice": 7,
+      "localPickupOnly": false,
+      "condition": "Good, tiny rim wear",
+      "era": "1870s",
+      "dims": {
+        "h": 3.2,
+        "w": 5,
+        "d": 5
+      },
+      "weightLb": 0.6,
+      "category": "China & glass",
+      "quantity": 1,
+      "status": "approved",
+      "image": "assets/items/it-teacup-gold.png",
+      "aspect": 1.444,
+      "heightIn": 3.2,
+      "mount": "stand",
+      "placement": {
+        "surfaceId": "fx1:s2",
+        "x": 23,
+        "y": 29.8
+      }
+    },
+    {
+      "id": "it-mug-brown",
+      "title": "Brown-Dipped Stoneware Tankard",
+      "description": "Salt-glazed stoneware with a brown dipped top and a pewter rim.",
+      "price": 12,
+      "shippingPrice": 7,
+      "localPickupOnly": false,
+      "condition": "Good",
+      "era": "1800s",
+      "dims": {
+        "h": 4,
+        "w": 5,
+        "d": 3.5
+      },
+      "weightLb": 0.9,
+      "category": "Kitchen",
+      "quantity": 1,
+      "status": "approved",
+      "image": "assets/items/it-mug-brown.png",
+      "aspect": 0.7875,
+      "heightIn": 4,
+      "mount": "stand",
+      "placement": {
+        "surfaceId": "fx1:s3",
+        "x": 12,
+        "y": 38.6
+      }
+    },
+    {
+      "id": "it-horseshoe",
+      "title": "Lucky Iron Horseshoe",
+      "description": "Rusted farrier's horseshoe, nail holes intact.",
+      "price": 9,
+      "shippingPrice": 6,
+      "localPickupOnly": false,
+      "condition": "Rusty, as found",
+      "era": "Early 1900s",
+      "dims": {
+        "h": 5,
+        "w": 4.75,
+        "d": 0.5
+      },
+      "weightLb": 0.8,
+      "category": "Farm & rustic",
+      "quantity": 1,
+      "status": "sold",
+      "image": "assets/items/it-horseshoe.png",
+      "aspect": 0.9125,
+      "heightIn": 5,
+      "mount": "stand",
+      "placement": {
+        "surfaceId": "fx1:s3",
+        "x": 21,
+        "y": 38.6
+      }
+    },
+    {
+      "id": "it-goblet-brass",
+      "title": "Copper Pedestal Goblet",
+      "description": "Tall copper-and-brass goblet on an ornate cast foot.",
+      "price": 26,
+      "shippingPrice": 8,
+      "localPickupOnly": false,
+      "condition": "Good",
+      "era": "1960s",
+      "dims": {
+        "h": 7,
+        "w": 4.5,
+        "d": 4.5
+      },
+      "weightLb": 0.7,
+      "category": "Brass & metal",
+      "quantity": 1,
+      "status": "approved",
+      "image": "assets/items/it-goblet-brass.png",
+      "aspect": 0.4684,
+      "heightIn": 7,
+      "mount": "stand",
+      "placement": {
+        "surfaceId": "fx2:s0",
+        "x": 90,
+        "y": 12.2
+      }
+    },
+    {
+      "id": "it-tin-motorcycle",
+      "title": "Tin Motorcycle with Sidecar",
+      "description": "Lithographed tin toy motorcycle with rider and a bright sidecar.",
+      "price": 64,
+      "shippingPrice": 9,
+      "localPickupOnly": false,
+      "condition": "Very good, works",
+      "era": "1960s",
+      "dims": {
+        "h": 5,
+        "w": 6.5,
+        "d": 3
+      },
+      "weightLb": 0.5,
+      "category": "Toys",
+      "quantity": 1,
+      "status": "approved",
+      "image": "assets/items/it-tin-motorcycle.png",
+      "aspect": 1.2678,
+      "heightIn": 5,
+      "mount": "stand",
+      "placement": {
+        "surfaceId": "fx2:s3",
+        "x": 96,
+        "y": 38.6
+      }
+    },
+    {
+      "id": "it-framed-art",
+      "title": "Blue Marbled Print, Framed",
+      "description": "Marbled-paper print in blue and gold, cream mat, black wood frame.",
+      "price": 120,
+      "shippingPrice": 22,
+      "localPickupOnly": false,
+      "condition": "Excellent",
+      "era": "Contemporary",
+      "dims": {
+        "h": 30,
+        "w": 21.6,
+        "d": 1.5
+      },
+      "weightLb": 6,
+      "category": "Wall art",
+      "quantity": 1,
+      "status": "approved",
+      "image": "assets/items/it-framed-art.png",
+      "aspect": 0.72,
+      "heightIn": 30,
+      "mount": "wall",
+      "placement": {
+        "surfaceId": "wall",
+        "x": 49.2,
+        "y": 42.4
+      }
+    },
+    {
+      "id": "it-cameo",
+      "title": "Cameo Portrait in Gilt Bow Frame",
+      "description": "White profile cameo on black, in a red-and-gilt oval frame with a ribbon bow.",
+      "price": 55,
+      "shippingPrice": 9,
+      "localPickupOnly": false,
+      "condition": "Good",
+      "era": "Victorian revival",
+      "dims": {
+        "h": 10,
+        "w": 8.5,
+        "d": 1
+      },
+      "weightLb": 1.1,
+      "category": "Wall art",
+      "quantity": 1,
+      "status": "approved",
+      "image": "assets/items/it-cameo.png",
+      "aspect": 0.7212,
+      "heightIn": 10,
+      "mount": "wall",
+      "placement": {
+        "surfaceId": "wall",
+        "x": 43,
+        "y": 59
+      }
+    },
+    {
+      "id": "it-amber-lamp",
+      "title": "Amber Lily Table Lamp",
+      "description": "Bronze lily lamp with seven iridescent amber glass shades.",
+      "price": 85,
+      "shippingPrice": 18,
+      "localPickupOnly": false,
+      "condition": "Very good, rewired",
+      "era": "Early 1900s style",
+      "dims": {
+        "h": 18,
+        "w": 12,
+        "d": 12
+      },
+      "weightLb": 4,
+      "category": "Lighting",
+      "quantity": 1,
+      "status": "approved",
+      "image": "assets/items/it-amber-lamp.png",
+      "aspect": 0.6562,
+      "heightIn": 18,
+      "mount": "stand",
+      "placement": {
+        "surfaceId": "fx3:top",
+        "x": 64,
+        "y": 65.5
+      }
+    },
+    {
+      "id": "it-rotary-phone",
+      "title": "Black Bakelite Rotary Telephone",
+      "description": "Heavy black Bakelite desk phone with a coiled cord.",
+      "price": 70,
+      "shippingPrice": 14,
+      "localPickupOnly": false,
+      "condition": "Good, untested",
+      "era": "1950s",
+      "dims": {
+        "h": 8,
+        "w": 12.5,
+        "d": 8
+      },
+      "weightLb": 3,
+      "category": "Brass & metal",
+      "quantity": 1,
+      "status": "approved",
+      "image": "assets/items/it-rotary-phone.png",
+      "aspect": 1.572,
+      "heightIn": 8,
+      "mount": "stand",
+      "placement": {
+        "surfaceId": "fx3:top",
+        "x": 78,
+        "y": 65.5
+      }
+    },
+    {
+      "id": "it-iron-truck",
+      "title": "Die-Cast Tipper Truck",
+      "description": "White cab and red tipper bed, nicely play-worn.",
+      "price": 95,
+      "shippingPrice": 16,
+      "localPickupOnly": false,
+      "condition": "Play-worn paint",
+      "era": "1960s",
+      "dims": {
+        "h": 4,
+        "w": 8,
+        "d": 3
+      },
+      "weightLb": 0.6,
+      "category": "Toys",
+      "quantity": 1,
+      "status": "approved",
+      "image": "assets/items/it-iron-truck.png",
+      "aspect": 2.046,
+      "heightIn": 4,
+      "mount": "stand",
+      "placement": {
+        "surfaceId": "fx3:top",
+        "x": 96,
+        "y": 65.5
+      }
+    },
+    {
+      "id": "it-yellow-chair",
+      "title": "Pretty Yellow Chair",
+      "description": "Wingback armchair in buttery yellow damask on carved cabriole legs.",
+      "price": 245,
+      "shippingPrice": null,
+      "localPickupOnly": true,
+      "condition": "Very good, reupholstered",
+      "era": "1950s Queen Anne revival",
+      "dims": {
+        "h": 42,
+        "w": 30,
+        "d": 30
+      },
+      "weightLb": 38,
+      "category": "Furniture",
+      "quantity": 1,
+      "status": "approved",
+      "image": "assets/items/it-yellow-chair.png",
+      "aspect": 0.7177,
+      "heightIn": 42,
+      "mount": "stand",
+      "placement": {
+        "surfaceId": "floor",
+        "x": 5,
+        "y": 104
+      }
+    },
+    {
+      "id": "it-braided-rug",
+      "title": "Peach Dragon Rug",
+      "description": "Wool rug with dragons and clouds and fringed ends, about 5 x 3 ft.",
+      "price": 40,
+      "shippingPrice": 15,
+      "localPickupOnly": false,
+      "condition": "Good, light wear",
+      "era": "Early 1900s",
+      "dims": {
+        "h": 0.5,
+        "w": 60,
+        "d": 36
+      },
+      "weightLb": 6,
+      "category": "Textiles",
+      "quantity": 1,
+      "status": "approved",
+      "image": "assets/items/it-braided-rug.png",
+      "aspect": 3.2556,
+      "widthIn": 60,
+      "flat": true,
+      "mount": "flat",
+      "placement": {
+        "surfaceId": "floor",
+        "x": 27,
+        "y": 113
+      }
+    },
+    {
+      "id": "it-book-stack",
+      "title": "Stack of Vintage Storybooks",
+      "description": "Seven cloth-bound children's books and readers, sold as a set.",
+      "price": 30,
+      "shippingPrice": 10,
+      "localPickupOnly": false,
+      "condition": "Worn, sound bindings",
+      "era": "1900s-1940s",
+      "dims": {
+        "h": 8,
+        "w": 11,
+        "d": 8
+      },
+      "weightLb": 4,
+      "category": "Books & paper",
+      "quantity": 1,
+      "status": "approved",
+      "image": "assets/items/it-book-stack.png",
+      "aspect": 1.3675,
+      "heightIn": 8,
+      "mount": "stand",
+      "placement": {
+        "surfaceId": "floor",
+        "x": 100,
+        "y": 112
+      }
+    }
+  ]
+}

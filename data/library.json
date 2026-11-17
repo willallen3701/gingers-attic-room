@@ -1,0 +1,288 @@
+{
+  "_note": "Phase 1 demo library. Wallpapers and floors are licensed textures (see assets-src/LICENSES.md); fixtures are still placeholder SVGs.",
+  "wallpapers": [
+    {
+      "id": "wp-floral-blue",
+      "name": "Blue Vine Trellis",
+      "src": "assets/textures/wallpapers/wp-floral-blue.jpg",
+      "tileIn": {
+        "w": 16.4,
+        "h": 15.5
+      }
+    },
+    {
+      "id": "wp-rose-trellis",
+      "name": "Rose Trellis",
+      "src": "assets/textures/wallpapers/wp-rose-trellis.jpg",
+      "tileIn": {
+        "w": 16.4,
+        "h": 15.5
+      }
+    },
+    {
+      "id": "wp-cabbage-rose",
+      "name": "Cabbage Rose",
+      "src": "assets/textures/wallpapers/wp-cabbage-rose.jpg",
+      "tileIn": {
+        "w": 16.4,
+        "h": 16.3
+      }
+    },
+    {
+      "id": "wp-calico",
+      "name": "Rosebud Calico",
+      "src": "assets/textures/wallpapers/wp-calico.jpg",
+      "tileIn": {
+        "w": 16.4,
+        "h": 11.8
+      }
+    },
+    {
+      "id": "wp-mint-stripe",
+      "name": "Mint Floral Stripe",
+      "src": "assets/textures/wallpapers/wp-mint-stripe.jpg",
+      "tileIn": {
+        "w": 16.4,
+        "h": 12.2
+      }
+    },
+    {
+      "id": "wp-gilded-damask",
+      "name": "Gilded Damask",
+      "src": "assets/textures/wallpapers/wp-gilded-damask.jpg",
+      "tileIn": {
+        "w": 16.4,
+        "h": 14.0
+      }
+    },
+    {
+      "id": "wp-parlour-stripe",
+      "name": "Parlour Stripe",
+      "src": "assets/textures/wallpapers/wp-parlour-stripe.jpg",
+      "tileIn": {
+        "w": 16.4,
+        "h": 18.0
+      }
+    },
+    {
+      "id": "wp-yellow-stripe",
+      "name": "Buttercup Stripe",
+      "src": "assets/textures/wallpapers/wp-yellow-stripe.jpg",
+      "tileIn": {
+        "w": 6,
+        "h": 6
+      }
+    },
+    {
+      "id": "wp-sage-gingham",
+      "name": "Sage Gingham",
+      "src": "assets/textures/wallpapers/wp-sage-gingham.jpg",
+      "tileIn": {
+        "w": 8,
+        "h": 8
+      }
+    }
+  ],
+  "floors": [
+    {
+      "id": "fl-wood-honey",
+      "name": "Honey Oak Planks",
+      "src": "assets/textures/floors/fl-wood-honey.jpg",
+      "tileIn": {
+        "w": 78.3,
+        "h": 78.3
+      }
+    },
+    {
+      "id": "fl-white-tile",
+      "name": "White Tile",
+      "src": "assets/textures/floors/fl-white-tile.jpg",
+      "tileIn": {
+        "w": 74.8,
+        "h": 74.8
+      }
+    },
+    {
+      "id": "fl-wood-light",
+      "name": "Light Maple",
+      "src": "assets/textures/floors/fl-wood-light.jpg",
+      "tileIn": {
+        "w": 78.7,
+        "h": 78.7
+      }
+    },
+    {
+      "id": "fl-wood-dark",
+      "name": "Walnut Boards",
+      "src": "assets/textures/floors/fl-wood-dark.jpg",
+      "tileIn": {
+        "w": 78.7,
+        "h": 78.7
+      }
+    },
+    {
+      "id": "fl-herringbone",
+      "name": "Herringbone Parquet",
+      "src": "assets/textures/floors/fl-herringbone.jpg",
+      "tileIn": {
+        "w": 133.9,
+        "h": 133.9
+      }
+    },
+    {
+      "id": "fl-checker",
+      "name": "Checkerboard Tile",
+      "src": "assets/textures/floors/fl-checker.jpg",
+      "tileIn": {
+        "w": 118.1,
+        "h": 118.1
+      }
+    },
+    {
+      "id": "fl-terracotta",
+      "name": "Victorian Terracotta",
+      "src": "assets/textures/floors/fl-terracotta.jpg",
+      "tileIn": {
+        "w": 84.7,
+        "h": 84.7
+      }
+    },
+    {
+      "id": "fl-octagon-lino",
+      "name": "Octagon Linoleum",
+      "src": "assets/textures/floors/fl-octagon-lino.jpg",
+      "tileIn": {
+        "w": 78.3,
+        "h": 78.3
+      }
+    }
+  ],
+  "paints": [
+    {
+      "id": "paint-cornflower",
+      "name": "Cornflower",
+      "color": "#2f5aa8"
+    },
+    {
+      "id": "paint-buttermilk",
+      "name": "Buttermilk",
+      "color": "#f1e3b3"
+    },
+    {
+      "id": "paint-sage",
+      "name": "Sage",
+      "color": "#a9b79a"
+    }
+  ],
+  "lights": [
+    {
+      "id": "window-afternoon",
+      "name": "Afternoon window",
+      "wash": "linear-gradient(105deg, rgba(255,214,150,0.55) 0%, rgba(255,196,130,0.25) 45%, rgba(70,45,30,0.30) 100%)",
+      "panes": {
+        "x": 4,
+        "y": 8,
+        "w": 44,
+        "h": 60,
+        "cols": 2,
+        "rows": 3,
+        "skewDeg": -14,
+        "color": "rgba(255,240,210,0.75)"
+      },
+      "vignette": 0.35
+    },
+    {
+      "id": "lamp-glow",
+      "name": "Lamp glow",
+      "wash": "radial-gradient(circle at 70% 55%, rgba(255,190,110,0.55), rgba(255,170,90,0.15) 40%, rgba(40,25,20,0.45) 100%)",
+      "panes": null,
+      "vignette": 0.5
+    },
+    {
+      "id": "cool-morning",
+      "name": "Cool morning",
+      "wash": "linear-gradient(180deg, rgba(190,215,255,0.45), rgba(220,230,255,0.15) 60%, rgba(60,70,90,0.2))",
+      "panes": {
+        "x": 70,
+        "y": 6,
+        "w": 40,
+        "h": 55,
+        "cols": 2,
+        "rows": 3,
+        "skewDeg": 10,
+        "color": "rgba(235,245,255,0.6)"
+      },
+      "vignette": 0.25
+    }
+  ],
+  "architecture": [
+    {
+      "id": "baseboard-walnut",
+      "name": "Walnut baseboard",
+      "kind": "baseboard",
+      "heightIn": 4,
+      "color": "#6a4128"
+    },
+    {
+      "id": "baseboard-white",
+      "name": "White baseboard",
+      "kind": "baseboard",
+      "heightIn": 5,
+      "color": "#efe9dc"
+    }
+  ],
+  "fixtures": [
+    {
+      "id": "shelf-stack-4",
+      "name": "Four-board wall shelf",
+      "kind": "shelf",
+      "src": "assets/placeholder/fixture-shelf-stack-4.svg",
+      "widthIn": 39,
+      "heightIn": 31,
+      "boardThicknessIn": 1.2,
+      "surfaces": [
+        {
+          "id": "s0",
+          "x1": 0.5,
+          "x2": 38.5,
+          "y": 0
+        },
+        {
+          "id": "s1",
+          "x1": 0.5,
+          "x2": 38.5,
+          "y": 8.8
+        },
+        {
+          "id": "s2",
+          "x1": 0.5,
+          "x2": 38.5,
+          "y": 17.6
+        },
+        {
+          "id": "s3",
+          "x1": 0.5,
+          "x2": 38.5,
+          "y": 26.4
+        }
+      ]
+    },
+    {
+      "id": "table-farm-60",
+      "name": "Farmhouse table",
+      "kind": "table",
+      "src": "assets/placeholder/fixture-table-farm-60.svg",
+      "widthIn": 60,
+      "heightIn": 30,
+      "boardThicknessIn": 1.6,
+      "surfaces": [
+        {
+          "id": "top",
+          "x1": 1,
+          "x2": 59,
+          "y": 0
+        }
+      ]
+    }
+  ]
+}

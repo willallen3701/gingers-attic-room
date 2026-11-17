@@ -1,0 +1,74 @@
+[
+ {
+  "file": "assets/items/it-amber-lamp.png",
+  "title": "Lamp",
+  "author": "Tiffany Studios",
+  "license": "CC BY 3.0",
+  "license_url": "https://creativecommons.org/licenses/by/3.0/",
+  "source": "https://www.brooklynmuseum.org/opencollection/objects/1513"
+ },
+ {
+  "file": "assets/items/it-book-stack.png",
+  "title": "books",
+  "author": "ali edwards",
+  "license": "CC BY 2.0",
+  "license_url": "https://creativecommons.org/licenses/by/2.0/",
+  "source": "https://www.flickr.com/photos/96666162@N00/543067160"
+ },
+ {
+  "file": "assets/items/it-framed-art.png",
+  "title": "Marbled Paper",
+  "author": "Photoshop Roadmap",
+  "license": "CC BY 2.0",
+  "license_url": "https://creativecommons.org/licenses/by/2.0/",
+  "source": "https://www.flickr.com/photos/36546102@N04/7564183154"
+ },
+ {
+  "file": "assets/items/it-horseshoe.png",
+  "title": "Old horseshoe",
+  "author": "Carlos Ebert",
+  "license": "CC BY 2.0",
+  "license_url": "https://creativecommons.org/licenses/by/2.0/",
+  "source": "https://www.flickr.com/photos/42042512@N00/14807603764"
+ },
+ {
+  "file": "assets/items/it-iron-truck.png",
+  "title": "Bedford 1 ton tipper",
+  "author": "Elsie esq.",
+  "license": "CC BY 2.0",
+  "license_url": "https://creativecommons.org/licenses/by/2.0/",
+  "source": "https://www.flickr.com/photos/61132483@N00/124354529"
+ },
+ {
+  "file": "assets/items/it-mug-brown.png",
+  "title": "Mug LACMA 27.1.6",
+  "author": "Fæ",
+  "license": "CC BY 2.0",
+  "license_url": "https://creativecommons.org/licenses/by/2.0/",
+  "source": "https://www.flickr.com/photos/50398299@N08/16416691481"
+ },
+ {
+  "file": "assets/items/it-rotary-phone.png",
+  "title": "Starý telefón; Old black phone",
+  "author": "Da4Sal",
+  "license": "CC BY 2.0",
+  "license_url": "https://creativecommons.org/licenses/by/2.0/",
+  "source": "https://www.flickr.com/photos/112931986@N07/11645033223"
+ },
+ {
+  "file": "assets/items/it-tin-motorcycle.png",
+  "title": "Motorcycle with sidecar, USSR",
+  "author": "lord enfield",
+  "license": "CC BY 2.0",
+  "license_url": "https://creativecommons.org/licenses/by/2.0/",
+  "source": "https://www.flickr.com/photos/42424413@N06/5157730294"
+ },
+ {
+  "file": "assets/items/it-yellow-chair.png",
+  "title": "Easy Chair with C-scroll Arms LACMA M.2006.51.6",
+  "author": "Fæ",
+  "license": "CC BY 2.0",
+  "license_url": "https://creativecommons.org/licenses/by/2.0/",
+  "source": "https://www.flickr.com/photos/50398299@N08/16219050369"
+ }
+]

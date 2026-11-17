@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ginger's Attic – Booth demo</title>
+  <style>
+    :root { color-scheme: light; }
+    body {
+      margin: 0; padding: 16px; min-height: 100vh;
+      background: #efe3c8 radial-gradient(ellipse at top, #f7eedb, #e6d4ad 70%);
+      font-family: Georgia, "Times New Roman", serif; color: #3a2a1e;
+    }
+    .page { max-width: 1100px; margin: 0 auto; }
+    .demo-note { font: 13px/1.4 "Courier New", monospace; color: #6b3a5c; margin: 0 0 10px; }
+    .log { margin-top: 14px; font: 12px/1.45 "Courier New", monospace; color: #4b2741; max-height: 160px; overflow: auto; }
+    @media (max-width: 600px) { body { padding: 8px; } .log { display: none; } }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <p class="demo-note">Local demo harness. Demo items with licensed photos (credits: <a href="CREDITS.md">CREDITS.md</a>); prices are fake; not connected to Wix.</p>
+    <attic-booth booth-src="data/demo-booth.json" library-src="data/library.json" demo></attic-booth>
+    <pre class="log" aria-label="Event log"></pre>
+  </main>
+  <script type="module">
+    import './src/attic-booth.js';
+    const el = document.querySelector('attic-booth');
+    const log = document.querySelector('.log');
+    const params = new URLSearchParams(location.search);
+    if (params.get('open')) el.setAttribute('open-item', params.get('open'));
+    el.addEventListener('attic-booth:event', (e) => {
+      log.textContent = `${new Date().toLocaleTimeString()}  ${JSON.stringify(e.detail)}\n` + log.textContent;
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Booth demo – phone frame</title>
+  <style>
+    body { margin: 0; background: #2b2420; }
+    iframe { display: block; width: 390px; height: 844px; border: 0; background: #fff; }
+  </style>
+</head>
+<body>
+  <!-- 390 px wide frame: headless Chrome can't make a window this narrow, and the real site embeds the app in an iframe anyway. -->
+  <iframe title="Booth at phone width"></iframe>
+  <script>
+    document.querySelector('iframe').src = 'index.html' + location.search;
+  </script>
+</body>
+</html>
