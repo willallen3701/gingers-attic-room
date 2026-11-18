@@ -100,7 +100,7 @@ const rectOf = (expr) =>
 
 // ---- harness: this page plays the Wix page
 const FRAME = `document.querySelector('iframe')`;
-async function harness(page, w, h) {
+async function harness(page, w, h, { noScroll = false } = {}) {
   await navigate(`${origin}/__harness`, 'document.readyState === "complete"');
   await evaluate(`(() => {
     document.documentElement.innerHTML = '<head></head><body style="margin:0;background:#333"></body>';
@@ -108,6 +108,7 @@ async function harness(page, w, h) {
     window.addEventListener('message', (e) => { if (e.data && e.data.source === 'attic-booth') window.__msgs.push(e.data); });
     const f = document.createElement('iframe');
     f.src = ${JSON.stringify(`/${page}`)};
+    ${noScroll ? `f.setAttribute('scrolling', 'no');` : ''}
     f.style.cssText = 'display:block;border:0;width:${w}px;height:${h}px';
     document.body.append(f);
     return true;
@@ -532,6 +533,87 @@ try {
   check('clicking a question opens its answer', (await evaluate(`${FQ}.querySelector('details.qa').open`)) && (await evaluate(`${FQ}.querySelector('details.qa .ans').getBoundingClientRect().height`)) > 10);
   await clickAt(await rectOf(`${FQ}.querySelector('details.qa summary')`));
   check('clicking it again closes it', !(await evaluate(`${FQ}.querySelector('details.qa').open`)));
+
+  // ---- 5b. The Wix HTML component has a fixed height that is set in the Editor and that page code cannot change.
+  // Whatever that height is, an answer the visitor opens must be fully visible or reachable by scrolling: inside its
+  // own panel, or by scrolling the frame. Every question is opened by a real click, in frames of different heights.
+  console.log('\n-- faq in a fixed-height frame');
+  const faqIds = await evaluate(`[...${FQ}.querySelectorAll('details.qa')].map((d) => d.id)`);
+  const lastId = faqIds.at(-1);
+  const probeAnswer = (id) =>
+    evaluate(`(() => {
+      const f = ${FRAME}, w = f.contentWindow, se = f.contentDocument.scrollingElement;
+      const sr = f.contentDocument.querySelector('attic-faq').shadowRoot;
+      const det = sr.getElementById(${JSON.stringify(id)}), ans = det.querySelector('.ans');
+      const openCount = sr.querySelectorAll('details.qa[open]').length;
+      se.scrollTop = 0; ans.scrollTop = 0;
+      const H = w.innerHeight, capped = ans.hasAttribute('data-capped');
+      const visible = det.open && !capped && ans.getBoundingClientRect().bottom <= H + 1; // all of it, with no scrolling
+      const frameScrolls = se.scrollHeight > H + 1;
+      ans.scrollTop = ans.scrollHeight; // scroll the answer to its end, then bring that end into the frame
+      se.scrollTop = Math.max(0, Math.min(ans.lastElementChild.getBoundingClientRect().bottom - H + 8, se.scrollHeight - H));
+      const end = ans.lastElementChild.getBoundingClientRect().bottom, box = ans.getBoundingClientRect();
+      const reachable = det.open && end > 0 && end <= H + 1 && end <= box.bottom + 1;
+      se.scrollTop = 0; ans.scrollTop = 0;
+      return { openCount, capped, visible, frameScrolls, reachable, H, end: Math.round(end) };
+    })()`);
+  const frames = [
+    { name: '375 px phone, 2400 px frame (the stopgap)', w: 375, h: 2400, mobile: true, noFrameScroll: true, allVisible: true },
+    { name: '375 px phone, 1600 px frame', w: 375, h: 1600, mobile: true, noFrameScroll: true },
+    // scrolling="no" stops a visitor scrolling the frame itself (the likely Wix symptom); an answer must then fit or scroll in its panel.
+    { name: '375 px phone, 1400 px frame with frame scrolling off', w: 375, h: 1400, mobile: true, noFrameScroll: true, noScroll: true },
+    { name: '1280 px desktop, 1350 px frame with frame scrolling off', w: 1280, h: 1350, noFrameScroll: true, noScroll: true },
+    { name: '375 px phone, 1000 px frame (shorter than the closed list)', w: 375, h: 1000, mobile: true },
+    { name: '320 px phone, 2400 px frame', w: 320, h: 2400, mobile: true, noFrameScroll: true },
+    { name: '1280 px desktop, 1350 px frame (the site owner\'s height)', w: 1280, h: 1350, noFrameScroll: true },
+    { name: '1280 px desktop, 1800 px frame', w: 1280, h: 1800, noFrameScroll: true, allVisible: true },
+    { name: '1280 px desktop, 700 px frame (shorter than the closed list)', w: 1280, h: 700 },
+  ];
+  for (const sc of frames) {
+    await viewport(sc.w, 900, !!sc.mobile);
+    await harness('faq.html', sc.w, sc.h, { noScroll: !!sc.noScroll });
+    await waitFor(`${FQ}.querySelectorAll('details.qa').length > 0`);
+    await evaluate(`${FRAME}.contentDocument.fonts.ready.then(() => true)`);
+    await sleep(300);
+    const bad = [];
+    let last = null;
+    for (const id of faqIds) {
+      await clickAt(await rectOf(`${FQ}.getElementById(${JSON.stringify(id)}).querySelector('summary')`));
+      await sleep(150);
+      const p = await probeAnswer(id);
+      if (id === lastId) last = p;
+      if (!(p.openCount === 1 && p.reachable && (!sc.noFrameScroll || !p.frameScrolls) && (!sc.allVisible || p.visible))) bad.push(`${id} ${JSON.stringify(p)}`);
+    }
+    check(`${sc.name}: each of the ${faqIds.length} answers, opened by a click, is readable (one open at a time)`, bad.length === 0, bad.slice(0, 2).join(' | '));
+    const how = last.visible ? 'fully visible' : `reached by ${last.capped ? 'scrolling its panel' : ''}${last.capped && last.frameScrolls ? ' and ' : ''}${last.frameScrolls ? 'scrolling the frame' : ''}`;
+    check(`...the last answer (${lastId}) is ${how}`, last.reachable, `frame ${last.H} px`);
+  }
+  // On a phone the finger scrolls the long answer inside its own panel.
+  await viewport(375, 812, true, 2);
+  await harness('faq.html', 375, 1600, { noScroll: true });
+  await waitFor(`${FQ}.querySelectorAll('details.qa').length > 0`);
+  await sleep(300);
+  await clickAt(await rectOf(`${FQ}.getElementById('${lastId}').querySelector('summary')`));
+  await sleep(200);
+  const panel = await rectOf(`${FQ}.getElementById('${lastId}').querySelector('.ans')`);
+  await send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 5 });
+  const tip = (y) => [{ x: Math.round(panel.x), y: Math.round(y) }];
+  await send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: tip(panel.y + 90) });
+  for (let k = 1; k <= 12; k++) {
+    await send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: tip(panel.y + 90 - k * 16) });
+    await sleep(16);
+  }
+  await send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+  await sleep(700);
+  const panelScroll = await evaluate(`${FQ}.getElementById('${lastId}').querySelector('.ans').scrollTop`);
+  check('on a phone (frame scrolling off), a finger drag scrolls the long answer inside its own panel', panelScroll > 40, `scrollTop ${Math.round(panelScroll)}`);
+  await send('Emulation.setTouchEmulationEnabled', { enabled: false });
+  // Not embedded (the page itself scrolls): nothing is capped.
+  await viewport(1280, 900);
+  await navigate(`${origin}/faq.html`, 'document.querySelector("attic-faq")?.shadowRoot?.querySelectorAll("details.qa").length > 0');
+  await clickAt(await rectOf(`document.querySelector('attic-faq').shadowRoot.getElementById('${lastId}').querySelector('summary')`));
+  await sleep(200);
+  check('opened on its own page (not in a frame), the answer is not capped and the page scrolls', (await evaluate(`document.querySelectorAll('attic-faq').length === 1 && !document.querySelector('attic-faq').shadowRoot.querySelector('[data-capped]') && document.scrollingElement.scrollHeight > innerHeight`)) === true);
 
   // =========================================================== 6. Sizing, magnifier, collectibles boxes, listing rules
   console.log('\n-- sizing, magnifier, collectibles boxes');

@@ -46,6 +46,10 @@ button, input, textarea { font: inherit; }
 .qa[open] .chev { transform: rotate(180deg); }
 .qa[open] summary { border-bottom: 1px dashed #cdb88c; border-radius: 12px 12px 0 0; }
 .ans { padding: 12px 18px 16px; font: 16px/1.55 var(--serif); color: var(--ink); }
+/* When the frame is shorter than the answer, src/attic-faq.js caps the height and the answer scrolls by touch. */
+.ans[data-capped] { overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior-y: auto; }
+.ans[data-capped]:focus-visible { outline: 3px solid var(--purple); outline-offset: -3px; }
+.ans[data-capped][data-more] { box-shadow: inset 0 -14px 10px -10px rgba(58, 42, 30, .45); }
 .ans p { margin: 0 0 10px; }
 .ans p:last-child { margin-bottom: 0; }
 .ans ul { margin: 0 0 10px; padding-left: 22px; }

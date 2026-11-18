@@ -3,6 +3,10 @@
 // Usage: <attic-faq faq-src="data/faq.json"></attic-faq>. The questions ship with the app.
 // Attributes: faq-src, allowed-origins.
 //
+// Height: the Wix frame has a fixed height that page code cannot change, so the embed fits itself to the frame it is
+// in (window.innerHeight): one answer is open at a time, and an answer that would run past the bottom edge scrolls
+// inside its own panel (src/logic/faqfit.js). Nothing here depends on a number set in the Editor.
+//
 // Message contract (see README):
 //   app -> page  ready{mode:'faq'} (about every second until load-faq)
 //   page -> app  load-faq{...} - only stops the ready ping; its content (e.g. the old businessEmail) is ignored.
@@ -11,6 +15,7 @@
 import { faqCss } from './faq-styles.js';
 import { Bridge } from './bridge.js';
 import { esc, ensureFonts } from './room-render.js';
+import { fitAnswerHeight } from './logic/faqfit.js';
 
 const READY_MS = 1000;
 const READY_TRIES = 90;
@@ -21,6 +26,7 @@ export class AtticFaq extends HTMLElement {
   #bridge = null;
   #loaded = false; // load-faq arrived
   #readyTimer = null;
+  #onResize = () => this.#fit();
 
   constructor() {
     super();
@@ -53,10 +59,14 @@ export class AtticFaq extends HTMLElement {
       this.loadFaq();
     }
     this.#announceReady();
+    this.#root.addEventListener('toggle', (e) => this.#onToggle(e), true); // toggle doesn't bubble
+    window.addEventListener('resize', this.#onResize);
+    document.fonts?.ready.then(() => this.#fit());
   }
 
   disconnectedCallback() {
     clearTimeout(this.#readyTimer);
+    window.removeEventListener('resize', this.#onResize);
     this.#bridge?.dispose();
   }
 
@@ -75,6 +85,45 @@ export class AtticFaq extends HTMLElement {
   loadFaq() {
     this.#loaded = true;
     clearTimeout(this.#readyTimer);
+  }
+
+  /** One answer open at a time, so the height the FAQ can reach is the closed list plus one answer. */
+  #onToggle(e) {
+    const d = e.target;
+    if (d?.tagName === 'DETAILS' && d.open) {
+      this.#root.querySelectorAll('details.qa[open]').forEach((o) => {
+        if (o !== d) o.open = false;
+      });
+    }
+    this.#fit();
+  }
+
+  /**
+   * Keep the open answer inside the frame. Only when embedded: standalone, the page itself scrolls. Wix sets the frame
+   * height and page code can't change it, so the answer gets a max-height and scrolls inside its own panel.
+   */
+  #fit() {
+    this.#root.querySelectorAll('.ans').forEach((a) => {
+      a.style.maxHeight = '';
+      a.removeAttribute('data-capped');
+      a.removeAttribute('data-more');
+      a.removeAttribute('tabindex');
+    });
+    if (!this.#bridge?.hasParent) return;
+    const open = this.#root.querySelector('details.qa[open] .ans');
+    if (!open) return;
+    const cap = fitAnswerHeight({
+      frameH: window.innerHeight,
+      contentH: this.#root.querySelector('.faq').offsetHeight,
+      answerH: open.offsetHeight,
+    });
+    if (cap == null) return;
+    open.style.maxHeight = `${cap}px`;
+    open.setAttribute('data-capped', '');
+    open.setAttribute('tabindex', '0'); // keyboard users can scroll it
+    const more = () => open.toggleAttribute('data-more', open.scrollTop + open.clientHeight < open.scrollHeight - 2);
+    more();
+    open.onscroll = more; // data-more draws a soft shadow at the bottom edge while there is more to read
   }
 
   #onMessage(m) {

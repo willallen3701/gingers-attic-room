@@ -156,6 +156,20 @@ on its single tab stop). Sellers pick highlights with the star in the editor's M
 Questions ship with the app in `data/faq.json`. No contact form (the site footer has one). **Out:** `ready` {mode:'faq'} (about every second until `load-faq`).
 **In:** `load-faq` (content ignored; the old `businessEmail` is harmless). Older site code that bridges `contact-send` / `contact-result` simply never fires.
 
+**FAQ and the frame height.** A Wix HTML component has a fixed height set in the Editor, and page code cannot change it:
+the Velo `$w` HtmlComponent API (https://dev.wix.com/docs/velo/velo-only-apis/$w/html-component) has `src`, `scrolling`,
+`allow`, `postMessage()`, `onMessage()`, `collapse()`/`expand()`, `hide()`/`show()` and the usual state properties, and no
+height or width. So the embed sends no height message; it fits itself to the frame instead (`src/logic/faqfit.js`):
+- one answer is open at a time;
+- when embedded, an answer that would run past the bottom of the frame (`window.innerHeight`) gets a maximum height and
+  scrolls inside its own panel (a soft shadow shows there is more; keyboard focusable); never smaller than 200 px, below
+  which the frame itself scrolls;
+- on its own page (not in a frame) nothing is capped.
+Measured (Chrome, 2026-11-18): the closed list is about 1070 px tall; at 375 px the longest answer ("What can't I sell?") brings it
+to 2271 px (2506 at 320, 1751 on desktop); every other answer stays under 1500 px at any phone width and 1240 on desktop. A
+frame height only has to be big enough to be comfortable (about 1500 on phones, 1350 on desktop); it no longer decides whether
+an answer can be read. `node scripts/pages-smoke.mjs` opens every question in frames of several heights and widths.
+
 ### Approvals (`<attic-approvals>`, `approvals.html`)
 **Out:** `ready` {mode:'approvals'}, `refresh-queue` {requestId}, `review` {requestId, action:'approve-item'|'reject-item'|'approve-upload'|'reject-upload', itemId?, boothId?, uploadId?, note?}
 **In:** `load-queue` {queue:{items, uploads}}, `queue-result` {requestId, ok, queue}, `review-result` {requestId, ok, message?}, `not-admin` {message}
