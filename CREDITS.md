@@ -12,7 +12,7 @@ Photos used under Creative Commons Attribution licences. Images were modified (b
 - **Motorcycle with sidecar, USSR** by lord enfield, CC BY 2.0 (https://creativecommons.org/licenses/by/2.0/). Source: https://www.flickr.com/photos/42424413@N06/5157730294. Used as `assets/items/it-tin-motorcycle.png`.
 - **Easy Chair with C-scroll Arms LACMA M.2006.51.6** by Fæ, CC BY 2.0 (https://creativecommons.org/licenses/by/2.0/). Source: https://www.flickr.com/photos/50398299@N08/16219050369. Used as `assets/items/it-yellow-chair.png`.
 
-All other images are CC0 / public domain or generated for this project; see `assets-src/LICENSES.md` for the full list.
+The Christmas tree, tabletop tree, stockings and gifts (`assets/decor/xmas-*.webp`) are Pexels photos (Pexels Licence: commercial use, no attribution required; photographers are named in `LICENSES-library-additions.md`). All other images are CC0 / public domain or generated for this project; see `assets-src/LICENSES.md` for the full list.
 
 ## Background-removal model
 
