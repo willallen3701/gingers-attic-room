@@ -226,6 +226,35 @@ button { font: inherit; color: inherit; }
 .light .vignette { position: absolute; inset: 0; mix-blend-mode: multiply;
   background: radial-gradient(ellipse at 50% 45%, transparent 55%, rgba(60,35,20,.55) 100%); }
 
+/* ---------- decor lamps switched on (room-render lampsHtml) ---------- */
+/* .lamps is a plain wrapper; its two layers sit above the lighting preset. The wash uses normal blending
+   (a pale wall turns warm, a dark one brightens); the bright cores are screen-blended. */
+.lamps { position: absolute; inset: 0; pointer-events: none; }
+.lamps > .wash, .lamps > .glow { position: absolute; inset: 0; z-index: 3600; transition: opacity .45s ease; }
+.lamps > .glow { z-index: 3601; mix-blend-mode: screen; }
+.room.lights-off .lamps > .wash, .room.lights-off .lamps > .glow { opacity: 0; }
+.lamp > span { position: absolute; border-radius: 50%; }
+.lamp .pool { background: radial-gradient(closest-side, rgba(255,190,96,.42), rgba(255,176,88,.26) 35%, rgba(255,160,80,.10) 68%, rgba(255,150,70,0)); }
+.lamp .ground { background: radial-gradient(closest-side, rgba(255,198,112,.55), rgba(255,176,92,.25) 55%, rgba(255,160,80,0)); }
+.lamp .halo { background: radial-gradient(closest-side, rgba(255,232,170,.95), rgba(255,200,110,.55) 35%, rgba(255,176,90,.18) 70%, rgba(255,160,80,0)); }
+.lamp .core { background: radial-gradient(closest-side, #fffef6, #fff4cc 40%, rgba(255,214,130,.8) 70%, rgba(255,190,100,0)); }
+.lamp.kind-shade .core { background: radial-gradient(closest-side, rgba(255,250,230,.95), rgba(255,236,186,.85) 55%, rgba(255,210,140,.45) 82%, rgba(255,190,110,0)); }
+.lamp.kind-shade .halo { background: radial-gradient(closest-side, rgba(255,226,160,.7), rgba(255,196,110,.38) 45%, rgba(255,170,90,.1) 75%, rgba(255,160,80,0)); }
+.lamp.flicker .halo, .lamp.flicker .core { animation: lamp-flicker 2.6s ease-in-out infinite; }
+@keyframes lamp-flicker {
+  0%, 100% { opacity: 1; transform: scale(1); } 18% { opacity: .82; transform: scale(.94); } 37% { opacity: .97; transform: scale(1.04); }
+  55% { opacity: .78; transform: scale(.93); } 76% { opacity: .93; transform: scale(1.02); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lamps > .wash, .lamps > .glow { transition: none; }
+  .lamp.flicker .halo, .lamp.flicker .core { animation: none; }
+}
+
+/* ---------- favourite the whole booth (name bar) ---------- */
+.ctl.favbooth { display: inline-flex; align-items: center; gap: 5px; }
+.ctl.favbooth svg { width: 16px; height: 16px; color: var(--plum); }
+.ctl.favbooth[aria-pressed="true"] svg { color: #f4a3bd; }
+
 /* ---------- placeholder badge ---------- */
 .badge {
   position: absolute; left: 1cqw; bottom: 1cqw; z-index: 4100; pointer-events: none;
@@ -316,6 +345,13 @@ button { font: inherit; color: inherit; }
 }
 .toast.show { opacity: .95; }
 .booth.narrow .namebar { gap: 8px; }
+/* Phones: the name-bar buttons wrap instead of pushing the page sideways, and every tap target is at least 40 px. */
+.controls { flex-wrap: wrap; }
+.booth.narrow .ctl { height: 40px; min-width: 40px; }
+.booth.narrow .card .close { width: 40px; height: 40px; }
+.booth.narrow .card summary { display: flex; align-items: center; min-height: 40px; }
+.booth.narrow .card .links button, .booth.narrow .card .askbtns .send, .booth.narrow .card .askbtns .askcancel { min-height: 40px; }
+.booth.narrow .card .askform input, .booth.narrow .card .askform textarea { min-height: 40px; }
 .booth.narrow .viewport { margin: 4px 0; }
 .booth.narrow { padding: 8px; }
 @media (prefers-reduced-motion: reduce) {

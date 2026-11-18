@@ -1,0 +1,156 @@
+{
+  "_note": "FAQ for faq.html. Every answer comes only from data/agreement.json (version 2026-11-17), docs/prohibited-items.md and the owner's settled facts of 2026-11-17 (USPS shipping at checkout, US only, local pickup, ship within 3 business days, all sales final, every item approved, one booth per member account). 'source' says where each answer comes from; it isn't shown. tests/faq.test.js checks the prohibited list matches agreement.json.",
+  "version": "2026-11-17",
+  "groups": [
+    {
+      "id": "shopping",
+      "title": "Shopping",
+      "items": [
+        {
+          "id": "what-is-gingersattic",
+          "q": "What is GingersAttic?",
+          "a": [
+            "GingersAttic is a virtual antique mall. Each seller decorates a booth and lists their own items, and GingersAttic sells them through the GingersAttic store on consignment."
+          ],
+          "source": "agreement intro"
+        },
+        {
+          "id": "who-am-i-buying-from",
+          "q": "Who am I buying from?",
+          "a": [
+            "Each item belongs to the seller whose booth it's in. GingersAttic sells it for them through its online store, so you pay GingersAttic.",
+            "GingersAttic collects sales tax on store sales where the law requires it."
+          ],
+          "source": "agreement 1, 9"
+        },
+        {
+          "id": "are-items-checked",
+          "q": "Are the items checked before they go on sale?",
+          "a": [
+            "Yes. GingersAttic approves every item before it goes on sale.",
+            "Sellers must use real photos of the actual item, give its measurements and condition, and mention chips, cracks, repairs, missing parts and replaced pieces. If an item is a reproduction or a reissue, or its age isn't known, the seller has to say so."
+          ],
+          "source": "settled fact; agreement 2, 3"
+        },
+        {
+          "id": "shipping-cost",
+          "q": "How much is shipping?",
+          "a": [
+            "USPS calculates shipping at checkout from the item's weight and size, with USPS Ground Advantage, Priority Mail and Priority Mail Express rates."
+          ],
+          "source": "settled fact; agreement 4, 6"
+        },
+        {
+          "id": "ship-outside-us",
+          "q": "Do you ship outside the US?",
+          "a": [
+            "Not yet. For now GingersAttic ships within the US only."
+          ],
+          "source": "settled fact"
+        },
+        {
+          "id": "local-pickup",
+          "q": "What does \"local pickup only\" mean?",
+          "a": [
+            "Items too big or too fragile to mail can be marked local pickup only. They aren't shipped: after you buy one, the seller arranges the pickup with you."
+          ],
+          "source": "settled fact; agreement 6"
+        },
+        {
+          "id": "when-ships",
+          "q": "When will my order ship?",
+          "a": [
+            "Sellers ship within 3 business days."
+          ],
+          "source": "settled fact; agreement 6"
+        },
+        {
+          "id": "returns",
+          "q": "Can I return an item?",
+          "a": [
+            "All sales are final, so items can't be returned because you changed your mind.",
+            "If an item doesn't arrive, or is significantly not as described, GingersAttic may refund you. Contact us below."
+          ],
+          "source": "settled fact; agreement 7"
+        }
+      ]
+    },
+    {
+      "id": "selling",
+      "title": "Selling",
+      "items": [
+        {
+          "id": "open-a-booth",
+          "q": "How do I open a booth?",
+          "a": [
+            "Anyone with a member account can open one booth. You decorate it, list your own items, and GingersAttic sells them for you through the GingersAttic store on consignment.",
+            "You keep ownership of your items until they sell, and you must own every item you list (or have the owner's permission to sell it)."
+          ],
+          "source": "settled fact; agreement intro, 1"
+        },
+        {
+          "id": "approval",
+          "q": "Does GingersAttic check my items?",
+          "a": [
+            "Yes. GingersAttic reviews every new item before shoppers can see it, and may decline or remove any listing at any time.",
+            "Price and quantity changes go live straight away. Changes to photos, the title, the description or the details go back for review; the approved version stays up meanwhile."
+          ],
+          "source": "agreement 3"
+        },
+        {
+          "id": "fees",
+          "q": "What does it cost to sell?",
+          "a": [
+            "GingersAttic keeps a 15% commission on each item's sale price. The shipping the buyer pays at checkout (calculated by USPS from the item's weight and size) is passed to you to cover postage."
+          ],
+          "source": "agreement 4"
+        },
+        {
+          "id": "when-it-sells",
+          "q": "What happens when my item sells?",
+          "a": [
+            "You'll get an email and see the order on your My Sales page. Ship it within 3 business days, packed well enough to survive the trip, and add the tracking number on My Sales. Insured shipping is strongly recommended for anything fragile or over $100.",
+            "If the item is local pickup only, you arrange the pickup with the buyer."
+          ],
+          "source": "agreement 6; settled fact"
+        },
+        {
+          "id": "payouts",
+          "q": "When do I get paid?",
+          "a": [
+            "Payouts are made once a month for items that have been delivered. An item counts as delivered once you've marked it shipped and either 14 days have passed or GingersAttic has confirmed delivery.",
+            "GingersAttic will ask you how you'd like to be paid before your first payout."
+          ],
+          "source": "agreement 5"
+        },
+        {
+          "id": "prohibited",
+          "q": "What can't I sell?",
+          "a": [
+            "These can't be sold at GingersAttic, even as antiques:"
+          ],
+          "list": [
+            "Firearms, ammunition, gun parts, explosives, fireworks, and weapons such as switchblades or brass knuckles",
+            "Ivory, tortoiseshell, rhino horn, and parts of endangered or protected animals (including feathers and taxidermy of protected species)",
+            "Human remains, including skulls, bones, hair and teeth",
+            "Hazardous materials: asbestos items, mercury, radioactive items (other than ordinary uranium glass), pesticides and chemicals",
+            "Recalled or unsafe children's items: cribs, car seats, baby walkers, toys with lead paint sold for children's use",
+            "Alcohol, tobacco, vaping products, drugs, drug paraphernalia, prescription medicine and medical devices",
+            "Food and anything perishable",
+            "Live animals and plants",
+            "Counterfeits, fakes, and reproductions sold as originals",
+            "Stolen goods, and archaeological or cultural artifacts without lawful provenance",
+            "Hate-group items, including Nazi and KKK memorabilia",
+            "Adult or sexually explicit material",
+            "Currency, coins or stamps that are forgeries, and live tickets or gift cards",
+            "Items that copy someone else's trademark or artwork without permission"
+          ],
+          "after": [
+            "GingersAttic may remove such items without notice, and repeated attempts can close your booth."
+          ],
+          "source": "prohibited-items.md; agreement 11"
+        }
+      ]
+    }
+  ]
+}

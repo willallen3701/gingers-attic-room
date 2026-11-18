@@ -10,6 +10,7 @@ import { itemSizeIn, clampTweak } from './scale.js';
 import { itemTweak } from './draft.js';
 import { canPlaceAnother } from './validate.js';
 import { normalizeLibrary, byId } from './library.js';
+import { isLampDef } from './lamps.js';
 
 export const REASONS = Object.freeze({
   OVERLAP: 'That would overlap something already there.',
@@ -115,7 +116,10 @@ export function placeDecor(booth, libIn, decorId, drop, instanceId = null) {
   const p = snapToSurface(drop, size, surfaces, decorMount(def.mount));
   if (!p) return fail('NO_SURFACE', booth);
   const id = existing?.id ?? nextId('dc', decor.map((d) => d.id));
-  const entry = { id, decorId, placement: { ...p, scaleAdj } };
+  // Moving keeps the entry's other fields (a lamp's `lit` switch); a new lamp starts switched off.
+  const entry = existing
+    ? { ...existing, decorId, placement: { ...p, scaleAdj } }
+    : { id, decorId, placement: { ...p, scaleAdj }, ...(isLampDef(def) ? { lit: false } : {}) };
   const next = { ...booth, decor: existing ? decor.map((d) => (d.id === id ? entry : d)) : [...decor, entry] };
   const res = judge(booth, next, lib, [id]);
   return { ...res, id };
@@ -123,6 +127,15 @@ export function placeDecor(booth, libIn, decorId, drop, instanceId = null) {
 
 export function removeDecor(booth, instanceId) {
   return ok({ ...booth, decor: (booth.decor ?? []).filter((d) => d.id !== instanceId) });
+}
+
+/** Switch a placed lamp on or off (decor whose library category is 'lighting'). Nothing moves, so nothing to judge. */
+export function setDecorLit(booth, libIn, instanceId, lit) {
+  const lib = normalizeLibrary(libIn);
+  const d = (booth.decor ?? []).find((x) => x.id === instanceId);
+  const def = d && byId(lib.decor)[d.decorId];
+  if (!def || !isLampDef(def)) return fail('UNKNOWN', booth);
+  return ok({ ...booth, decor: booth.decor.map((x) => (x.id === instanceId ? { ...x, lit: !!lit } : x)) });
 }
 
 export function setDecorScale(booth, libIn, instanceId, scaleAdj) {

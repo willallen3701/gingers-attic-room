@@ -27,6 +27,8 @@ const lib = normalizeLibrary({
     { id: 't-fern', name: 'Fern', category: 'plant', mount: 'floor', heightIn: 30, aspect: 0.8, image: 'f.png' },
     { id: 't-clock', name: 'Clock', mount: 'wall', heightIn: 12, aspect: 1, image: 'k.png' },
     { id: 't-vase', name: 'Vase', mount: 'stand', heightIn: 8, aspect: 0.6, image: 'v.png' },
+    // The demo booth's lit candelabra (the demo has to stay clean with this library).
+    ...rawLib.decor.filter((d) => d.id === 'candelabra-brass'),
   ],
   architecture: [
     ...rawLib.architecture.filter((a) => a.id.startsWith('baseboard')),

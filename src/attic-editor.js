@@ -19,8 +19,9 @@ import * as ops from './logic/editops.js';
 import { Bridge } from './bridge.js';
 import { ItemSheet } from './item-sheet.js';
 import {
-  esc, money, ensureFonts, roomInnerHtml, placeablesHtml, fixturesHtml, decorHtml, itemsHtml, tagsHtml, paintSurfaces, SIGN_STYLES,
+  esc, money, ensureFonts, roomInnerHtml, placeablesHtml, fixturesHtml, decorHtml, itemsHtml, tagsHtml, lampsHtml, paintSurfaces, SIGN_STYLES,
 } from './room-render.js';
+import { isLampDef } from './logic/lamps.js';
 
 const NARROW_EDIT_PX = 768;
 const AUTOSAVE_MS = 1500;
@@ -685,6 +686,8 @@ export class AtticEditor extends HTMLElement {
     const opts = { edit: true, selectedId: this.#sel?.id, badIds: extra.badIds };
     room.querySelector('.layer').innerHTML = placeablesHtml(L, opts) + fixturesHtml(L, opts) + decorHtml(L, opts) + itemsHtml(L, opts);
     room.querySelector('.tags').innerHTML = tagsHtml(L);
+    const lamps = room.querySelector('.lamps');
+    if (lamps) lamps.outerHTML = lampsHtml(L); // a lit lamp's glow follows it while it is dragged
     const guide = room.querySelector('.guide');
     if (guide) {
       const s = extra.guide && L.surfaces.find((x) => x.id === extra.guide);
@@ -811,6 +814,8 @@ export class AtticEditor extends HTMLElement {
   #lightHtml(lib, room) {
     const cur = room.light?.presetId ?? null;
     const k = Math.round((room.light?.intensity ?? 0.8) * 100);
+    const decorDefs = byId(lib.decor);
+    const lit = this.#booth.decor.filter((d) => d.lit === true && isLampDef(decorDefs[d.decorId])).length;
     return `
       <p class="lede">Optional. A soft light can set the mood; most booths look best with none.</p>
       <section><div class="lights">
@@ -819,8 +824,9 @@ export class AtticEditor extends HTMLElement {
           .map((l) => `<button class="lightopt${cur === l.id ? ' on' : ''}" type="button" data-act="light" data-id="${esc(l.id)}" aria-pressed="${cur === l.id}"><i style="background:${esc(l.wash)}, #e9dcc0"></i><span>${esc(l.name)}</span></button>`)
           .join('')}
       </div></section>
-      ${cur ? `<section><h3>Strength</h3><div class="range"><input type="range" min="20" max="100" step="5" value="${k}" data-act="light-strength" aria-label="Lighting strength"><output>${k}%</output></div></section>
-      <section><h3>Light switch</h3><p class="note">Shoppers get a &#128161; Lights button in your booth to turn this on and off. Try it here:</p>
+      ${cur ? `<section><h3>Strength</h3><div class="range"><input type="range" min="20" max="100" step="5" value="${k}" data-act="light-strength" aria-label="Lighting strength"><output>${k}%</output></div></section>` : ''}
+      <section><h3>Lamps</h3><p class="note">Lamps from the Decor tab light up: click a lamp in your booth and use its On/Off switch.${lit ? ` ${lit} lamp${lit === 1 ? ' is' : 's are'} on.` : ''}</p></section>
+      ${cur || lit ? `<section><h3>Light switch</h3><p class="note">Shoppers get a &#128161; Lights button in your booth to turn the lighting${lit ? ' and your lamps' : ''} on and off. Try it here:</p>
         <button class="toggle${this.#lightsOff ? '' : ' on'}" type="button" data-act="light-preview" aria-pressed="${!this.#lightsOff}">&#128161; Lights ${this.#lightsOff ? 'off' : 'on'}</button></section>` : ''}`;
   }
 
@@ -848,7 +854,7 @@ export class AtticEditor extends HTMLElement {
     return `<p class="lede">Decor is just for atmosphere: it's never for sale and has no price tag.</p>
       ${openings.length ? `<section><h3>Windows &amp; doors</h3><div class="srcgrid">${openings.map((a) => this.#srcCard('placeable', a, inches(a.widthIn, a.heightIn))).join('')}</div></section>` : ''}
       ${cats
-        .map((c) => `<section><h3>${esc(c.charAt(0).toUpperCase() + c.slice(1))}</h3><div class="srcgrid">${lib.decor
+        .map((c) => `<section><h3>${esc(c.charAt(0).toUpperCase() + c.slice(1))}</h3>${c === 'lighting' ? '<p class="note lampnote">Lamps start off. Click one in your booth to switch it on.</p>' : ''}<div class="srcgrid">${lib.decor
           .filter((d) => d.category === c)
           .map((d) => this.#srcCard('decor', d, `${+d.heightIn.toFixed(1)} in tall &middot; ${d.mount === 'wall' ? 'wall' : d.mount === 'floor' ? 'floor' : 'shelf or floor'}`))
           .join('')}</div></section>`)
@@ -903,7 +909,7 @@ export class AtticEditor extends HTMLElement {
     if (s.kind === 'decor') {
       const d = b.decor.find((x) => x.id === s.id);
       const def = d && byId(this.#lib.decor)[d.decorId];
-      return def ? { ...s, name: def.name, img: def.src, scale: d.placement?.scaleAdj ?? 1 } : null;
+      return def ? { ...s, name: def.name, img: def.src, scale: d.placement?.scaleAdj ?? 1, lamp: isLampDef(def), lit: d.lit === true } : null;
     }
     if (s.kind === 'fixture') {
       const f = b.fixtures.find((x) => x.id === s.id);
@@ -934,6 +940,7 @@ export class AtticEditor extends HTMLElement {
     bar.innerHTML = `
       <span class="thumb">${s.img ? `<img src="${esc(s.img)}" alt="">` : ''}</span>
       <span class="selname"><b>${esc(s.name)}</b>${s.dims ? `<small>${s.dims}</small>` : ''}</span>
+      ${s.lamp ? `<button class="lampswitch" type="button" role="switch" aria-checked="${s.lit}" data-act="lamp-toggle" title="Switch this lamp on or off"><span class="track" aria-hidden="true"><span class="knob"></span></span><span class="lbl">${s.lit ? 'On' : 'Off'}</span></button>` : ''}
       ${sizable ? `<label class="range small">Size<input type="range" min="80" max="120" step="5" value="${pctv}" data-act="sel-scale" aria-label="Size"><output>${pctv}%</output></label>` : ''}
       <span class="nudges" role="group" aria-label="Nudge">
         <button class="tb" type="button" data-act="nudge" data-dx="-1" data-dy="0" aria-label="Nudge left">&#9664;</button>
@@ -1174,6 +1181,9 @@ export class AtticEditor extends HTMLElement {
       case 'sel-remove':
         this.#removeSelected();
         break;
+      case 'lamp-toggle':
+        this.#setLampLit(s.id, el.getAttribute('aria-checked') !== 'true');
+        break;
       case 'sel-done':
         this.#sel = null;
         this.#renderAll();
@@ -1181,6 +1191,18 @@ export class AtticEditor extends HTMLElement {
       default:
         break;
     }
+  }
+
+  /** The selected lamp's On/Off switch. Saved on the decor entry as `lit` (autosaved with the draft). */
+  #setLampLit(id, lit) {
+    const r = ops.setDecorLit(this.#booth, this.#lib, id, lit);
+    if (!r.ok) return;
+    if (lit && this.#lightsOff) {
+      // The Lighting tab's preview had the lights off; show the lamp the seller just switched on.
+      this.#lightsOff = false;
+      this.#root.querySelector('.room.edit')?.classList.remove('lights-off');
+    }
+    this.#commit(r.booth);
   }
 
   #selScale(e, final) {

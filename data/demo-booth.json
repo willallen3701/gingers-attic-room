@@ -501,5 +501,12 @@
       }
     }
   ],
-  "decor": []
+  "decor": [
+    {
+      "id": "dc1",
+      "decorId": "candelabra-brass",
+      "placement": { "surfaceId": "fx3:top", "x": 105.5, "y": 65.5, "scaleAdj": 1 },
+      "lit": true
+    }
+  ]
 }

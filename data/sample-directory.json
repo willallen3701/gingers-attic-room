@@ -1,0 +1,102 @@
+{
+  "_note": "Sample data for directory.html opened directly (no Wix page). Made-up booths and sellers; the photos are the demo item cutouts. The live site sends load-directory instead.",
+  "loggedIn": true,
+  "categories": [
+    { "id": "furniture", "label": "Furniture" },
+    { "id": "lighting", "label": "Lighting" },
+    { "id": "art-frames", "label": "Art & Frames" },
+    { "id": "glass-ceramics", "label": "Glass & Ceramics" },
+    { "id": "kitchen-barware", "label": "Kitchen & Barware" },
+    { "id": "books-paper", "label": "Books & Paper" },
+    { "id": "toys-games", "label": "Toys & Games" },
+    { "id": "jewelry-accessories", "label": "Jewelry & Accessories" },
+    { "id": "textiles-linens", "label": "Textiles & Linens" },
+    { "id": "clocks-decor", "label": "Clocks & Decor" },
+    { "id": "tools-hardware", "label": "Tools & Hardware" },
+    { "id": "collectibles-other", "label": "Collectibles & Other" }
+  ],
+  "favourites": { "boothIds": ["bt-lamplight", "bt-teacup"], "itemIds": ["it-amber-lamp", "it-teacup-gold", "it-horseshoe", "it-rotary-phone", "it-cameo"] },
+  "booths": [
+    {
+      "id": "bt-ginger", "slug": "the-gingersattic-booth", "boothNumber": 1, "name": "The GingersAttic Booth",
+      "about": "Teacups, brass and little treasures carried down from the attic.",
+      "signStyle": "wood", "sellerName": "GingersAttic", "itemCount": 15,
+      "categories": ["glass-ceramics", "kitchen-barware", "lighting", "toys-games", "art-frames", "furniture", "textiles-linens", "books-paper"],
+      "itemTitles": ["Bronze Oil Lamp", "Mint Lustre Teacup", "Black Floral Teacup", "Gold Rim Teacup", "Brown Stoneware Mug", "Brass Goblet", "Tin Motorcycle Toy", "Marbled Paper Print", "Cameo Brooch Frame", "Amber Slag Glass Lamp", "Rotary Telephone", "Cast Iron Dump Truck", "Yellow Wingback Chair", "Dragon Rug", "Stack of Old Books"],
+      "previews": ["assets/items/it-teacup-mint.png", "assets/items/it-genie-lamp.png", "assets/items/it-yellow-chair.png", "assets/items/it-goblet-brass.png"],
+      "updatedAt": "2026-11-16T18:20:00Z"
+    },
+    {
+      "id": "bt-lamplight", "slug": "lamplight-lane", "boothNumber": 2, "name": "Lamplight Lane",
+      "about": "Slag glass, brass and pressed tin lamps, rewired and ready for a cosy corner.",
+      "signStyle": "brass", "sellerName": "Ruth", "itemCount": 9,
+      "categories": ["lighting", "clocks-decor"],
+      "itemTitles": ["Amber Slag Glass Table Lamp", "Brass Student Lamp", "Milk Glass Hurricane Lamp", "Pressed Tin Sconce"],
+      "previews": ["assets/items/it-amber-lamp.png", "assets/items/it-genie-lamp.png"],
+      "updatedAt": "2026-11-15T09:05:00Z"
+    },
+    {
+      "id": "bt-teacup", "slug": "the-teacup-shelf", "boothNumber": 3, "name": "The Teacup Shelf",
+      "about": "Bone china cups and saucers, one shelf at a time. Mismatched sets welcome.",
+      "signStyle": "cream", "sellerName": "June", "itemCount": 24,
+      "categories": ["glass-ceramics", "kitchen-barware"],
+      "itemTitles": ["Gold Rim Teacup and Saucer", "Mint Lustre Teacup", "Black Chintz Teacup", "Stoneware Mug"],
+      "previews": ["assets/items/it-teacup-gold.png", "assets/items/it-teacup-black.png", "assets/items/it-teacup-mint.png", "assets/items/it-mug-brown.png"],
+      "updatedAt": "2026-11-17T08:40:00Z"
+    },
+    {
+      "id": "bt-rust", "slug": "rust-and-rosewood", "boothNumber": 4, "name": "Rust & Rosewood",
+      "about": "Farmhouse iron, horseshoes, tools and the odd sturdy chair.",
+      "signStyle": "wood", "sellerName": "Hank", "itemCount": 12,
+      "categories": ["tools-hardware", "furniture", "collectibles-other"],
+      "itemTitles": ["Lucky Horseshoe", "Cast Iron Dump Truck", "Wingback Chair", "Hand Drill"],
+      "previews": ["assets/items/it-horseshoe.png", "assets/items/it-iron-truck.png", "assets/items/it-yellow-chair.png"],
+      "updatedAt": "2026-11-10T14:00:00Z"
+    },
+    {
+      "id": "bt-paper", "slug": "the-paper-trail", "boothNumber": 5, "name": "The Paper Trail",
+      "about": "Old books, marbled prints and framed ephemera.",
+      "signStyle": "cream", "sellerName": "Agnes", "itemCount": 31,
+      "categories": ["books-paper", "art-frames"],
+      "itemTitles": ["Stack of Cloth-bound Books", "Marbled Paper Print", "Victorian Cameo Frame"],
+      "previews": ["assets/items/it-book-stack.png", "assets/items/it-framed-art.png", "assets/items/it-cameo.png"],
+      "updatedAt": "2026-11-12T20:15:00Z"
+    },
+    {
+      "id": "bt-toybox", "slug": "toy-box-revival", "boothNumber": 7, "name": "Toy Box Revival",
+      "about": "Tin wind-ups, die-cast trucks and the toys from Grandpa's shelf.",
+      "signStyle": "brass", "sellerName": "Walt", "itemCount": 8,
+      "categories": ["toys-games", "collectibles-other"],
+      "itemTitles": ["Tin Motorcycle with Sidecar", "Cast Iron Dump Truck", "Rotary Telephone"],
+      "previews": ["assets/items/it-tin-motorcycle.png", "assets/items/it-iron-truck.png", "assets/items/it-rotary-phone.png"],
+      "updatedAt": "2026-11-14T11:30:00Z"
+    },
+    {
+      "id": "bt-parlour", "slug": "porch-and-parlour", "boothNumber": 10, "name": "Porch & Parlour",
+      "about": "Braided rugs, armchairs and everything for a front porch.",
+      "signStyle": "wood", "sellerName": "Dottie", "itemCount": 6,
+      "categories": ["textiles-linens", "furniture"],
+      "itemTitles": ["Braided Rag Rug", "Yellow Damask Wingback Chair"],
+      "previews": ["assets/items/it-braided-rug.png", "assets/items/it-yellow-chair.png"],
+      "updatedAt": "2026-11-02T16:45:00Z"
+    },
+    {
+      "id": "bt-velvet", "slug": "the-velvet-drawer", "boothNumber": 12, "name": "The Velvet Drawer",
+      "about": "Cameos, brooches and brass goblets for the dressing table.",
+      "signStyle": "brass", "sellerName": "Clementine", "itemCount": 17,
+      "categories": ["jewelry-accessories", "glass-ceramics"],
+      "itemTitles": ["Shell Cameo in a Gilt Frame", "Brass Goblet", "Gold Rim Teacup"],
+      "previews": ["assets/items/it-cameo.png", "assets/items/it-goblet-brass.png", "assets/items/it-teacup-gold.png", "assets/items/it-mug-brown.png"],
+      "updatedAt": "2026-11-16T07:10:00Z"
+    }
+  ],
+  "collection": {
+    "items": [
+      { "id": "it-amber-lamp", "title": "Amber Slag Glass Table Lamp", "price": 85, "image": "assets/items/it-amber-lamp.png", "status": "approved", "quantity": 1, "boothSlug": "lamplight-lane", "boothName": "Lamplight Lane" },
+      { "id": "it-teacup-gold", "title": "Gold Rim Teacup and Saucer", "price": 20, "image": "assets/items/it-teacup-gold.png", "status": "approved", "quantity": 2, "boothSlug": "the-teacup-shelf", "boothName": "The Teacup Shelf" },
+      { "id": "it-horseshoe", "title": "Lucky Horseshoe", "price": 14, "image": "assets/items/it-horseshoe.png", "status": "sold", "quantity": 0, "boothSlug": "rust-and-rosewood", "boothName": "Rust & Rosewood" },
+      { "id": "it-rotary-phone", "title": "Black Rotary Telephone", "price": 70, "image": "assets/items/it-rotary-phone.png", "status": "approved", "quantity": 0, "boothSlug": "toy-box-revival", "boothName": "Toy Box Revival" },
+      { "id": "it-cameo", "title": "Shell Cameo in a Gilt Frame", "price": 55, "image": "assets/items/it-cameo.png", "status": "approved", "quantity": 1, "boothSlug": "the-velvet-drawer", "boothName": "The Velvet Drawer" }
+    ]
+  }
+}

@@ -5,6 +5,7 @@
 import { ROOM, pct } from './logic/room.js';
 import { backgroundFor } from './logic/tile.js';
 import { stripTopIn } from './logic/library.js';
+import { litLamps } from './logic/lamps.js';
 
 export const esc = (s) =>
   String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
@@ -171,6 +172,34 @@ export function lightHtml(booth, lib) {
   );
 }
 
+/**
+ * Lamps the seller switched on: warm light at each bulb/flame/shade, a halo around it, a soft pool on the
+ * wall, and a pool on the floor or shelf it stands on. Two layers: .wash (pools and halos, normal blending, so
+ * a pale wall turns warm and a dark one brightens) and .glow (bright cores, screen-blended). Always returns the
+ * .lamps wrapper (empty when nothing is lit) so the editor can refresh it during a drag. The shop's Lights
+ * switch hides it with .lights-off.
+ */
+export function lampsHtml(layout) {
+  const disc = (x, y, rx, ry) => `left:${pct(x - rx)}%;top:${pct(y - ry)}%;width:${pct(2 * rx)}%;height:${pct(2 * ry)}%`;
+  const wash = [];
+  const glow = [];
+  litLamps(layout).forEach((g, n) => {
+    const cls = `lamp kind-${esc(g.kind)}${g.flicker ? ' flicker' : ''}`;
+    const w = [`<span class="pool" style="${disc(g.pool.x, g.pool.y, g.pool.r, g.pool.r)}"></span>`];
+    if (g.ground) w.push(`<span class="ground" style="${disc(g.ground.x, g.ground.y, g.ground.rx, g.ground.ry)}"></span>`);
+    const c = [];
+    g.lights.forEach((l, i) => {
+      // Flames flicker out of step with each other.
+      const delay = g.flicker ? `;animation-delay:-${((n * 0.37 + i * 0.83) % 2.6).toFixed(2)}s` : '';
+      w.push(`<span class="halo" style="${disc(l.x, l.y, l.halo, l.halo)}${delay}"></span>`);
+      c.push(`<span class="core" style="${disc(l.x, l.y, l.rx, l.ry)}${delay}"></span>`);
+    });
+    wash.push(`<div class="${cls}" data-id="${esc(g.id)}">${w.join('')}</div>`);
+    glow.push(`<div class="${cls}" data-id="${esc(g.id)}">${c.join('')}</div>`);
+  });
+  return `<div class="lamps" aria-hidden="true"><div class="wash">${wash.join('')}</div><div class="glow">${glow.join('')}</div></div>`;
+}
+
 /** A library texture by id, or a seller upload ({src, tileIn}) passed inline. */
 export function textureFor(list, cfg) {
   if (cfg?.src) return { src: cfg.src, tileIn: cfg.tileIn ?? { w: 24, h: 24 } };
@@ -213,6 +242,7 @@ export function roomInnerHtml(booth, lib, layout, opts = {}) {
     `<div class="layer">${placeablesHtml(layout, opts)}${fixturesHtml(layout, opts)}${decorHtml(layout, opts)}${itemsHtml(layout, opts)}</div>` +
     signHtml(booth) +
     lightHtml(booth, lib) +
+    lampsHtml(layout) +
     `<div class="tags">${tagsHtml(layout)}</div>`
   );
 }

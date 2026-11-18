@@ -12,6 +12,7 @@ import { buildLayout } from './logic/layout.js';
 import { normalizeLibrary } from './logic/library.js';
 import { isAllowedOrigin, DEFAULT_ALLOWED_ORIGINS } from './logic/origin.js';
 import { esc, money, ensureFonts, roomInnerHtml, paintSurfaces } from './room-render.js';
+import { anyLampLit } from './logic/lamps.js';
 
 const NARROW_PX = 600;
 const ZOOM_MIN = 1;
@@ -47,6 +48,7 @@ export class AtticBooth extends HTMLElement {
   #layout = null;
   #zoom = 1;
   #favourites = new Set();
+  #favBooths = new Set(); // booth ids the visitor saved (set-favourites boothIds)
   #openId = null;
   #fromSearch = false;
   #audio = null;
@@ -146,6 +148,9 @@ export class AtticBooth extends HTMLElement {
     const initial = esc((b.seller?.displayName ?? b.name ?? '?').trim().charAt(0).toUpperCase());
     const avatar = b.seller?.avatarSrc ? `<img src="${esc(b.seller.avatarSrc)}" alt="">` : initial;
     const forSale = L.items.filter((e) => e.item.status !== 'sold').length;
+    // The Lights switch appears for a lighting preset or for lamps the seller left on; lit lamps start on.
+    const hasLights = !!b.room?.light?.presetId || anyLampLit(L);
+    const favBooth = this.#favBooths.has(b.id);
     shell.innerHTML = `
       <header class="namebar">
         <div class="avatar" aria-hidden="true">${avatar}</div>
@@ -155,7 +160,8 @@ export class AtticBooth extends HTMLElement {
           ${b.about ? `<p class="about">${esc(b.about)}</p>` : ''}
         </div>
         <div class="controls">
-          ${b.room?.light?.presetId ? '<button class="ctl lights" type="button" aria-pressed="true" title="Turn the booth lighting on or off">&#128161; Lights on</button>' : ''}
+          <button class="ctl favbooth" type="button" aria-pressed="${favBooth}" title="Save this booth to your favourites">${ICONS.heart}<span>${favBooth ? 'Saved' : 'Save booth'}</span></button>
+          ${hasLights ? '<button class="ctl lights" type="button" aria-pressed="true" title="Turn the booth lighting on or off">&#128161; Lights on</button>' : ''}
           <button class="ctl sound" type="button" aria-pressed="false" title="Ambient sound">&#9835; Sound off</button>
           <button class="ctl zoom-out" type="button" aria-label="Zoom out">&minus;</button>
           <button class="ctl zoom-in" type="button" aria-label="Zoom in">+</button>
@@ -200,6 +206,7 @@ export class AtticBooth extends HTMLElement {
       }),
     );
     shell.querySelector('.sound').addEventListener('click', () => this.#toggleSound());
+    shell.querySelector('.favbooth').addEventListener('click', () => this.#toggleBoothFav());
     shell.querySelector('.lights')?.addEventListener('click', (e) => {
       // The light switch: the seller's chosen lighting fades on and off.
       const btn = e.currentTarget;
@@ -381,6 +388,33 @@ export class AtticBooth extends HTMLElement {
     this.#emit('toggle-favourite', { itemId: id, on });
   }
 
+  /** The heart in the name bar: save or unsave the whole booth. */
+  #toggleBoothFav() {
+    const id = this.#booth?.id;
+    if (!id) return;
+    const on = !this.#favBooths.has(id);
+    if (on) this.#favBooths.add(id);
+    else this.#favBooths.delete(id);
+    this.#syncFavs();
+    this.#emit('toggle-favourite-booth', { boothId: id, on });
+  }
+
+  /** Bring the hearts in line with the favourite sets (after set-favourites or a toggle). */
+  #syncFavs() {
+    const fb = this.#root.querySelector('.favbooth');
+    if (fb) {
+      const on = this.#favBooths.has(this.#booth?.id);
+      fb.setAttribute('aria-pressed', String(on));
+      fb.querySelector('span').textContent = on ? 'Saved' : 'Save booth';
+    }
+    const fi = this.#root.querySelector('.card:not([hidden]) .fav');
+    if (fi && this.#openId) {
+      const on = this.#favourites.has(this.#openId);
+      fi.setAttribute('aria-pressed', String(on));
+      fi.setAttribute('aria-label', on ? 'Remove from favourites' : 'Save to favourites');
+    }
+  }
+
   #addToCart(id, btn) {
     btn.disabled = true;
     btn.querySelector('span').textContent = 'Adding...';
@@ -521,7 +555,10 @@ export class AtticBooth extends HTMLElement {
         this.#askResult(m);
         break;
       case 'set-favourites':
-        this.#favourites = new Set(Array.isArray(m.itemIds) ? m.itemIds : []);
+        // Either list may come alone; a list that isn't sent leaves that set as it was.
+        if (Array.isArray(m.itemIds)) this.#favourites = new Set(m.itemIds);
+        if (Array.isArray(m.boothIds)) this.#favBooths = new Set(m.boothIds);
+        this.#syncFavs();
         break;
       case 'cart-result':
         this.#cartResult(m);

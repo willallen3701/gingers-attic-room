@@ -221,6 +221,20 @@ kbd { padding: 0 4px; border: 1px solid #cbb385; border-bottom-width: 2px; borde
 .nudges { display: flex; gap: 3px; }
 .nudges .tb { padding: 6px 9px; }
 
+/* ---------- a selected lamp's On/Off switch ---------- */
+.lampswitch {
+  display: inline-flex; align-items: center; gap: 8px; min-height: 36px; padding: 4px 12px 4px 6px; cursor: pointer;
+  border: 1px solid #cbb385; border-radius: 18px; background: #fbf5e6; font: 700 13px var(--type); color: var(--plum-dark);
+}
+.lampswitch .track { position: relative; width: 38px; height: 22px; border-radius: 11px; background: #cdbd9f; box-shadow: inset 0 1px 2px rgba(0,0,0,.25); transition: background .2s; }
+.lampswitch .knob { position: absolute; left: 3px; top: 3px; width: 16px; height: 16px; border-radius: 50%; background: #fffaf0; box-shadow: 0 1px 2px rgba(0,0,0,.35); transition: transform .2s; }
+.lampswitch[aria-checked="true"] { border-color: #d9a65a; background: #fff3d6; }
+.lampswitch[aria-checked="true"] .track { background: #e0a43a; box-shadow: inset 0 1px 2px rgba(0,0,0,.2), 0 0 8px rgba(255,190,90,.8); }
+.lampswitch[aria-checked="true"] .knob { transform: translateX(16px); }
+.lampswitch:focus-visible { outline: 2px dashed var(--plum); outline-offset: 2px; }
+.lampnote { margin: 0 0 8px; }
+@media (prefers-reduced-motion: reduce) { .lampswitch .track, .lampswitch .knob { transition: none; } }
+
 /* ---------- drag ghost from the panel ---------- */
 .ghost { position: fixed; z-index: 9999; pointer-events: none; transform: translate(-50%, -100%); filter: drop-shadow(0 6px 10px rgba(40,25,10,.35)); }
 .ghost img { display: block; max-width: 130px; max-height: 130px; opacity: .92; }
@@ -277,6 +291,10 @@ kbd { padding: 0 4px; border: 1px solid #cbb385; border-bottom-width: 2px; borde
 .room.viewonly .tag { pointer-events: none; }
 .narrowitems { margin: 0 0 12px; padding: 12px; border: 1px solid #d8c59c; border-radius: 6px; background: #f7efdc; }
 .narrowitems .additem { margin-bottom: 10px; }
+/* Phones: tap targets of at least 40 px. */
+.narrowmode .primary, .ed.loading .primary { min-height: 44px; }
+.narrowmode .lnk { min-height: 40px; padding: 0 6px; }
+.narrowmode .rowacts { gap: 0 6px; margin-left: -6px; }
 
 /* ---------- items: add button, status badges, row actions ---------- */
 .additem { width: 100%; margin-bottom: 12px; }
@@ -397,5 +415,12 @@ kbd { padding: 0 4px; border: 1px solid #cbb385; border-bottom-width: 2px; borde
   .cutprev { height: 160px; }
   .cutprev img { max-height: 148px; }
   .cutcanvas { max-height: 46vh; }
+  /* tap targets of at least 40 px on phones */
+  .sheetx { width: 44px; height: 44px; }
+  .wb2, .sheet .primary, .uploadbtn, .seg button, .bigdrop { min-height: 44px; }
+  .ph-x { width: 40px; height: 40px; }
+  .radio, .check, .agreecheck { min-height: 40px; align-items: center; }
+  .radio input, .check input, .agreecheck input { width: 20px; height: 20px; margin-top: 0; }
+  .itemform input:not([type]), .itemform input[inputmode], .itemform select, .itemform input[name="title"], .itemform input[name="eraNote"] { min-height: 44px; }
 }
 `;
