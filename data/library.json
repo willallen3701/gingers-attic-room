@@ -17,7 +17,8 @@
    "tileIn": {
     "w": 16.4,
     "h": 15.5
-   }
+   },
+   "hidden": true
   },
   {
    "id": "wp-cabbage-rose",
@@ -92,15 +93,6 @@
    }
   },
   {
-   "id": "wp-red-roses",
-   "name": "Red Rose Bouquets",
-   "src": "assets/textures/wallpapers/wp-red-roses.jpg",
-   "tileIn": {
-    "w": 16.4,
-    "h": 16.3
-   }
-  },
-  {
    "id": "wp-coral-damask",
    "name": "Coral Damask",
    "src": "assets/textures/wallpapers/wp-coral-damask.jpg",
@@ -134,6 +126,15 @@
    "tileIn": {
     "w": 6,
     "h": 6
+   }
+  },
+  {
+   "id": "wp-gold-lattice",
+   "name": "Golden Lattice",
+   "src": "assets/textures/wallpapers/wp-gold-lattice.jpg",
+   "tileIn": {
+    "w": 16.4,
+    "h": 16.3
    }
   }
  ],
@@ -2147,12 +2148,12 @@
   },
   {
    "id": "xmas-garland",
-   "name": "Fir garland with a red bow",
+   "name": "Draped fir garland with red bows",
    "category": "christmas",
    "mount": "wall",
-   "heightIn": 22.99,
-   "widthIn": 39.41,
-   "aspect": 1.7137,
+   "heightIn": 16.0,
+   "widthIn": 40.0,
+   "aspect": 2.5,
    "image": "assets/decor/xmas-garland.webp",
    "src": "assets/decor/xmas-garland.webp"
   },
@@ -2172,20 +2173,20 @@
    "name": "Nutcracker soldier",
    "category": "christmas",
    "mount": "stand",
-   "heightIn": 32.86,
-   "widthIn": 10.71,
-   "aspect": 0.3259,
+   "heightIn": 31.0,
+   "widthIn": 9.04,
+   "aspect": 0.2916,
    "image": "assets/decor/xmas-nutcracker.webp",
    "src": "assets/decor/xmas-nutcracker.webp"
   },
   {
    "id": "xmas-stockings",
-   "name": "Stockings on a fir garland",
+   "name": "Stockings on a draped fir garland",
    "category": "christmas",
    "mount": "wall",
-   "heightIn": 28.82,
-   "widthIn": 43.21,
-   "aspect": 1.4995,
+   "heightIn": 32.79,
+   "widthIn": 56.0,
+   "aspect": 1.7081,
    "image": "assets/decor/xmas-stockings.webp",
    "src": "assets/decor/xmas-stockings.webp"
   },
@@ -2216,9 +2217,9 @@
    "name": "Christmas wreath",
    "category": "christmas",
    "mount": "wall",
-   "heightIn": 26.0,
-   "widthIn": 26.87,
-   "aspect": 1.0336,
+   "heightIn": 34.72,
+   "widthIn": 25.0,
+   "aspect": 0.72,
    "image": "assets/decor/xmas-wreath.webp",
    "src": "assets/decor/xmas-wreath.webp"
   },
@@ -2346,12 +2347,12 @@
   },
   {
    "id": "xmas-candles",
-   "name": "Advent candles on a brass tray",
+   "name": "Advent candles on a fir wreath",
    "category": "lighting",
    "mount": "stand",
-   "heightIn": 13.93,
-   "widthIn": 22.64,
-   "aspect": 1.6253,
+   "heightIn": 11.67,
+   "widthIn": 19.0,
+   "aspect": 1.6286,
    "image": "assets/decor/xmas-candles.webp",
    "src": "assets/decor/xmas-candles.webp"
   },

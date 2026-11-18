@@ -7,6 +7,7 @@ import { buildLayout } from '../src/logic/layout.js';
 import { toDraft, applyDraft, defaultRoom } from '../src/logic/draft.js';
 import { boxProblems, boxedItemIds, placedPieces, MAX_BOXES } from '../src/logic/boxes.js';
 import { placeItem } from '../src/logic/editops.js';
+import { LAMP_LIGHTS } from '../src/logic/lamps.js';
 import {
   TEMPLATES, applyTemplate, availableTemplates, isTemplateAvailable, hasExistingLayout, classifyItem, templateSummary, TINY_MAX_IN,
 } from '../src/logic/templates.js';
@@ -303,5 +304,67 @@ describe('the Christmas cutoff (offered until January 1, 2027)', () => {
     // and the seller can still edit it
     const moved = placeItem(reloaded, lib, 'it-cameo', { x: 60, y: 30 });
     expect(moved.ok || moved.errors.length > 0).toBe(true);
+  });
+});
+
+describe('the Christmas layout (v4): every piece places, and nothing lies on top of anything else', () => {
+  const made = () => applyTemplate(demoBooth(), rawLib, 'christmas', { now: NOV });
+  const defs = byId(lib.decor);
+  const fxDefs = byId(lib.fixtures);
+  const rectOf = (d) => {
+    const def = defs[d.decorId];
+    return { id: d.decorId, x1: d.placement.x, x2: d.placement.x + def.widthIn, y1: d.placement.y - def.heightIn, y2: d.placement.y };
+  };
+  const hit = (a, b) => Math.min(a.x2, b.x2) - Math.max(a.x1, b.x1) > 0 && Math.min(a.y2, b.y2) - Math.max(a.y1, b.y1) > 0;
+
+  it('places all eight pieces and skips nothing', () => {
+    const r = made();
+    expect(r.ok).not.toBe(false);
+    expect(r.report.skipped).toEqual([]);
+    expect(r.booth.decor.map((d) => d.decorId).sort()).toEqual(
+      ['lamp-oil', 'xmas-candles', 'xmas-garland', 'xmas-gifts', 'xmas-nutcracker', 'xmas-stockings', 'xmas-tree', 'xmas-wreath'],
+    );
+    expectValidBooth(r.booth);
+  });
+
+  it('the wall pieces (two swags, stockings, wreath) are clear of each other, of the shelf, and sit above the wainscoting', () => {
+    const b = made().booth;
+    const wall = b.decor.filter((d) => defs[d.decorId].mount === 'wall').map(rectOf);
+    expect(wall.map((r) => r.id).sort()).toEqual(['xmas-garland', 'xmas-stockings', 'xmas-wreath']);
+    const shelf = b.fixtures.find((f) => fxDefs[f.fixtureId].mount === 'wall');
+    const sd = fxDefs[shelf.fixtureId];
+    const rects = [...wall, { id: 'shelf', x1: shelf.x, x2: shelf.x + sd.widthIn, y1: shelf.y, y2: shelf.y + sd.heightIn }];
+    for (let i = 0; i < rects.length; i++) for (let j = i + 1; j < rects.length; j++) expect(hit(rects[i], rects[j]), `${rects[i].id} / ${rects[j].id}`).toBe(false);
+    for (const r of wall) {
+      expect(r.y2).toBeLessThanOrEqual(ROOM.wallHeightIn - 36 + 0.01); // the wainscoting is 36 in tall and is drawn over the wall
+      expect(r.y1).toBeGreaterThanOrEqual(0);
+      expect(r.x1).toBeGreaterThanOrEqual(0);
+      expect(r.x2).toBeLessThanOrEqual(ROOM.widthIn);
+    }
+    expect(TEMPLATES.find((t) => t.id === 'christmas').strips).not.toContain('picturerail-white'); // a rail would cut across the swags
+  });
+
+  it('the pieces on the console (lamp, candles) and on the floor (nutcracker, gifts, tree) do not lie on one another', () => {
+    const b = made().booth;
+    const row = (ids) => ids.map((id) => rectOf(b.decor.find((d) => d.decorId === id))).sort((p, q) => p.x1 - q.x1);
+    for (const ids of [['lamp-oil', 'xmas-candles'], ['xmas-nutcracker', 'xmas-gifts', 'xmas-tree']]) {
+      const r = row(ids);
+      for (let i = 1; i < r.length; i++) expect(r[i].x1, `${r[i - 1].id} / ${r[i].id}`).toBeGreaterThanOrEqual(r[i - 1].x2 - 0.01);
+    }
+    const tree = rectOf(b.decor.find((d) => d.decorId === 'xmas-tree'));
+    expect(tree.x2).toBeLessThanOrEqual(ROOM.widthIn + 0.01);
+  });
+
+  it('the candles are a lighting piece with one flame per candle (four), each inside the picture and below the top edge', () => {
+    expect(defs['xmas-candles'].category).toBe('lighting');
+    const pts = LAMP_LIGHTS['xmas-candles'].points;
+    expect(pts).toHaveLength(4);
+    for (const p of pts) {
+      expect(p.x).toBeGreaterThan(0.05);
+      expect(p.x).toBeLessThan(0.95);
+      expect(p.y).toBeGreaterThan(0.03); // headroom above the tallest wick, so the glow is not clipped
+      expect(p.y).toBeLessThan(0.5);
+    }
+    expect(made().booth.decor.find((d) => d.decorId === 'xmas-candles').lit).toBe(true);
   });
 });

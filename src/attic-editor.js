@@ -11,7 +11,7 @@ import { css as roomCss } from './styles.js';
 import { editorCss } from './editor-styles.js';
 import { ROOM, pct } from './logic/room.js';
 import { buildLayout } from './logic/layout.js';
-import { normalizeLibrary, byId } from './logic/library.js';
+import { normalizeLibrary, byId, pickerWallpapers } from './logic/library.js';
 import { createHistory } from './logic/history.js';
 import { toDraft, applyDraft, defaultRoom } from './logic/draft.js';
 import { encodePlan, dataUrlBytes, MAX_BYTES, uploadTileIn } from './logic/downscale.js';
@@ -815,7 +815,7 @@ export class AtticEditor extends HTMLElement {
     const strips = lib.architecture.filter((a) => a.kind === 'strip');
     return `
       <p class="lede">Pick your back wall: wallpaper, paint or your own photo.</p>
-      <section><h3>Wallpaper</h3>${this.#texSwatches(lib.wallpapers, wall, 'wallpaper')}</section>
+      <section><h3>Wallpaper</h3>${this.#texSwatches(pickerWallpapers(lib, wall), wall, 'wallpaper')}</section>
       ${this.#scaleSection('wall', wall)}
       <section><h3>Paint</h3><div class="swatches paints">${lib.paints
         .map((p) => {

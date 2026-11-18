@@ -72,4 +72,14 @@ export function normalizeLibrary(lib = {}) {
   };
 }
 
+/**
+ * The wallpapers the editor's picker offers. An entry flagged `hidden: true` stays in the library (the live site
+ * validates booth wallpaper ids against it, and a booth that already uses it still renders and saves) but is no longer
+ * offered. It is listed only while it is the booth's current wallpaper, so the seller can see what is applied and change it.
+ */
+export function pickerWallpapers(lib, wallCfg = null) {
+  const current = wallCfg && !wallCfg.src && wallCfg.type !== 'paint' ? wallCfg.textureId : null;
+  return (lib?.wallpapers ?? []).filter((w) => !w.hidden || w.id === current);
+}
+
 export const byId = (list) => Object.fromEntries((list ?? []).map((x) => [x.id, x]));

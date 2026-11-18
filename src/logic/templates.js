@@ -133,26 +133,28 @@ export const TEMPLATES = Object.freeze([
   {
     id: 'christmas',
     name: 'Christmas',
-    blurb: 'Deep red damask walls, a full tree with gifts, garland, stockings and glowing candles.',
+    blurb: 'Deep red damask walls, a full tree with gifts, draped garlands, stockings, a wreath and glowing candles.',
     until: '2027-01-01',
     wall: { wallpaper: 'wp-crimson-damask' },
     floor: 'fl-wood-dark',
-    strips: ['picturerail-white', 'wainscot-cream', 'baseboard-white'],
+    strips: ['wainscot-cream', 'baseboard-white'],   // no picture rail: it would cut across the swags
     light: 'lamp-glow',
     box: { style: 'jewelry', lining: 'red' },
     windows: [],
     fixtures: [
-      { k: 'stackR', id: 'shelf-stack-3-cream', x: 86, y: 8 },
+      { k: 'stackR', id: 'shelf-stack-3-cream', x: 89, y: 8 },
       { k: 'console', id: 'table-console-carved', x: 4, base: 108 },
     ],
+    // On the wall x is the centre of the piece and base is its bottom edge. Left wall: a swag over the top, then the
+    // stockings garland as a mantel swag over the console. Right wall: the wreath above the tree.
     decor: [
-      { id: 'xmas-garland', on: { wall: true, x: 21, base: 28 } },
-      { id: 'xmas-wreath', on: { wall: true, x: 21, base: 57 } },
-      { id: 'xmas-stockings', on: { wall: true, x: 63, base: 52 } },
-      { id: 'xmas-candles', on: { fx: 'console', s: 's0', u: 0.2 }, lit: true },
-      { id: 'lamp-oil', on: { fx: 'console', s: 's0', u: 0.62 }, lit: true },
-      { id: 'xmas-nutcracker', on: { floor: true, x: 30, base: 118 } },
-      { id: 'xmas-gifts', on: { floor: true, x: 53, base: 119 } },
+      { id: 'xmas-garland', on: { wall: true, x: 26, base: 18 } },
+      { id: 'xmas-stockings', on: { wall: true, x: 34, base: 52 } },
+      { id: 'xmas-wreath', on: { wall: true, x: 76, base: 46 } },
+      { id: 'xmas-candles', on: { fx: 'console', s: 's0', u: 0.42 }, lit: true },
+      { id: 'lamp-oil', on: { fx: 'console', s: 's0', u: 0.05 }, lit: true },
+      { id: 'xmas-nutcracker', on: { floor: true, x: 26, base: 117 } },
+      { id: 'xmas-gifts', on: { floor: true, x: 58, base: 119 } },
       { id: 'xmas-tree', on: { floor: true, x: 95, base: 118 } },
     ],
   },
