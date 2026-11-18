@@ -526,39 +526,12 @@ try {
   const nq = await evaluate(`${FQ}.querySelectorAll('details.qa').length`);
   check('the accordion has 8-14 questions', nq >= 8 && nq <= 14, `${nq}`);
   await post('load-faq', { businessEmail: 'hello@example.com' });
-  const line1 = await evaluate(`${FQ}.querySelector('.emailline').textContent.trim()`);
-  check('load-faq with an address shows "Email us at <address>"', line1 === 'Email us at hello@example.com' && (await evaluate(`${FQ}.querySelector('.emailline a').getAttribute('href')`)) === 'mailto:hello@example.com', line1);
-  await post('load-faq', { businessEmail: null });
-  const line2 = await evaluate(`${FQ}.querySelector('.emailline').textContent.trim()`);
-  check('load-faq without one says the address is coming soon', line2 === 'Our email address is coming soon - use the form below.', line2);
+  check('load-faq with the old businessEmail is harmless: no contact form, no email line', (await evaluate(`${FQ}.querySelectorAll('form, input, textarea, .contact, .emailline').length`)) === 0 && (await evaluate(`${FQ}.querySelectorAll('details.qa').length`)) === nq);
+  check('the FAQ points to the footer contact form and never sends contact-send', (await evaluate(`${FQ}.querySelector('.more').textContent`)).includes('contact form at the bottom of the page') && (await msgs('contact-send')).length === 0);
   await clickAt(await rectOf(`${FQ}.querySelector('details.qa summary')`));
   check('clicking a question opens its answer', (await evaluate(`${FQ}.querySelector('details.qa').open`)) && (await evaluate(`${FQ}.querySelector('details.qa .ans').getBoundingClientRect().height`)) > 10);
   await clickAt(await rectOf(`${FQ}.querySelector('details.qa summary')`));
   check('clicking it again closes it', !(await evaluate(`${FQ}.querySelector('details.qa').open`)));
-  const fill = async (name, email, message) => {
-    for (const [n, v] of [['name', name], ['email', email], ['message', message]]) {
-      await clickAt(await rectOf(`${FQ}.querySelector('.cform [name="${n}"]')`));
-      await evaluate(`${FQ}.querySelector('.cform [name="${n}"]').value = ''`);
-      await typeText(v);
-    }
-  };
-  await fill('Pat Shopper', 'not-an-email', 'Hello there');
-  await clickAt(await rectOf(`${FQ}.querySelector('.cform .send')`));
-  check('an invalid email is not sent', (await msgs('contact-send')).length === 0);
-  await fill('Pat Shopper', 'pat@example.com', 'Do you ship to Alaska?');
-  await clickAt(await rectOf(`${FQ}.querySelector('.cform .send')`));
-  const cs = await lastMsg('contact-send');
-  check('Send posts contact-send {requestId, name, email, message}', cs && cs.requestId && cs.name === 'Pat Shopper' && cs.email === 'pat@example.com' && cs.message === 'Do you ship to Alaska?', JSON.stringify(cs));
-  await post('contact-result', { requestId: 'someone-else', ok: true });
-  check('a contact-result for another request is ignored', (await evaluate(`${FQ}.querySelector('.csent').hidden`)) === true);
-  await post('contact-result', { requestId: cs.requestId, ok: true, message: 'Thanks, we got it.' });
-  check('contact-result ok shows the thank-you', (await evaluate(`!${FQ}.querySelector('.csent').hidden && ${FQ}.querySelector('.cform').hidden`)) && (await evaluate(`${FQ}.querySelector('.csent').textContent`)) === 'Thanks, we got it.');
-  await clickAt(await rectOf(`${FQ}.querySelector('.again')`));
-  await fill('Pat Shopper', 'pat@example.com', 'Second question');
-  await clickAt(await rectOf(`${FQ}.querySelector('.cform .send')`));
-  const cs2 = await lastMsg('contact-send');
-  await post('contact-result', { requestId: cs2.requestId, ok: false, message: 'Our mail is down, try later.' });
-  check('contact-result failure keeps the message and shows the error', (await evaluate(`${FQ}.querySelector('.cerr').textContent`)) === 'Our mail is down, try later.' && (await evaluate(`${FQ}.querySelector('.cform [name="message"]').value`)) === 'Second question');
 
   // =========================================================== 6. Sizing, magnifier, collectibles boxes, listing rules
   console.log('\n-- sizing, magnifier, collectibles boxes');

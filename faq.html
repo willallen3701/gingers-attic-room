@@ -12,17 +12,13 @@
 </head>
 <body>
   <!--
-    Embedded on the Wix FAQ page: the questions ship with the app (data/faq.json); the page sends load-faq
-    with the business email address and answers contact-send.
-    Opened directly (no parent page): shows the questions and simulates sending.
-    Standalone-only URL options: ?email=hello@example.com shows the "Email us at" line.
+    Embedded on the Wix FAQ page: the questions ship with the app (data/faq.json); the page may send load-faq
+    (its content is ignored). No contact form: the site footer has one.
     faq.html#q-shipping opens that question.
   -->
   <attic-faq faq-src="data/faq.json"></attic-faq>
   <script type="module">
     await import('./src/attic-faq.js');
-    const q = new URLSearchParams(location.search);
-    if (window.parent === window && q.has('email')) document.querySelector('attic-faq').loadFaq({ businessEmail: q.get('email') });
   </script>
 </body>
 </html>

@@ -153,9 +153,8 @@ scrolled only by hand (swipe, wheel, the back/forward buttons shown when it over
 on its single tab stop). Sellers pick highlights with the star in the editor's My Items tab (`draft.highlights`).
 
 ### FAQ (`<attic-faq>`, `faq.html`)
-Questions ship with the app in `data/faq.json`. **Out:** `ready` {mode:'faq'} (about every second until `load-faq`),
-`contact-send` {requestId, name, email, message}. **In:** `load-faq` {businessEmail: string|null},
-`contact-result` {requestId, ok, message?}
+Questions ship with the app in `data/faq.json`. No contact form (the site footer has one). **Out:** `ready` {mode:'faq'} (about every second until `load-faq`).
+**In:** `load-faq` (content ignored; the old `businessEmail` is harmless). Older site code that bridges `contact-send` / `contact-result` simply never fires.
 
 ### Approvals (`<attic-approvals>`, `approvals.html`)
 **Out:** `ready` {mode:'approvals'}, `refresh-queue` {requestId}, `review` {requestId, action:'approve-item'|'reject-item'|'approve-upload'|'reject-upload', itemId?, boothId?, uploadId?, note?}
