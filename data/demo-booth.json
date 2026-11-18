@@ -28,7 +28,8 @@
     "sign": {
       "style": "wood"
     },
-    "placeables": []
+    "placeables": [],
+    "sound": "fireplace"
   },
   "fixtures": [
     {

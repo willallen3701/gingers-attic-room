@@ -25,6 +25,8 @@ import { isLampDef } from './logic/lamps.js';
 import { tweakRange, itemSizeIn } from './logic/scale.js';
 import { BOX_STYLES, BOX_LININGS, BOX_GRID_MIN, BOX_GRID_MAX, MAX_BOXES, boxOfItem, boxedItemIds, placedPieces, styleOf, liningOf } from './logic/boxes.js';
 import { Lens } from './lens.js';
+import { SOUNDS, SOUND_VOLUME, SOUNDS_ENABLED, soundOf, roomSoundId } from './logic/sounds.js';
+import { MAX_HIGHLIGHTS, cleanHighlights, setHighlight, canHighlight } from './logic/reel.js';
 
 const NARROW_EDIT_PX = 768;
 const AUTOSAVE_MS = 1500;
@@ -35,7 +37,7 @@ const DRAG_START_PX = 4;
 const TABS = [
   { id: 'walls', label: 'Walls', icon: '<path d="M4 4h16v16H4z M4 9h16 M4 14h16 M9 4v5 M15 9v5 M9 14v6"/>' },
   { id: 'floor', label: 'Floor', icon: '<path d="M3 20 8 6h8l5 14z M6 13h12 M10 6l-1 14 M14 6l1 14"/>' },
-  { id: 'light', label: 'Lighting', icon: '<path d="M9 18h6 M10 21h4 M12 3a6 6 0 0 0-4 10.5c.8.8 1 1.6 1 2.5h6c0-.9.2-1.7 1-2.5A6 6 0 0 0 12 3z"/>' },
+  { id: 'light', label: SOUNDS_ENABLED ? 'Light & sound' : 'Lighting', icon: '<path d="M9 18h6 M10 21h4 M12 3a6 6 0 0 0-4 10.5c.8.8 1 1.6 1 2.5h6c0-.9.2-1.7 1-2.5A6 6 0 0 0 12 3z"/>' },
   { id: 'fixtures', label: 'Fixtures', icon: '<path d="M3 7h18 M3 13h18 M3 19h18 M5 7v3 M19 7v3 M5 13v3 M19 13v3"/>' },
   { id: 'decor', label: 'Decor', icon: '<path d="M12 21v-7 M12 14c-4 0-6-3-6-7 3 0 6 2 6 5 0-3 3-5 6-5 0 4-2 7-6 7z M8 21h8"/>' },
   { id: 'items', label: 'My Items', icon: '<path d="M3 8h18v12H3z M3 8l3-4h12l3 4 M9 12h6"/>' },
@@ -131,6 +133,7 @@ export class AtticEditor extends HTMLElement {
   #requests = new Map(); // requestId -> resolve, for request/response messages
   #confirmDel = null; // item id whose Delete / Take down asks "are you sure?"
   #lightsOff = false; // editor preview of the shoppers' light switch (not saved)
+  #listen = null; // { id, audio }: the seller listening to a booth sound in the editor (never saved, never automatic)
   #simN = 0;
   #libraryPromise = null;
   #narrow = false;
@@ -199,6 +202,7 @@ export class AtticEditor extends HTMLElement {
     clearTimeout(this.#save.retryTimer);
     this.#bridge?.dispose();
     this.#ro?.disconnect();
+    this.#stopListening();
   }
 
   #announceReady() {
@@ -542,7 +546,7 @@ export class AtticEditor extends HTMLElement {
       return;
     }
     if (this.#sel?.id === id) this.#sel = null;
-    this.#booth = { ...this.#booth, items: this.#booth.items.filter((i) => i.id !== id) };
+    this.#booth = { ...this.#booth, items: this.#booth.items.filter((i) => i.id !== id), highlights: (this.#booth.highlights ?? []).filter((h) => h !== id) };
     this.#changed();
     this.#renderAll();
     this.#toast(it.status === 'approved' ? 'Taken down. It is no longer for sale.' : 'Item deleted.');
@@ -558,6 +562,8 @@ export class AtticEditor extends HTMLElement {
     const max = this.#meta.maxPlaced ?? ROOM.maxPlacedItems;
     const full = placedPieces(this.#booth) >= max;
     const boxed = boxedItemIds(this.#booth);
+    const hl = cleanHighlights(this.#booth);
+    const hlFull = hl.length >= MAX_HIGHLIGHTS;
     return `<ul class="itemlist">${items
       .map((it) => {
         const inRoom = !!it.placement;
@@ -571,6 +577,10 @@ export class AtticEditor extends HTMLElement {
             <span class="rowacts">
               ${placeable && (inRoom || boxed.has(it.id)) ? `<button class="lnk" type="button" data-act="show-item" data-id="${esc(it.id)}">Show me</button>` : ''}
               ${it.status !== 'sold' ? `<button class="lnk" type="button" data-act="edit-item" data-id="${esc(it.id)}">Edit</button>` : ''}
+              ${canHighlight(it) ? (() => {
+                const on = hl.includes(it.id);
+                return `<button class="lnk hl${on ? ' on' : ''}" type="button" data-act="highlight" data-id="${esc(it.id)}" aria-pressed="${on}" ${!on && hlFull ? 'aria-disabled="true" title="You have 6 highlights. Turn one off first."' : 'title="Show it in the reel on your Booths card"'}>${on ? '&#9733; Highlighted' : '&#9734; Highlight'}</button>`;
+              })() : ''}
               ${canDelete ? (asking
                 ? `<button class="lnk danger" type="button" data-act="delete-item-yes" data-id="${esc(it.id)}">${delLabel}: are you sure?</button><button class="lnk" type="button" data-act="delete-item-no">Keep</button>`
                 : `<button class="lnk" type="button" data-act="delete-item" data-id="${esc(it.id)}">${delLabel}</button>`) : ''}
@@ -841,7 +851,54 @@ export class AtticEditor extends HTMLElement {
       ${cur ? `<section><h3>Strength</h3><div class="range"><input type="range" min="20" max="100" step="5" value="${k}" data-act="light-strength" aria-label="Lighting strength"><output>${k}%</output></div></section>` : ''}
       <section><h3>Lamps</h3><p class="note">Lamps from the Decor tab light up: click a lamp in your booth and use its On/Off switch.${lit ? ` ${lit} lamp${lit === 1 ? ' is' : 's are'} on.` : ''}</p></section>
       ${cur || lit ? `<section><h3>Light switch</h3><p class="note">Shoppers get a &#128161; Lights button in your booth to turn the lighting${lit ? ' and your lamps' : ''} on and off. Try it here:</p>
-        <button class="toggle${this.#lightsOff ? '' : ' on'}" type="button" data-act="light-preview" aria-pressed="${!this.#lightsOff}">&#128161; Lights ${this.#lightsOff ? 'off' : 'on'}</button></section>` : ''}`;
+        <button class="toggle${this.#lightsOff ? '' : ' on'}" type="button" data-act="light-preview" aria-pressed="${!this.#lightsOff}">&#128161; Lights ${this.#lightsOff ? 'off' : 'on'}</button></section>` : ''}
+      ${SOUNDS_ENABLED ? this.#soundHtml(room) : ''}`;
+  }
+
+  /** Booth sound picker: one background sound or none. Shoppers must press Sound to hear it; it never autoplays. */
+  #soundHtml(room) {
+    const cur = roomSoundId(room);
+    const listening = this.#listen?.id ?? null;
+    const opt = (id, name) => {
+      const on = cur === id;
+      const listen = id
+        ? `<button class="listen${listening === id ? ' on' : ''}" type="button" data-act="sound-listen" data-id="${esc(id)}" aria-pressed="${listening === id}" aria-label="${listening === id ? 'Stop' : 'Listen to'} ${esc(name)}">${listening === id ? '&#9632; Stop' : '&#9654; Listen'}</button>`
+        : '';
+      return `<li class="soundopt${on ? ' on' : ''}"><button class="pick" type="button" data-act="sound" data-id="${esc(id ?? '')}" aria-pressed="${on}"><i aria-hidden="true">${on ? '&#10003;' : ''}</i><span>${esc(name)}</span></button>${listen}</li>`;
+    };
+    return `<section class="sounds"><h3>Booth sound</h3>
+      <p class="note">Pick a quiet background sound for your booth. Shoppers hear it only if they press &#9835; Sound in your booth; it never plays by itself.</p>
+      <ul class="soundlist">${opt(null, 'No sound')}${SOUNDS.map((s) => opt(s.id, s.name)).join('')}</ul></section>`;
+  }
+
+  #stopListening() {
+    if (!this.#listen) return;
+    this.#listen.audio.pause();
+    this.#listen = null;
+  }
+
+  /** The seller pressed Listen: play that sound once through (pressing again, or another Listen, stops it). */
+  #toggleListen(id) {
+    const was = this.#listen?.id;
+    this.#stopListening();
+    const s = soundOf(id);
+    if (s && was !== id) {
+      const audio = new Audio(s.src);
+      audio.volume = SOUND_VOLUME;
+      audio.addEventListener('ended', () => {
+        if (this.#listen?.audio === audio) {
+          this.#listen = null;
+          this.#renderPanel();
+        }
+      });
+      this.#listen = { id, audio };
+      audio.play().catch(() => {
+        if (this.#listen?.audio === audio) this.#listen = null;
+        this.#toast("Couldn't play that sound here.");
+        this.#renderPanel();
+      });
+    }
+    this.#renderPanel();
   }
 
   #srcCard(kind, def, sub) {
@@ -896,6 +953,7 @@ export class AtticEditor extends HTMLElement {
     return `
       ${this.#itemsOn ? '<button class="primary additem" type="button" data-act="add-item">+ Add an item</button>' : ''}
       <div class="count${full ? ' full' : ''}"><b>${pieces}</b> of ${max} pieces out in your booth${nb ? ` <small>(a collectibles box counts as one)</small>` : ''}</div>
+      ${this.#highlightsHtml()}
       <section class="crate"><h3>${icon('<path d="M3 8h18v12H3z M3 8l3-4h12l3 4 M9 12h6"/>')} Storage crate <small>(${stored.length})</small></h3>
         ${stored.length ? this.#itemListHtml(stored) : items.length ? '<p class="empty">Your crate is empty: everything is out on display.</p>' : '<p class="empty">No items yet. Click "Add an item" to photograph your first one.</p>'}
         ${full && stored.length ? '<p class="note">Your booth is full. Store something to make room.</p>' : ''}
@@ -905,6 +963,17 @@ export class AtticEditor extends HTMLElement {
       </section>
       ${inBoxes.length ? `<section><h3>In collectibles boxes <small>(${inBoxes.length})</small></h3>${this.#itemListHtml(inBoxes)}</section>` : ''}
       <p class="foot">${this.#itemsOn ? 'Items marked Private are only visible to you until GingersAttic approves them.' : 'Adding new items with photos and prices comes in the next update.'}</p>`;
+  }
+
+  /** Highlights for the listing reel on the booth's Booths-page card (logic/reel.js). */
+  #highlightsHtml() {
+    const hl = cleanHighlights(this.#booth);
+    const byId = new Map(this.#booth.items.map((i) => [i.id, i]));
+    const waiting = hl.filter((id) => byId.get(id)?.status !== 'approved').length;
+    return `<section class="hlsum"><h3>&#9733; Highlights <small>(${hl.length} of ${MAX_HIGHLIGHTS})</small></h3>
+      <p class="note">${hl.length
+        ? `Your highlights show in a row on your card in the Booths directory, in the order you picked them, after you press Update booth.${waiting ? ` ${waiting === 1 ? 'One shows' : `${waiting} show`} once GingersAttic approves ${waiting === 1 ? 'it' : 'them'}.` : ''}`
+        : `Pick up to ${MAX_HIGHLIGHTS} items with &#9734; Highlight to show them in a row on your card in the Booths directory. Until you do, your newest items show there.`}</p></section>`;
   }
 
   #signPanelHtml() {
@@ -1154,6 +1223,18 @@ export class AtticEditor extends HTMLElement {
         if (inBox) this.#openBoxSheet(inBox.boxId, inBox.slot);
         break;
       }
+      case 'highlight': {
+        const r = setHighlight(this.#booth, id, el.getAttribute('aria-pressed') !== 'true');
+        if (r.ok) this.#commit(r.booth);
+        else this.#toast(r.errors[0]?.code === 'FULL' ? `You can highlight up to ${MAX_HIGHLIGHTS} items. Turn one off first.` : "That item can't be highlighted.");
+        break;
+      }
+      case 'sound':
+        this.#setRoom({ sound: soundOf(id)?.id ?? null });
+        break;
+      case 'sound-listen':
+        this.#toggleListen(id);
+        break;
       case 'light-preview':
         this.#lightsOff = !this.#lightsOff;
         this.#root.querySelector('.room.edit')?.classList.toggle('lights-off', this.#lightsOff);

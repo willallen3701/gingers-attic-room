@@ -11,6 +11,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { filterBooths } from '../src/logic/directory.js';
+import { SOUNDS_ENABLED } from '../src/logic/sounds.js';
 import { applyDraft } from '../src/logic/draft.js';
 import { launchFirefox } from './firefox-bidi.mjs';
 
@@ -69,7 +70,7 @@ async function navigate(url, readyExpr) {
   await sleep(150);
   if (readyExpr && !(await waitFor(readyExpr, 15000))) throw new Error(`page not ready: ${url}`);
 }
-const KEYS = { ArrowLeft: 37, ArrowRight: 39, End: 35, Home: 36, Escape: 27 };
+const KEYS = { ArrowLeft: 37, ArrowRight: 39, End: 35, Home: 36, Escape: 27, Tab: 9 };
 async function key(k) {
   const vk = KEYS[k];
   await send('Input.dispatchKeyEvent', { type: 'rawKeyDown', key: k, code: k, windowsVirtualKeyCode: vk, nativeVirtualKeyCode: vk });
@@ -296,6 +297,53 @@ try {
   await sleep(650);
   const onOp = await evaluate(`getComputedStyle(${BV}.querySelector('.lamps .wash')).opacity + '/' + getComputedStyle(${BV}.querySelector('.lamps .glow')).opacity`);
   check('Lights on brings it back', onOp === '1/1', onOp);
+
+  // Booth sound: the seller's pick (demo: fireplace) plays only after the shopper presses Sound. A play() spy is
+  // installed before any page script runs, so a sound that started by itself would be caught.
+  const spy = await send('Page.addScriptToEvaluateOnNewDocument', { source: `window.__plays = []; { const play = HTMLMediaElement.prototype.play; HTMLMediaElement.prototype.play = function () { window.__plays.push(this.src); window.__lastAudio = this; return play.call(this); }; }` });
+  if (!SOUNDS_ENABLED) {
+    // Sounds switched off (src/logic/sounds.js): no Sound button even for a booth that picked one, no picker.
+    console.log('  (booth sounds are switched off: SOUNDS_ENABLED = false)');
+    await navigate(`${origin}/embed.html`, `!!document.querySelector('attic-booth')?.shadowRoot?.querySelector('.room .item')`);
+    await sleep(1000);
+    check('sounds off: no Sound button, even for a booth that picked a sound (demo: fireplace), and nothing plays', (await evaluate(`!${BV}.querySelector('.sound')`)) && (await evaluate('window.__plays.length')) === 0);
+    await navigate(`${origin}/editor.html?tab=light&coach=0`, `!!document.querySelector('attic-editor')?.shadowRoot?.querySelector('.lightopt')`);
+    const off = await evaluate(`(() => { const r = document.querySelector('attic-editor').shadowRoot; return { picker: !!r.querySelector('.soundlist, .soundopt'), tab: r.querySelector('.tab[data-tab="light"] span')?.textContent }; })()`);
+    check('sounds off: the editor shows no sound picker, and the tab is called Lighting', !off.picker && off.tab === 'Lighting', JSON.stringify(off));
+  } else {
+  await navigate(`${origin}/embed.html`, `!!document.querySelector('attic-booth')?.shadowRoot?.querySelector('.room .item')`);
+  await evaluate(`window.__ev = []; document.addEventListener('attic-booth:event', (e) => window.__ev.push(e.detail)); true`);
+  await sleep(1500);
+  check('the booth sound does not play by itself', (await evaluate('window.__plays.length')) === 0 && (await evaluate(`${BV}.querySelector('.sound')?.getAttribute('aria-pressed')`)) === 'false');
+  await clickAt(await rectOf(`${BV}.querySelector('.sound')`));
+  await sleep(1500);
+  const playing = await evaluate(`(() => { const a = window.__lastAudio; return a ? { src: a.src.split('/').slice(-2).join('/'), paused: a.paused, error: a.error?.code ?? null, t: a.currentTime, loop: a.loop, label: ${BV}.querySelector('.sound').textContent.trim() } : null; })()`);
+  check('pressing Sound plays the seller\'s sound on a loop', playing?.src === 'sounds/fireplace.mp3' && !playing.paused && playing.error === null && playing.t > 0 && playing.loop && /Sound on/.test(playing.label), JSON.stringify(playing));
+  check('...and tells the page (sound-toggle on)', (await evaluate(`window.__ev.filter((m) => m.type === 'sound-toggle').at(-1)?.on`)) === true);
+  await clickAt(await rectOf(`${BV}.querySelector('.sound')`));
+  check('pressing it again stops it', (await evaluate('window.__lastAudio.paused')) && (await evaluate(`${BV}.querySelector('.sound').getAttribute('aria-pressed')`)) === 'false');
+  await evaluate(`(async () => { const el = document.querySelector('attic-booth'); const b = await (await fetch('data/demo-booth.json')).json(); b.room.sound = null; el.load(b, await (await fetch('data/library.json')).json()); return true; })()`);
+  await sleep(300);
+  check('a booth without a sound shows no Sound button', (await evaluate(`!${BV}.querySelector('.sound')`)));
+
+  // The seller's picker in the editor's Light & sound tab.
+  await navigate(`${origin}/editor.html?tab=light&coach=0`, `!!document.querySelector('attic-editor')?.shadowRoot?.querySelector('.soundlist')`);
+  const ED0 = `document.querySelector('attic-editor').shadowRoot`;
+  const picks = await evaluate(`[...${ED0}.querySelectorAll('.soundopt .pick')].map((b) => b.querySelector('span').textContent.trim() + (b.getAttribute('aria-pressed') === 'true' ? '*' : ''))`);
+  check('the editor offers No sound and the five booth sounds (demo: fireplace picked)', picks.join('|') === 'No sound|Crackling fireplace*|Rain on the window|Quiet record player|Grandfather clock|Shop chatter and doorbell', picks.join('|'));
+  await clickAt(await rectOf(`${ED0}.querySelector('.pick[data-act="sound"][data-id="rain"]')`));
+  await sleep(300);
+  check('picking a sound selects it without playing it', (await evaluate(`${ED0}.querySelector('.pick[data-id="rain"]').getAttribute('aria-pressed')`)) === 'true' && (await evaluate('window.__plays.length')) === 0);
+  await clickAt(await rectOf(`${ED0}.querySelector('.listen[data-id="clock"]')`));
+  await sleep(1200);
+  const heard = await evaluate(`(() => { const a = window.__lastAudio; return a ? { src: a.src.split('/').at(-1), paused: a.paused, t: a.currentTime, btn: ${ED0}.querySelector('.listen[data-id="clock"]').textContent.trim() } : null; })()`);
+  check('Listen lets the seller hear a sound (and does not change the pick)', heard?.src === 'grandfather-clock.mp3' && !heard.paused && heard.t > 0 && /Stop/.test(heard.btn) && (await evaluate(`${ED0}.querySelector('.pick[data-id="rain"]').getAttribute('aria-pressed')`)) === 'true', JSON.stringify(heard));
+  await clickAt(await rectOf(`${ED0}.querySelector('.listen[data-id="clock"]')`));
+  check('Stop stops it', await evaluate('window.__lastAudio.paused'));
+  }
+  await send('Page.removeScriptToEvaluateOnNewDocument', { identifier: spy.identifier });
+  await navigate(`${origin}/embed.html`, `!!document.querySelector('attic-booth')?.shadowRoot?.querySelector('.room .item')`);
+  await evaluate(`window.__ev = []; document.addEventListener('attic-booth:event', (e) => window.__ev.push(e.detail)); true`);
   await clickAt(await rectOf(`${BV}.querySelector('.favbooth')`));
   const fb = await evaluate(`window.__ev.filter((m) => m.type === 'toggle-favourite-booth').at(-1) ?? null`);
   check('the booth heart sends toggle-favourite-booth {boothId, on}', fb?.boothId === 'booth-demo-ginger' && fb.on === true && (await evaluate(`${BV}.querySelector('.favbooth').getAttribute('aria-pressed')`)) === 'true');
@@ -328,8 +376,59 @@ try {
   check('ready stops once the directory has arrived', (await msgs('ready')).length === readyN);
   const cardIds = () => evaluate(`[...${DIR}.querySelectorAll('.bcard')].map((c) => c.dataset.id)`);
   check('one card per booth', (await cardIds()).length === sample.booths.length, `${(await cardIds()).length}`);
-  const card0 = await evaluate(`(() => { const c = ${DIR}.querySelector('.bcard[data-id="bt-velvet"]'); return { sign: c.querySelector('.sign')?.className, no: c.querySelector('.sign .no')?.textContent, nm: c.querySelector('.sign .nm')?.textContent, thumbs: c.querySelectorAll('.thumbs img').length, count: c.querySelector('.count')?.textContent, about: c.querySelector('.babout')?.textContent }; })()`);
-  check('a card draws the booth sign in its style, with about text, item count and thumbnails', card0.sign === 'sign style-brass' && card0.no === 'Booth No. 12' && card0.nm === 'The Velvet Drawer' && card0.thumbs === 4 && /17\s*items/.test(card0.count) && !!card0.about, JSON.stringify(card0));
+  await waitFor(`${DIR}.querySelectorAll('.bcard .peek[data-drawn]').length === ${sample.booths.length}`, 8000);
+  const card0 = await evaluate(`(() => { const c = ${DIR}.querySelector('.bcard[data-id="bt-velvet"]'); return { sign: c.querySelector('.signclip .sign')?.className, no: c.querySelector('.signclip .sign .no')?.textContent, nm: c.querySelector('.signclip .sign .nm')?.textContent, thumbs: c.querySelectorAll('.thumbs img').length, count: c.querySelector('.count')?.textContent, about: c.querySelector('.babout')?.textContent }; })()`);
+  check('a card draws the booth sign in its style, with about text and item count', card0.sign === 'sign style-brass' && card0.no === 'Booth No. 12' && card0.nm === 'The Velvet Drawer' && /7\s*items/.test(card0.count) && !!card0.about, JSON.stringify(card0));
+  const velvet = sample.booths.find((b) => b.id === 'bt-velvet').peek;
+  const pk = await evaluate(`(() => { const p = ${DIR}.querySelector('.bcard[data-id="bt-velvet"] .peek'); const r = p.querySelector('.room'); const wall = getComputedStyle(r.querySelector('.wall')).backgroundImage; return { inert: p.inert, hidden: p.getAttribute('aria-hidden'), w: r.clientWidth, h: r.clientHeight, wall, fixtures: r.querySelectorAll('.fixture').length, items: r.querySelectorAll('.item:not(.decor)').length, boxed: r.querySelectorAll('.box .cell img').length, decor: r.querySelectorAll('.item.decor').length, sign: getComputedStyle(r.querySelector('.sign')).display, tags: getComputedStyle(r.querySelector('.tags')).display, focusable: p.querySelectorAll('button').length && [...p.querySelectorAll('button')].every((b) => { b.focus(); return p.getRootNode().activeElement !== b; }) }; })()`);
+  check('...a look-only view into its room: the real wallpaper, fixtures, items, box and decor', /cabbage-rose/.test(pk.wall) && pk.fixtures === velvet.fixtures.length && pk.items === velvet.items.filter((i) => i.placement).length && pk.boxed === velvet.items.filter((i) => !i.placement).length && pk.decor === velvet.decor.length && pk.w > 200 && Math.abs(pk.w - pk.h) <= 1, JSON.stringify(pk));
+  check('...without the room sign or price tags, and nothing in it can be focused', pk.sign === 'none' && pk.tags === 'none' && pk.inert && pk.hidden === 'true' && pk.focusable, JSON.stringify(pk));
+  check('...instead of the item thumbnails', card0.thumbs === 0);
+
+  // Listing reel: between the room peek and the bio; scrolled by hand only; one tab stop with arrow keys.
+  const G = `${DIR}.querySelector('.bcard[data-id="bt-ginger"]')`;
+  const ginger = sample.booths.find((b) => b.id === 'bt-ginger');
+  const reel0 = await evaluate(`(() => { const c = ${G}; const r = c.querySelector('.reel'); const after = (a, b) => !!(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING);
+    return { order: after(c.querySelector('.peek'), r) && after(r, c.querySelector('.by')) && after(r, c.querySelector('.babout')), tag: r.querySelector('.reeltag').textContent,
+      prices: [...r.querySelectorAll('.rprice')].map((p) => p.textContent).join(' '), imgs: [...r.querySelectorAll('.ritem img')].filter((i) => i.complete && i.naturalWidth > 0).length,
+      stops: [...r.querySelectorAll('.ritem')].filter((b) => b.tabIndex === 0).length, cards: ${DIR}.querySelectorAll('.bcard .reel').length }; })()`);
+  check("each card has a listing reel, between the room peek and the seller's bio", reel0.order && reel0.cards === sample.booths.length, JSON.stringify(reel0));
+  check("...the seller's picks, each with its photo and price (up to 6)", reel0.tag === "Seller's picks" && reel0.imgs === 6 && reel0.prices === ginger.reel.items.map((i) => `$${i.price}`).join(' '), reel0.prices);
+  check('a booth with no picks shows its newest items', (await evaluate(`${DIR}.querySelector('.bcard[data-id="bt-teacup"] .reeltag').textContent`)) === 'Newest');
+  const lefts = () => evaluate(`[...${DIR}.querySelectorAll('.reeltrack')].map((t) => t.scrollLeft).join()`);
+  const l0 = await lefts();
+  await sleep(3000);
+  check('no reel moves by itself', (await lefts()) === l0 && !/[1-9]/.test(l0), l0);
+  check('...and the reel is a single tab stop', reel0.stops === 1);
+  await evaluate(`${DIR}.querySelector('.bcard[data-id="bt-teacup"] .heart').focus(); true`);
+  // Tab order inside the reel: its forward button (the back one starts disabled), then the items as one stop.
+  await key('Tab');
+  const firstStop = await evaluate(`${DIR}.activeElement?.getAttribute('aria-label')`);
+  await key('Tab');
+  check("Tab reaches the reel's forward button, then its first item (one stop for all six)", firstStop === 'Show more items' && (await evaluate(`${DIR}.activeElement?.dataset.reelItem`)) === ginger.reel.items[0].id, `${firstStop} -> ${await evaluate(`${DIR}.activeElement?.className`)}`);
+  await key('Tab');
+  check('...and one more Tab leaves the reel', !(await evaluate(`!!${DIR}.activeElement?.closest('.reel')`)));
+  await evaluate(`${G}.querySelector('.ritem[tabindex="0"]').focus(); true`);
+  await key('ArrowRight');
+  check('the right arrow key moves to the next item', (await evaluate(`${DIR}.activeElement?.dataset.reelItem`)) === ginger.reel.items[1].id);
+  await key('End');
+  await sleep(700);
+  const endState = await evaluate(`(() => { const t = ${G}.querySelector('.reeltrack'); const a = ${DIR}.activeElement; const r = a.getBoundingClientRect(), tr = t.getBoundingClientRect(); return { id: a.dataset.reelItem, left: Math.round(t.scrollLeft), inView: r.left >= tr.left - 1 && r.right <= tr.right + 1, stops: [...t.querySelectorAll('.ritem')].filter((b) => b.tabIndex === 0).map((b) => b.dataset.reelItem).join() }; })()`);
+  check('End goes to the last item and scrolls it into view (still one tab stop)', endState.id === ginger.reel.items.at(-1).id && endState.left > 0 && endState.inView && endState.stops === endState.id, JSON.stringify(endState));
+  await key('Home');
+  await sleep(700);
+  check('Home goes back to the first', (await evaluate(`${DIR}.activeElement?.dataset.reelItem`)) === ginger.reel.items[0].id && (await evaluate(`${G}.querySelector('.reeltrack').scrollLeft`)) < 2);
+  const nav0 = await evaluate(`(() => { const n = ${G}.querySelector('.reelnav'); return { shown: !n.hidden, back: n.querySelectorAll('.rnav')[0].disabled, fwd: n.querySelectorAll('.rnav')[1].disabled }; })()`);
+  check('an overflowing reel shows back/forward buttons (back disabled at the start)', nav0.shown && nav0.back && !nav0.fwd, JSON.stringify(nav0));
+  await clickAt(await rectOf(`${G}.querySelectorAll('.rnav')[1]`));
+  await sleep(800);
+  const reelMoved = await evaluate(`({ left: ${G}.querySelector('.reeltrack').scrollLeft, back: ${G}.querySelectorAll('.rnav')[0].disabled })`);
+  check('the forward button scrolls the reel on', reelMoved.left > 50 && !reelMoved.back, JSON.stringify(reelMoved));
+  check('a short reel (2 items) has no buttons', await evaluate(`${DIR}.querySelector('.bcard[data-id="bt-rust"] .reelnav').hidden`));
+  const pick = ginger.reel.items[2];
+  await clickAt(await rectOf(`${G}.querySelector('.ritem[data-reel-item="${pick.id}"]')`));
+  const ob = await lastMsg('open-booth');
+  check('tapping a reel item opens that item in its booth (open-booth {slug, itemId})', ob?.slug === ginger.slug && ob.itemId === pick.id, JSON.stringify(ob));
   check('saved booths show a filled heart', (await evaluate(`${DIR}.querySelector('.bcard[data-id="bt-lamplight"] .heart').getAttribute('aria-pressed')`)) === 'true');
   const want = (opts) => filterBooths(sample.booths, opts).map((r) => r.booth.id);
   await clickAt(await rectOf(`${DIR}.querySelector('.tools input[name="q"]')`));
@@ -367,6 +466,13 @@ try {
   check('a card heart sends toggle-favourite-booth {boothId, on}', tfb?.boothId === 'bt-paper' && tfb.on === true);
   await clickAt(await rectOf(`${DIR}.querySelector('.bcard[data-id="bt-paper"] .babout')`));
   check('clicking a card sends open-booth {slug}', (await lastMsg('open-booth'))?.slug === 'the-paper-trail');
+  await clickAt(await rectOf(`${DIR}.querySelector('.bcard[data-id="bt-toybox"] .peek')`));
+  check('clicking the room peek opens that booth too', (await lastMsg('open-booth'))?.slug === 'toy-box-revival');
+  await post('load-directory', { booths: sample.booths.map(({ peek, reel, ...b }) => (b.id === 'bt-rust' ? { ...b, peek: { room: { wall: { type: 'paint', paintId: 'paint-sage' } }, items: [{ id: 'x', image: 'assets/items/it-horseshoe.png', aspect: 0, heightIn: 5, placement: { surfaceId: 'floor', x: 5, y: 110 } }] } } : b)), loggedIn: false, favourites: { boothIds: [], itemIds: [] }, categories: sample.categories });
+  await sleep(300);
+  const peekFb = await evaluate(`({ peeks: ${DIR}.querySelectorAll('.bcard .peek').length, rust: ${DIR}.querySelectorAll('.bcard[data-id="bt-rust"] .peek .item').length, thumbs: ${DIR}.querySelectorAll('.bcard[data-id="bt-velvet"] .thumbs img').length })`);
+  check('booths sent without a peek or reel fall back to thumbnails; a malformed peek item is skipped', peekFb.peeks === 1 && peekFb.rust === 0 && peekFb.thumbs === 4, JSON.stringify(peekFb));
+  await post('load-directory', { booths: sample.booths, loggedIn: false, favourites: { boothIds: ['bt-toybox'], itemIds: [] }, categories: sample.categories });
   await post('set-favourites', { boothIds: ['bt-toybox'] });
   check('set-favourites updates the hearts', (await evaluate(`[...${DIR}.querySelectorAll('.bcard .heart[aria-pressed="true"]')].map((h) => h.dataset.favBooth).join()`)) === 'bt-toybox');
   await post('load-directory', { booths: [], loggedIn: false, favourites: { boothIds: [], itemIds: [] }, categories: sample.categories });
@@ -625,6 +731,42 @@ try {
     }
     check(`no horizontal scrolling at ${w} px (${pages.length} views)`, bad.length === 0, bad.join(', '));
   }
+
+  // =========================================================== 7b. Listing reel: phone swipe, seller highlights
+  console.log('\n-- listing reel: phone swipe and seller highlights');
+  await viewport(375, 812, true, 2);
+  await send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 5 });
+  await navigate(`${origin}/directory.html`, 'document.querySelector("attic-directory")?.shadowRoot?.querySelectorAll(".bcard .reel").length > 0');
+  const RG = `document.querySelector("attic-directory").shadowRoot.querySelector('.bcard[data-id="bt-ginger"] .reeltrack')`;
+  const tr = await rectOf(RG);
+  await sleep(400);
+  const tr2 = await evaluate(`(() => { const r = ${RG}.getBoundingClientRect(); return { x: r.left + r.width * 0.75, y: r.top + r.height / 2 }; })()`);
+  // A finger drag with real touch events (headless Chrome's synthesized touch scroll gesture doesn't scroll).
+  const finger = (x) => [{ x: Math.round(x), y: Math.round(tr2.y) }];
+  await send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: finger(tr2.x) });
+  for (let k = 1; k <= 10; k++) {
+    await send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: finger(tr2.x - k * 18) });
+    await sleep(16);
+  }
+  await send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+  await sleep(900);
+  const swiped = await evaluate(`${RG}.scrollLeft`);
+  check('on a phone, a swipe scrolls the reel sideways (and the page doesn’t scroll sideways)', swiped > 40 && (await noSideScroll()).ok, `scrollLeft ${swiped}, track ${Math.round(tr.w)} px`);
+  await send('Emulation.setTouchEmulationEnabled', { enabled: false });
+  await viewport(1440, 1000);
+  await navigate(`${origin}/editor.html?tab=items&coach=0`, '!!document.querySelector("attic-editor")?.shadowRoot?.querySelector(".hlsum")');
+  const EDH = `document.querySelector('attic-editor').shadowRoot`;
+  check('My Items explains highlights and the newest-items fallback', /newest items show/.test(await evaluate(`${EDH}.querySelector('.hlsum').textContent`)));
+  const hlIds = await evaluate(`[...${EDH}.querySelectorAll('[data-act="highlight"]')].map((b) => b.dataset.id)`);
+  for (const id of hlIds.slice(0, 7)) {
+    await clickAt(await rectOf(`${EDH}.querySelector('[data-act="highlight"][data-id="${id}"]')`));
+    await sleep(150);
+  }
+  const hlState = await evaluate(`({ on: [...${EDH}.querySelectorAll('[data-act="highlight"][aria-pressed="true"]')].map((b) => b.dataset.id), sum: ${EDH}.querySelector('.hlsum h3').textContent, toast: ${EDH}.querySelector('.toast')?.textContent ?? '' })`);
+  check('a seller can highlight up to 6 items in My Items; the 7th is refused with a reason', hlState.on.length === 6 && hlState.on.join() === hlIds.slice(0, 6).join() && /6 of 6/.test(hlState.sum) && /up to 6/.test(hlState.toast), JSON.stringify(hlState));
+  await clickAt(await rectOf(`${EDH}.querySelector('[data-act="highlight"][data-id="${hlIds[0]}"]')`));
+  await sleep(150);
+  check('...and turn one off again', (await evaluate(`${EDH}.querySelectorAll('[data-act="highlight"][aria-pressed="true"]').length`)) === 5);
 
   // =========================================================== 8. Screenshots
   console.log('\n-- screenshots');

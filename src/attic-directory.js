@@ -4,7 +4,7 @@
 //   Opened directly (no parent page) it shows the sample booths and answers its own requests, so it can be
 //   tried on localhost. Attribute sample-options takes a query string: tab=collection, loggedIn=0, empty=1,
 //   q=<search>, category=<id>, sort=updated|number|shuffle.
-// Attributes: sample-src, sample-options, allowed-origins.
+// Attributes: sample-src, sample-options, allowed-origins, library-src (room library for the card room peeks).
 //
 // Message contract (see README):
 //   app -> page  ready{mode:'directory'} (about every second until load-directory), open-booth{slug},
@@ -12,12 +12,21 @@
 //                get-collection, add-to-cart{itemId, quantity:1}
 //   page -> app  load-directory{booths, loggedIn, favourites:{boothIds, itemIds}, categories:[{id, label}]},
 //                set-favourites{boothIds?, itemIds?}, collection{booths, items}, cart-result{itemId, ok, message?}
+//   A booth may carry `peek` (the room's look and its shown items, logic/peek.js); its card then shows a small,
+//   look-only view into the room instead of the item thumbnails.
+//   A booth may carry `reel` {kind:'picks'|'newest', items:[{id, title, price, image}]} (logic/reel.js): a row of up to
+//   six listings under the peek, scrolled by hand (swipe, scroll, the arrow buttons, or the arrow keys); tapping one
+//   sends open-booth {slug, itemId}.
 
 import { css as roomCss } from './styles.js';
 import { directoryCss } from './directory-styles.js';
 import { Bridge } from './bridge.js';
-import { esc, money, ensureFonts, signHtml } from './room-render.js';
+import { esc, money, ensureFonts, signHtml, roomInnerHtml, paintSurfaces } from './room-render.js';
 import { filterBooths, SORTS, availability, AVAILABILITY_LABEL } from './logic/directory.js';
+import { buildLayout } from './logic/layout.js';
+import { normalizeLibrary } from './logic/library.js';
+import { peekBooth } from './logic/peek.js';
+import { reelOf } from './logic/reel.js';
 
 const READY_MS = 1000;
 const READY_TRIES = 90;
@@ -69,6 +78,12 @@ export class AtticDirectory extends HTMLElement {
   #searchTimer = null;
   #sample = null; // standalone sample data
   #toastTimer = null;
+  #library = null; // normalised room library, for the card room peeks
+  #libState = 'none'; // none (no library-src) | loading | ready | error
+  #peeks = new Map(); // boothId -> peek booth (logic/peek.js) | null
+  #peekRo = null;
+  #reels = new Map(); // boothId -> reel (logic/reel.js) | null
+  #reelResize = null;
 
   constructor() {
     super();
@@ -90,6 +105,7 @@ export class AtticDirectory extends HTMLElement {
         .then((sample) => this.#startSample(sample))
         .catch((err) => this.#fail(`Couldn't load the sample booths (${err.message}).`));
     }
+    this.#loadLibrary(this.getAttribute('library-src'));
     this.#announceReady();
   }
 
@@ -98,7 +114,31 @@ export class AtticDirectory extends HTMLElement {
     clearTimeout(this.#colTimer);
     clearTimeout(this.#searchTimer);
     this.#cartTimers.forEach((t) => clearTimeout(t));
+    this.#peekRo?.disconnect();
+    if (this.#reelResize) window.removeEventListener('resize', this.#reelResize);
     this.#bridge?.dispose();
+  }
+
+  // The room library (wallpapers, floors, fixtures, decor) ships with the app, like the booth view's. Until it
+  // arrives the peeks show an empty frame; if it can't load, the cards fall back to item thumbnails.
+  #loadLibrary(src) {
+    if (!src) return;
+    this.#libState = 'loading';
+    fetch(src)
+      .then((r) => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      })
+      .then((lib) => {
+        this.#library = normalizeLibrary(lib);
+        this.#libState = 'ready';
+        this.#paintPeeks();
+      })
+      .catch((err) => {
+        console.warn('[attic-directory] room library unavailable; showing thumbnails', err);
+        this.#libState = 'error';
+        this.#renderGrid();
+      });
   }
 
   // Say "ready" now and about every second until the page sends the directory: the Wix page's code can
@@ -122,6 +162,8 @@ export class AtticDirectory extends HTMLElement {
     this.#loaded = true;
     clearTimeout(this.#readyTimer);
     this.#booths = list(booths).filter((b) => b && typeof b === 'object' && b.id);
+    this.#peeks = new Map(this.#booths.map((b) => [b.id, peekBooth(b)]));
+    this.#reels = new Map(this.#booths.map((b) => [b.id, reelOf(b)]));
     this.#categories = list(categories).filter((c) => c && c.id);
     const wasLoggedIn = this.#loggedIn;
     this.#loggedIn = !!loggedIn;
@@ -261,20 +303,88 @@ export class AtticDirectory extends HTMLElement {
     return `<div class="signclip" aria-hidden="true"><div class="signroom">${signHtml(booth)}</div></div>`;
   }
 
+  #thumbsHtml(b) {
+    const previews = list(b?.previews).filter((s) => typeof s === 'string' && s).slice(0, 4);
+    if (!previews.length) return '';
+    return `<ul class="thumbs" aria-hidden="true">${previews.map((src) => `<li><img src="${esc(src)}" alt="" loading="lazy" decoding="async"></li>`).join('')}${'<li class="none"></li>'.repeat(4 - previews.length)}</ul>`;
+  }
+
+  /**
+   * The listing reel: one tab stop (the arrow keys, Home and End move along it), swipe or scroll by hand, and
+   * back/forward buttons that appear only when the row overflows. It never moves by itself.
+   */
+  #reelHtml(b) {
+    const reel = this.#reels.get(b.id);
+    if (!reel) return '';
+    const picks = reel.kind === 'picks';
+    const label = picks ? `Highlights from ${b.name ?? 'this booth'}` : `Newest at ${b.name ?? 'this booth'}`;
+    return `
+        <section class="reel" aria-label="${esc(label)}">
+          <div class="reelhead">
+            <span class="reeltag">${picks ? "Seller's picks" : 'Newest'}</span>
+            <span class="reelnav" hidden>
+              <button class="rnav" type="button" data-reel-step="-1" aria-label="Show earlier items" disabled>&#8249;</button>
+              <button class="rnav" type="button" data-reel-step="1" aria-label="Show more items">&#8250;</button>
+            </span>
+          </div>
+          <ul class="reeltrack">${reel.items
+            .map((it, i) => `<li><button class="ritem" type="button" data-reel-item="${esc(it.id)}" data-slug="${esc(b.slug ?? '')}" tabindex="${i === 0 ? 0 : -1}" aria-label="${esc(`${it.title || 'Item'}, ${money(it.price)}. Opens it in the booth.`)}">`
+              + `<span class="rimg"><img src="${esc(it.image)}" alt="" loading="lazy" decoding="async" draggable="false"></span><span class="rprice">${esc(money(it.price))}</span></button></li>`)
+            .join('')}</ul>
+        </section>`;
+  }
+
+  /** Show each reel's back/forward buttons only when it overflows, and disable the one at an end. */
+  #syncReel(track) {
+    const nav = track.closest('.reel')?.querySelector('.reelnav');
+    if (!nav) return;
+    const max = track.scrollWidth - track.clientWidth;
+    nav.hidden = max <= 12; // a few px is just the focus-ring padding: every item is already in view
+    const [back, fwd] = nav.querySelectorAll('.rnav');
+    back.disabled = track.scrollLeft <= 1;
+    fwd.disabled = track.scrollLeft >= max - 1;
+  }
+
+  #syncReels() {
+    this.#root.querySelectorAll('.bcard .reeltrack').forEach((t) => this.#syncReel(t));
+  }
+
+  #reelKey(e) {
+    const btn = e.target.closest?.('.ritem');
+    if (!btn) return;
+    const all = [...btn.closest('.reeltrack').querySelectorAll('.ritem')];
+    const i = all.indexOf(btn);
+    const to = { ArrowRight: i + 1, ArrowLeft: i - 1, Home: 0, End: all.length - 1 }[e.key];
+    if (to === undefined) return;
+    e.preventDefault();
+    const next = all[Math.max(0, Math.min(all.length - 1, to))];
+    all.forEach((b) => (b.tabIndex = b === next ? 0 : -1));
+    next.focus({ preventScroll: true });
+    next.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: this.#motion() });
+  }
+
+  #motion() {
+    return typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
+  }
+
   #cardHtml({ booth: b, titles }) {
     const fav = this.#favBooths.has(b.id);
     const n = Number(b.itemCount) || 0;
-    const previews = list(b.previews).filter((s) => typeof s === 'string' && s).slice(0, 4);
     const updated = dateFmt(b.updatedAt);
     const label = boothLabel(b);
     const more = titles.length > 2 ? ` and ${titles.length - 2} more` : '';
+    // A look-only view into the booth's room when the site sent one (and the room library loaded); else thumbnails.
+    // The peek is inert and hidden from screen readers: the whole card is already the "Visit booth" link.
+    const peek = this.#libState !== 'none' && this.#libState !== 'error' && this.#peeks.get(b.id);
     return `
       <article class="bcard paper" data-id="${esc(b.id)}">
         <h3 class="vh">${esc(label)}</h3>
         ${this.#signBox(b)}
+        ${peek ? `<div class="peek" data-peek="${esc(b.id)}" aria-hidden="true" inert><div class="room"></div></div>` : ''}
+        ${this.#reelHtml(b)}
         ${b.sellerName ? `<p class="by">by ${esc(b.sellerName)}</p>` : ''}
         ${b.about ? `<p class="babout">${esc(b.about)}</p>` : ''}
-        ${previews.length ? `<ul class="thumbs" aria-hidden="true">${previews.map((src) => `<li><img src="${esc(src)}" alt="" loading="lazy" decoding="async"></li>`).join('')}${'<li class="none"></li>'.repeat(4 - previews.length)}</ul>` : ''}
+        ${peek || this.#reels.get(b.id) ? '' : this.#thumbsHtml(b)}
         ${titles.length ? `<p class="hits">Has: ${titles.slice(0, 2).map(esc).join(', ')}${more}</p>` : ''}
         <div class="bfoot">
           <span class="meta"><span class="count"><b>${n}</b> item${n === 1 ? '' : 's'}</span>${updated ? `<span class="upd">Updated ${esc(updated)}</span>` : ''}</span>
@@ -309,6 +419,42 @@ export class AtticDirectory extends HTMLElement {
     grid.innerHTML = rows.map((r) => this.#cardHtml(r)).join('');
     const filtered = q || cat;
     line.textContent = filtered ? `${rows.length} of ${total} booth${total === 1 ? '' : 's'}` : `${total} booth${total === 1 ? '' : 's'}`;
+    this.#paintPeeks();
+    this.#syncReels();
+  }
+
+  /** Draw each card's room peek (once the library is here). A peek that can't be drawn becomes thumbnails. */
+  #paintPeeks() {
+    if (this.#libState !== 'ready') return;
+    const lib = this.#library;
+    this.#peekRo?.disconnect();
+    const painted = [];
+    this.#root.querySelectorAll('.bcard .peek[data-peek]').forEach((el) => {
+      const pb = this.#peeks.get(el.dataset.peek);
+      try {
+        if (!pb) throw new Error('no peek');
+        const room = el.querySelector('.room');
+        if (!el.dataset.drawn) {
+          room.innerHTML = roomInnerHtml(pb, lib, buildLayout(pb, lib));
+          el.dataset.drawn = '1';
+        }
+        paintSurfaces(el, pb, lib);
+        painted.push([el, pb]);
+      } catch (err) {
+        console.warn('[attic-directory] room peek skipped', el.dataset.peek, err);
+        el.outerHTML = this.#thumbsHtml(this.#booths.find((x) => x.id === el.dataset.peek));
+      }
+    });
+    if (!painted.length || typeof ResizeObserver === 'undefined') return;
+    // Wallpaper and floor tiles are sized in real inches, so they are repainted when a card changes width.
+    const byEl = new Map(painted);
+    this.#peekRo = new ResizeObserver((entries) => {
+      for (const e of entries) {
+        const pb = byEl.get(e.target);
+        if (pb) paintSurfaces(e.target, pb, lib);
+      }
+    });
+    painted.forEach(([el]) => this.#peekRo.observe(el));
   }
 
   #miniBoothHtml(b) {
@@ -433,7 +579,24 @@ export class AtticDirectory extends HTMLElement {
       this.#seed = newSeed();
       this.#renderGrid();
     });
-    dir.querySelector('#p-all').addEventListener('click', (e) => {
+    const all = dir.querySelector('#p-all');
+    all.addEventListener('keydown', (e) => this.#reelKey(e));
+    // 'scroll' doesn't bubble; a capturing listener sees every reel's scroll.
+    all.addEventListener('scroll', (e) => { if (e.target.classList?.contains('reeltrack')) this.#syncReel(e.target); }, true);
+    this.#reelResize = () => this.#syncReels();
+    window.addEventListener('resize', this.#reelResize);
+    all.addEventListener('click', (e) => {
+      const item = e.target.closest('[data-reel-item]');
+      if (item) {
+        if (item.dataset.slug) this.#send('open-booth', { slug: item.dataset.slug, itemId: item.dataset.reelItem });
+        return;
+      }
+      const step = e.target.closest('[data-reel-step]');
+      if (step) {
+        const track = step.closest('.reel').querySelector('.reeltrack');
+        track.scrollBy({ left: Number(step.dataset.reelStep) * track.clientWidth * 0.8, behavior: this.#motion() });
+        return;
+      }
       const heart = e.target.closest('[data-fav-booth]');
       if (heart) {
         this.#toggleBooth(heart.dataset.favBooth, heart.getAttribute('aria-pressed') !== 'true');

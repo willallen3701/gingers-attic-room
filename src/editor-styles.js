@@ -105,6 +105,23 @@ export const editorCss = /* css */ `
 .lightopt i.none { background: repeating-linear-gradient(45deg, #f2e8d2 0 6px, #e8dbbd 6px 12px); }
 .lightopt.on { border-color: var(--plum); box-shadow: 0 0 0 2px var(--plum); }
 
+/* Booth sound picker (Light & sound tab): one row per sound, a Listen button for the seller only. */
+.soundlist { display: flex; flex-direction: column; gap: 6px; margin: 8px 0 0; padding: 0; list-style: none; }
+.soundopt { display: flex; align-items: stretch; gap: 6px; }
+.soundopt .pick {
+  display: flex; flex: 1; align-items: center; gap: 8px; min-height: 40px; padding: 0 10px; cursor: pointer; text-align: left;
+  border: 2px solid #d8c59c; border-radius: 6px; background: #fbf5e6; font: 13px/1.2 var(--serif); color: var(--ink);
+}
+.soundopt .pick i { display: inline-grid; place-items: center; flex: none; width: 18px; height: 18px; border: 2px solid #b99a66; border-radius: 50%; font: 700 11px/1 var(--serif); font-style: normal; color: #fff; }
+.soundopt.on .pick { border-color: var(--plum); box-shadow: 0 0 0 1px var(--plum); background: #f3e3ee; }
+.soundopt.on .pick i { border-color: var(--plum); background: var(--plum); }
+.soundopt .listen {
+  flex: none; min-width: 84px; min-height: 40px; padding: 0 10px; cursor: pointer;
+  border: 1px solid #d8c59c; border-radius: 20px; background: #fffaf0; font: 12px/1 var(--type); color: var(--plum-dark);
+}
+.soundopt .listen.on { background: var(--plum); border-color: var(--plum); color: var(--paper); }
+.soundopt .pick:focus-visible, .soundopt .listen:focus-visible { outline: 2px dashed var(--plum); outline-offset: 2px; }
+
 .srcgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
 .srccard {
   display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 8px 6px;
@@ -367,6 +384,12 @@ kbd { padding: 0 4px; border: 1px solid #cbb385; border-bottom-width: 2px; borde
 .rowacts { display: flex; flex-wrap: wrap; gap: 2px 10px; }
 .lnk { padding: 0; border: 0; background: none; cursor: pointer; font: 12px var(--type); color: var(--plum); text-decoration: underline; }
 .lnk.danger { color: #a3301c; font-weight: 700; }
+/* Listing-reel highlights (My Items): a star toggle per item and a short summary at the top. */
+.lnk.hl { text-decoration: none; color: #8a6a1f; }
+.lnk.hl.on { color: #a8740b; font-weight: 700; }
+.lnk.hl[aria-disabled="true"] { color: #a99a86; cursor: not-allowed; }
+.hlsum { margin-top: 10px; }
+.hlsum .note { margin-top: 4px; }
 .rownote { font: italic 12px/1.3 var(--serif); color: #8a2b1a; }
 .item.unapproved img { opacity: .6; }
 .item.unapproved::after { content: ""; position: absolute; inset: -3px; border: 2px dashed #b07a1a; border-radius: 4px; pointer-events: none; }

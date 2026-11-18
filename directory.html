@@ -22,7 +22,8 @@
       ?category=lighting  start with a category
       ?sort=number        updated | number | shuffle
   -->
-  <attic-directory></attic-directory>
+  <!-- library-src: the room library the cards' room peeks are drawn with (it ships with the app, as in embed.html). -->
+  <attic-directory library-src="data/library.json"></attic-directory>
   <script type="module">
     const el = document.querySelector('attic-directory');
     if (window.parent === window) {

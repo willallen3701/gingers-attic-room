@@ -16,6 +16,7 @@ import { anyLampLit } from './logic/lamps.js';
 import { ANNOUNCE_TYPES } from './bridge.js';
 import { Lens } from './lens.js';
 import { boxOfItem, boxedItemIds, styleOf, liningOf } from './logic/boxes.js';
+import { soundOf, SOUND_VOLUME, SOUNDS_ENABLED } from './logic/sounds.js';
 
 const NARROW_PX = 600;
 const ZOOM_MIN = 1;
@@ -26,23 +27,6 @@ const ICONS = {
   cart: '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M3 3h2.3l2.6 11.2A2 2 0 0 0 9.8 16H18v-2H9.8l-.4-1.7h8.9a1 1 0 0 0 1-.8L21 6H6.6L6 3.8A1 1 0 0 0 5 3H3zm6.5 15a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm7 0a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3z"/></svg>',
   heart: '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 4.5 6.7 4.5c2 0 3.6 1.1 4.4 2.6h1.8c.8-1.5 2.4-2.6 4.4-2.6 3.7 0 5.8 3.9 4.3 7.3C19.5 16.4 12 21 12 21z"/></svg>',
 };
-
-/** 1 s of silence as a WAV data URI: placeholder until real ambience audio is licensed. */
-function silentWav() {
-  const rate = 8000;
-  const n = rate;
-  const buf = new ArrayBuffer(44 + n);
-  const v = new DataView(buf);
-  const str = (o, s) => [...s].forEach((c, i) => v.setUint8(o + i, c.charCodeAt(0)));
-  str(0, 'RIFF'); v.setUint32(4, 36 + n, true); str(8, 'WAVE'); str(12, 'fmt ');
-  v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
-  v.setUint32(24, rate, true); v.setUint32(28, rate, true); v.setUint16(32, 1, true); v.setUint16(34, 8, true);
-  str(36, 'data'); v.setUint32(40, n, true);
-  for (let i = 0; i < n; i++) v.setUint8(44 + i, 128);
-  let bin = '';
-  new Uint8Array(buf).forEach((b) => (bin += String.fromCharCode(b)));
-  return `data:audio/wav;base64,${btoa(bin)}`;
-}
 
 export class AtticBooth extends HTMLElement {
   #root;
@@ -59,6 +43,8 @@ export class AtticBooth extends HTMLElement {
   #fromSearch = false;
   #audio = null;
   #soundOn = false;
+  #soundId = null;
+  #pendingOpen = null; // open-item that arrived before the booth was drawn (e.g. from a directory reel) // the seller's booth sound (logic/sounds.js); the shopper starts it with the Sound button
   #parentOrigin = null;
   #libraryPromise = null;
   #loaded = false;
@@ -133,7 +119,8 @@ export class AtticBooth extends HTMLElement {
       console.warn('[attic-booth] placement problems', this.#layout.problems);
     }
     this.#render();
-    const open = this.getAttribute('open-item');
+    const open = this.#pendingOpen ?? this.getAttribute('open-item');
+    this.#pendingOpen = null;
     if (open) requestAnimationFrame(() => requestAnimationFrame(() => this.openItem(open)));
   }
 
@@ -165,6 +152,10 @@ export class AtticBooth extends HTMLElement {
     // The Lights switch appears for a lighting preset or for lamps the seller left on; lit lamps start on.
     const hasLights = !!b.room?.light?.presetId || anyLampLit(L);
     const favBooth = this.#favBooths.has(b.id);
+    // The seller's sound, if any. A different sound (fresh data from the page) stops what was playing.
+    const sound = SOUNDS_ENABLED ? soundOf(b.room?.sound) : null; // logic/sounds.js SOUNDS_ENABLED
+    if ((sound?.id ?? null) !== this.#soundId) this.#stopSound();
+    this.#soundId = sound?.id ?? null;
     shell.innerHTML = `
       <header class="namebar">
         <div class="avatar" aria-hidden="true">${avatar}</div>
@@ -176,7 +167,7 @@ export class AtticBooth extends HTMLElement {
         <div class="controls">
           <button class="ctl favbooth" type="button" aria-pressed="${favBooth}" title="Save this booth to your favourites">${ICONS.heart}<span>${favBooth ? 'Saved' : 'Save booth'}</span></button>
           ${hasLights ? '<button class="ctl lights" type="button" aria-pressed="true" title="Turn the booth lighting on or off">&#128161; Lights on</button>' : ''}
-          <button class="ctl sound" type="button" aria-pressed="false" title="Ambient sound">&#9835; Sound off</button>
+          ${sound ? `<button class="ctl sound" type="button" aria-pressed="${this.#soundOn}" title="Play the booth's background sound: ${esc(sound.name)}">${this.#soundLabel()}</button>` : ''}
           <button class="ctl zoom-out" type="button" aria-label="Zoom out">&minus;</button>
           <button class="ctl zoom-in" type="button" aria-label="Zoom in">+</button>
         </div>
@@ -249,7 +240,7 @@ export class AtticBooth extends HTMLElement {
         if (el) this.#openCard(t.dataset.id, el);
       }),
     );
-    shell.querySelector('.sound').addEventListener('click', () => this.#toggleSound());
+    shell.querySelector('.sound')?.addEventListener('click', () => this.#toggleSound());
     shell.querySelector('.favbooth').addEventListener('click', () => this.#toggleBoothFav());
     shell.querySelector('.lights')?.addEventListener('click', (e) => {
       // The light switch: the seller's chosen lighting fades on and off.
@@ -375,17 +366,43 @@ export class AtticBooth extends HTMLElement {
     else this.#applyZoom(this.#pinchStart.zoom * (d / this.#pinchStart.d));
   }
 
+  #soundLabel() {
+    return `&#9835; Sound ${this.#soundOn ? 'on' : 'off'}`;
+  }
+
+  #paintSoundButton() {
+    const btn = this.#root.querySelector('.sound');
+    if (!btn) return;
+    btn.setAttribute('aria-pressed', String(this.#soundOn));
+    btn.innerHTML = this.#soundLabel();
+  }
+
+  #stopSound() {
+    this.#audio?.pause();
+    this.#audio = null;
+    this.#soundOn = false;
+  }
+
+  // Only ever called from the shopper's click on the Sound button: the booth never plays sound by itself.
   #toggleSound() {
+    const sound = soundOf(this.#soundId);
+    if (!sound) return;
     this.#soundOn = !this.#soundOn;
     if (!this.#audio) {
-      this.#audio = new Audio(silentWav()); // placeholder ambience
+      this.#audio = new Audio(sound.src);
       this.#audio.loop = true;
+      this.#audio.volume = SOUND_VOLUME;
     }
-    if (this.#soundOn) this.#audio.play().catch(() => {});
-    else this.#audio.pause();
-    const btn = this.#root.querySelector('.sound');
-    btn.setAttribute('aria-pressed', String(this.#soundOn));
-    btn.innerHTML = `&#9835; Sound ${this.#soundOn ? 'on' : 'off'}`;
+    if (this.#soundOn) {
+      const audio = this.#audio;
+      audio.play().catch(() => {
+        if (this.#audio !== audio) return;
+        this.#soundOn = false;
+        this.#paintSoundButton();
+        this.#toast("Couldn't play the booth sound.");
+      });
+    } else this.#audio.pause();
+    this.#paintSoundButton();
     this.#emit('sound-toggle', { on: this.#soundOn });
   }
 
@@ -672,7 +689,9 @@ export class AtticBooth extends HTMLElement {
         this.#cartResult(m);
         break;
       case 'open-item':
-        if (typeof m.itemId === 'string') this.openItem(m.itemId, { fromSearch: !!m.fromSearch });
+        if (typeof m.itemId !== 'string') break;
+        if (!this.#layout) this.#pendingOpen = m.itemId; // the booth is still loading: open it once drawn
+        else this.openItem(m.itemId, { fromSearch: !!m.fromSearch });
         break;
       default:
         break;

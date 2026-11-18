@@ -2,101 +2,1619 @@
   "_note": "Sample data for directory.html opened directly (no Wix page). Made-up booths and sellers; the photos are the demo item cutouts. The live site sends load-directory instead.",
   "loggedIn": true,
   "categories": [
-    { "id": "furniture", "label": "Furniture" },
-    { "id": "lighting", "label": "Lighting" },
-    { "id": "art-frames", "label": "Art & Frames" },
-    { "id": "glass-ceramics", "label": "Glass & Ceramics" },
-    { "id": "kitchen-barware", "label": "Kitchen & Barware" },
-    { "id": "books-paper", "label": "Books & Paper" },
-    { "id": "toys-games", "label": "Toys & Games" },
-    { "id": "jewelry-accessories", "label": "Jewelry & Accessories" },
-    { "id": "textiles-linens", "label": "Textiles & Linens" },
-    { "id": "clocks-decor", "label": "Clocks & Decor" },
-    { "id": "tools-hardware", "label": "Tools & Hardware" },
-    { "id": "collectibles-other", "label": "Collectibles & Other" }
+    {
+      "id": "furniture",
+      "label": "Furniture"
+    },
+    {
+      "id": "lighting",
+      "label": "Lighting"
+    },
+    {
+      "id": "art-frames",
+      "label": "Art & Frames"
+    },
+    {
+      "id": "glass-ceramics",
+      "label": "Glass & Ceramics"
+    },
+    {
+      "id": "kitchen-barware",
+      "label": "Kitchen & Barware"
+    },
+    {
+      "id": "books-paper",
+      "label": "Books & Paper"
+    },
+    {
+      "id": "toys-games",
+      "label": "Toys & Games"
+    },
+    {
+      "id": "jewelry-accessories",
+      "label": "Jewelry & Accessories"
+    },
+    {
+      "id": "textiles-linens",
+      "label": "Textiles & Linens"
+    },
+    {
+      "id": "clocks-decor",
+      "label": "Clocks & Decor"
+    },
+    {
+      "id": "tools-hardware",
+      "label": "Tools & Hardware"
+    },
+    {
+      "id": "collectibles-other",
+      "label": "Collectibles & Other"
+    }
   ],
-  "favourites": { "boothIds": ["bt-lamplight", "bt-teacup"], "itemIds": ["it-amber-lamp", "it-teacup-gold", "it-horseshoe", "it-rotary-phone", "it-cameo"] },
+  "favourites": {
+    "boothIds": [
+      "bt-lamplight",
+      "bt-teacup"
+    ],
+    "itemIds": [
+      "it-amber-lamp",
+      "it-teacup-gold",
+      "it-horseshoe",
+      "it-rotary-phone",
+      "it-cameo"
+    ]
+  },
   "booths": [
     {
-      "id": "bt-ginger", "slug": "the-gingersattic-booth", "boothNumber": 1, "name": "The GingersAttic Booth",
+      "id": "bt-ginger",
+      "slug": "the-gingersattic-booth",
+      "boothNumber": 1,
+      "name": "The GingersAttic Booth",
       "about": "Teacups, brass and little treasures carried down from the attic.",
-      "signStyle": "wood", "sellerName": "GingersAttic", "itemCount": 15,
-      "categories": ["glass-ceramics", "kitchen-barware", "lighting", "toys-games", "art-frames", "furniture", "textiles-linens", "books-paper"],
-      "itemTitles": ["Bronze Oil Lamp", "Mint Lustre Teacup", "Black Floral Teacup", "Gold Rim Teacup", "Brown Stoneware Mug", "Brass Goblet", "Tin Motorcycle Toy", "Marbled Paper Print", "Cameo Brooch Frame", "Amber Slag Glass Lamp", "Rotary Telephone", "Cast Iron Dump Truck", "Yellow Wingback Chair", "Dragon Rug", "Stack of Old Books"],
-      "previews": ["assets/items/it-teacup-mint.png", "assets/items/it-genie-lamp.png", "assets/items/it-yellow-chair.png", "assets/items/it-goblet-brass.png"],
-      "updatedAt": "2026-11-16T18:20:00Z"
+      "signStyle": "wood",
+      "sellerName": "GingersAttic",
+      "itemCount": 15,
+      "categories": [
+        "glass-ceramics",
+        "kitchen-barware",
+        "lighting",
+        "toys-games",
+        "art-frames",
+        "furniture",
+        "textiles-linens",
+        "books-paper"
+      ],
+      "itemTitles": [
+        "Bronze Oil Lamp",
+        "Lotus Teacup & Leaf Saucer",
+        "Black & Gold Cup and Saucer",
+        "Cream & Gold Teacup",
+        "Brown-Dipped Stoneware Tankard",
+        "Lucky Iron Horseshoe",
+        "Copper Pedestal Goblet",
+        "Tin Motorcycle with Sidecar",
+        "Blue Marbled Print, Framed",
+        "Cameo Portrait in Gilt Bow Frame",
+        "Amber Lily Table Lamp",
+        "Black Bakelite Rotary Telephone",
+        "Die-Cast Tipper Truck",
+        "Pretty Yellow Chair",
+        "Peach Dragon Rug",
+        "Stack of Vintage Storybooks"
+      ],
+      "previews": [
+        "assets/items/it-genie-lamp.png",
+        "assets/items/it-teacup-mint.png",
+        "assets/items/it-teacup-black.png",
+        "assets/items/it-teacup-gold.png"
+      ],
+      "updatedAt": "2026-11-16T18:20:00Z",
+      "peek": {
+        "room": {
+          "wall": {
+            "type": "wallpaper",
+            "textureId": "wp-floral-blue",
+            "mode": "tile",
+            "scale": 1
+          },
+          "floor": {
+            "textureId": "fl-wood-honey",
+            "mode": "tile",
+            "scale": 1
+          },
+          "light": null,
+          "architecture": [
+            "baseboard-walnut"
+          ],
+          "placeables": []
+        },
+        "fixtures": [
+          {
+            "id": "fx1",
+            "fixtureId": "shelf-stack-4",
+            "x": 3,
+            "y": 12.2
+          },
+          {
+            "id": "fx2",
+            "fixtureId": "shelf-stack-4",
+            "x": 78.5,
+            "y": 12.2
+          },
+          {
+            "id": "fx3",
+            "fixtureId": "table-farm-60",
+            "x": 58,
+            "y": 65.5
+          }
+        ],
+        "decor": [
+          {
+            "id": "dc1",
+            "decorId": "candelabra-brass",
+            "placement": {
+              "surfaceId": "fx3:top",
+              "x": 105.5,
+              "y": 65.5,
+              "scaleAdj": 1
+            },
+            "lit": true
+          }
+        ],
+        "boxes": [],
+        "items": [
+          {
+            "id": "it-genie-lamp",
+            "image": "assets/items/it-genie-lamp.png",
+            "mount": "stand",
+            "aspect": 1.2529,
+            "placement": {
+              "surfaceId": "fx1:s0",
+              "x": 13,
+              "y": 12.2
+            },
+            "heightIn": 6
+          },
+          {
+            "id": "it-teacup-mint",
+            "image": "assets/items/it-teacup-mint.png",
+            "mount": "stand",
+            "aspect": 1.6495,
+            "placement": {
+              "surfaceId": "fx1:s2",
+              "x": 9,
+              "y": 29.8
+            },
+            "heightIn": 3.2
+          },
+          {
+            "id": "it-teacup-black",
+            "image": "assets/items/it-teacup-black.png",
+            "mount": "stand",
+            "aspect": 1.6714,
+            "placement": {
+              "surfaceId": "fx1:s2",
+              "x": 16,
+              "y": 29.8
+            },
+            "heightIn": 3.2
+          },
+          {
+            "id": "it-teacup-gold",
+            "image": "assets/items/it-teacup-gold.png",
+            "mount": "stand",
+            "aspect": 1.444,
+            "placement": {
+              "surfaceId": "fx1:s2",
+              "x": 23,
+              "y": 29.8
+            },
+            "heightIn": 3.2
+          },
+          {
+            "id": "it-mug-brown",
+            "image": "assets/items/it-mug-brown.png",
+            "mount": "stand",
+            "aspect": 0.7875,
+            "placement": {
+              "surfaceId": "fx1:s3",
+              "x": 12,
+              "y": 38.6
+            },
+            "heightIn": 4
+          },
+          {
+            "id": "it-horseshoe",
+            "image": "assets/items/it-horseshoe.png",
+            "mount": "stand",
+            "aspect": 0.9125,
+            "placement": {
+              "surfaceId": "fx1:s3",
+              "x": 21,
+              "y": 38.6
+            },
+            "heightIn": 5,
+            "sold": true
+          },
+          {
+            "id": "it-goblet-brass",
+            "image": "assets/items/it-goblet-brass.png",
+            "mount": "stand",
+            "aspect": 0.4684,
+            "placement": {
+              "surfaceId": "fx2:s0",
+              "x": 90,
+              "y": 12.2
+            },
+            "heightIn": 7
+          },
+          {
+            "id": "it-tin-motorcycle",
+            "image": "assets/items/it-tin-motorcycle.png",
+            "mount": "stand",
+            "aspect": 1.2678,
+            "placement": {
+              "surfaceId": "fx2:s3",
+              "x": 96,
+              "y": 38.6
+            },
+            "heightIn": 5
+          },
+          {
+            "id": "it-framed-art",
+            "image": "assets/items/it-framed-art.png",
+            "mount": "wall",
+            "aspect": 0.72,
+            "placement": {
+              "surfaceId": "wall",
+              "x": 49.2,
+              "y": 42.4
+            },
+            "heightIn": 30
+          },
+          {
+            "id": "it-cameo",
+            "image": "assets/items/it-cameo.png",
+            "mount": "wall",
+            "aspect": 0.7212,
+            "placement": {
+              "surfaceId": "wall",
+              "x": 43,
+              "y": 59
+            },
+            "heightIn": 10
+          },
+          {
+            "id": "it-amber-lamp",
+            "image": "assets/items/it-amber-lamp.png",
+            "mount": "stand",
+            "aspect": 0.6562,
+            "placement": {
+              "surfaceId": "fx3:top",
+              "x": 64,
+              "y": 65.5
+            },
+            "heightIn": 18
+          },
+          {
+            "id": "it-rotary-phone",
+            "image": "assets/items/it-rotary-phone.png",
+            "mount": "stand",
+            "aspect": 1.572,
+            "placement": {
+              "surfaceId": "fx3:top",
+              "x": 78,
+              "y": 65.5
+            },
+            "heightIn": 8
+          },
+          {
+            "id": "it-iron-truck",
+            "image": "assets/items/it-iron-truck.png",
+            "mount": "stand",
+            "aspect": 2.046,
+            "placement": {
+              "surfaceId": "fx3:top",
+              "x": 96,
+              "y": 65.5
+            },
+            "heightIn": 4
+          },
+          {
+            "id": "it-yellow-chair",
+            "image": "assets/items/it-yellow-chair.png",
+            "mount": "stand",
+            "aspect": 0.7177,
+            "placement": {
+              "surfaceId": "floor",
+              "x": 5,
+              "y": 104
+            },
+            "heightIn": 42
+          },
+          {
+            "id": "it-braided-rug",
+            "image": "assets/items/it-braided-rug.png",
+            "mount": "flat",
+            "aspect": 3.2556,
+            "placement": {
+              "surfaceId": "floor",
+              "x": 27,
+              "y": 113
+            },
+            "flat": true,
+            "widthIn": 60
+          },
+          {
+            "id": "it-book-stack",
+            "image": "assets/items/it-book-stack.png",
+            "mount": "stand",
+            "aspect": 1.3675,
+            "placement": {
+              "surfaceId": "floor",
+              "x": 100,
+              "y": 112
+            },
+            "heightIn": 8
+          }
+        ]
+      },
+      "reel": {
+        "kind": "picks",
+        "items": [
+          {
+            "id": "it-yellow-chair",
+            "title": "Pretty Yellow Chair",
+            "price": 245,
+            "image": "assets/items/it-yellow-chair.png"
+          },
+          {
+            "id": "it-amber-lamp",
+            "title": "Amber Lily Table Lamp",
+            "price": 85,
+            "image": "assets/items/it-amber-lamp.png"
+          },
+          {
+            "id": "it-teacup-gold",
+            "title": "Cream & Gold Teacup",
+            "price": 20,
+            "image": "assets/items/it-teacup-gold.png"
+          },
+          {
+            "id": "it-rotary-phone",
+            "title": "Black Bakelite Rotary Telephone",
+            "price": 70,
+            "image": "assets/items/it-rotary-phone.png"
+          },
+          {
+            "id": "it-framed-art",
+            "title": "Blue Marbled Print, Framed",
+            "price": 120,
+            "image": "assets/items/it-framed-art.png"
+          },
+          {
+            "id": "it-tin-motorcycle",
+            "title": "Tin Motorcycle with Sidecar",
+            "price": 64,
+            "image": "assets/items/it-tin-motorcycle.png"
+          }
+        ]
+      }
     },
     {
-      "id": "bt-lamplight", "slug": "lamplight-lane", "boothNumber": 2, "name": "Lamplight Lane",
+      "id": "bt-lamplight",
+      "slug": "lamplight-lane",
+      "boothNumber": 2,
+      "name": "Lamplight Lane",
       "about": "Slag glass, brass and pressed tin lamps, rewired and ready for a cosy corner.",
-      "signStyle": "brass", "sellerName": "Ruth", "itemCount": 9,
-      "categories": ["lighting", "clocks-decor"],
-      "itemTitles": ["Amber Slag Glass Table Lamp", "Brass Student Lamp", "Milk Glass Hurricane Lamp", "Pressed Tin Sconce"],
-      "previews": ["assets/items/it-amber-lamp.png", "assets/items/it-genie-lamp.png"],
-      "updatedAt": "2026-11-15T09:05:00Z"
+      "signStyle": "brass",
+      "sellerName": "Ruth",
+      "itemCount": 3,
+      "categories": [
+        "lighting",
+        "clocks-decor"
+      ],
+      "itemTitles": [
+        "Amber Lily Table Lamp",
+        "Bronze Oil Lamp",
+        "Copper Pedestal Goblet"
+      ],
+      "previews": [
+        "assets/items/it-amber-lamp.png",
+        "assets/items/it-genie-lamp.png",
+        "assets/items/it-goblet-brass.png"
+      ],
+      "updatedAt": "2026-11-15T09:05:00Z",
+      "peek": {
+        "room": {
+          "wall": {
+            "type": "wallpaper",
+            "textureId": "wp-gilded-damask",
+            "mode": "tile",
+            "scale": 1
+          },
+          "floor": {
+            "textureId": "fl-herringbone",
+            "mode": "tile",
+            "scale": 1
+          },
+          "light": {
+            "presetId": "lamp-glow",
+            "intensity": 0.55
+          },
+          "architecture": [
+            "baseboard-walnut",
+            "crown-walnut"
+          ],
+          "placeables": []
+        },
+        "fixtures": [
+          {
+            "id": "fx1",
+            "fixtureId": "shelf-single-48-walnut",
+            "x": 36,
+            "y": 34
+          },
+          {
+            "id": "fx2",
+            "fixtureId": "table-console-carved",
+            "x": 30,
+            "y": 62.71
+          },
+          {
+            "id": "fx3",
+            "fixtureId": "pedestal-42",
+            "x": 6,
+            "y": 62.86
+          }
+        ],
+        "decor": [
+          {
+            "id": "dc1",
+            "decorId": "lamp-oil",
+            "placement": {
+              "surfaceId": "fx1:s0",
+              "x": 42.2851625,
+              "y": 34,
+              "scaleAdj": 1
+            },
+            "lit": true
+          },
+          {
+            "id": "dc2",
+            "decorId": "candelabra-brass",
+            "placement": {
+              "surfaceId": "fx1:s0",
+              "x": 54.85461,
+              "y": 34,
+              "scaleAdj": 1
+            },
+            "lit": true
+          },
+          {
+            "id": "dc3",
+            "decorId": "plant-fern",
+            "placement": {
+              "surfaceId": "floor",
+              "x": 0.9996325000000006,
+              "y": 91,
+              "scaleAdj": 1
+            }
+          },
+          {
+            "id": "dc4",
+            "decorId": "lamp-floor-fringe",
+            "placement": {
+              "surfaceId": "floor",
+              "x": 96.785656,
+              "y": 112,
+              "scaleAdj": 1
+            },
+            "lit": true
+          },
+          {
+            "id": "dc5",
+            "decorId": "lantern-hanging",
+            "placement": {
+              "surfaceId": "wall",
+              "x": 93.46529,
+              "y": 40,
+              "scaleAdj": 1
+            },
+            "lit": true
+          }
+        ],
+        "boxes": [],
+        "items": [
+          {
+            "id": "it-amber-lamp",
+            "image": "assets/items/it-amber-lamp.png",
+            "mount": "stand",
+            "aspect": 0.6562,
+            "placement": {
+              "surfaceId": "fx2:s0",
+              "x": 41.053399999999996,
+              "y": 62.71,
+              "scaleAdj": 1
+            },
+            "heightIn": 18
+          },
+          {
+            "id": "it-genie-lamp",
+            "image": "assets/items/it-genie-lamp.png",
+            "mount": "stand",
+            "aspect": 1.2529,
+            "placement": {
+              "surfaceId": "fx2:s0",
+              "x": 62.80089999999999,
+              "y": 62.71,
+              "scaleAdj": 1
+            },
+            "heightIn": 6
+          },
+          {
+            "id": "it-goblet-brass",
+            "image": "assets/items/it-goblet-brass.png",
+            "mount": "stand",
+            "aspect": 0.4684,
+            "placement": {
+              "surfaceId": "fx1:s0",
+              "x": 71.66060000000002,
+              "y": 34,
+              "scaleAdj": 1
+            },
+            "heightIn": 7
+          }
+        ]
+      },
+      "reel": {
+        "kind": "picks",
+        "items": [
+          {
+            "id": "it-amber-lamp",
+            "title": "Amber Lily Table Lamp",
+            "price": 85,
+            "image": "assets/items/it-amber-lamp.png"
+          },
+          {
+            "id": "it-genie-lamp",
+            "title": "Bronze Oil Lamp",
+            "price": 38,
+            "image": "assets/items/it-genie-lamp.png"
+          }
+        ]
+      }
     },
     {
-      "id": "bt-teacup", "slug": "the-teacup-shelf", "boothNumber": 3, "name": "The Teacup Shelf",
+      "id": "bt-teacup",
+      "slug": "the-teacup-shelf",
+      "boothNumber": 3,
+      "name": "The Teacup Shelf",
       "about": "Bone china cups and saucers, one shelf at a time. Mismatched sets welcome.",
-      "signStyle": "cream", "sellerName": "June", "itemCount": 24,
-      "categories": ["glass-ceramics", "kitchen-barware"],
-      "itemTitles": ["Gold Rim Teacup and Saucer", "Mint Lustre Teacup", "Black Chintz Teacup", "Stoneware Mug"],
-      "previews": ["assets/items/it-teacup-gold.png", "assets/items/it-teacup-black.png", "assets/items/it-teacup-mint.png", "assets/items/it-mug-brown.png"],
-      "updatedAt": "2026-11-17T08:40:00Z"
+      "signStyle": "cream",
+      "sellerName": "June",
+      "itemCount": 4,
+      "categories": [
+        "glass-ceramics",
+        "kitchen-barware"
+      ],
+      "itemTitles": [
+        "Cream & Gold Teacup",
+        "Lotus Teacup & Leaf Saucer",
+        "Black & Gold Cup and Saucer",
+        "Brown-Dipped Stoneware Tankard"
+      ],
+      "previews": [
+        "assets/items/it-teacup-gold.png",
+        "assets/items/it-teacup-mint.png",
+        "assets/items/it-teacup-black.png",
+        "assets/items/it-mug-brown.png"
+      ],
+      "updatedAt": "2026-11-17T08:40:00Z",
+      "peek": {
+        "room": {
+          "wall": {
+            "type": "wallpaper",
+            "textureId": "wp-rose-trellis",
+            "mode": "tile",
+            "scale": 1
+          },
+          "floor": {
+            "textureId": "fl-white-tile",
+            "mode": "tile",
+            "scale": 1
+          },
+          "light": null,
+          "architecture": [
+            "baseboard-white",
+            "crown-white"
+          ],
+          "placeables": []
+        },
+        "fixtures": [
+          {
+            "id": "fx1",
+            "fixtureId": "hutch-china-54",
+            "x": 6,
+            "y": 41.93
+          },
+          {
+            "id": "fx2",
+            "fixtureId": "shelf-stack-4-cream",
+            "x": 72,
+            "y": 22
+          }
+        ],
+        "decor": [
+          {
+            "id": "dc1",
+            "decorId": "clock-wall",
+            "placement": {
+              "surfaceId": "wall",
+              "x": 50.604921000000004,
+              "y": 30,
+              "scaleAdj": 1
+            }
+          },
+          {
+            "id": "dc2",
+            "decorId": "plant-succulent",
+            "placement": {
+              "surfaceId": "fx2:s0",
+              "x": 88.1799,
+              "y": 22,
+              "scaleAdj": 1
+            }
+          },
+          {
+            "id": "dc3",
+            "decorId": "plant-fern",
+            "placement": {
+              "surfaceId": "floor",
+              "x": 90.9996325,
+              "y": 114,
+              "scaleAdj": 1
+            }
+          }
+        ],
+        "boxes": [],
+        "items": [
+          {
+            "id": "it-teacup-gold",
+            "image": "assets/items/it-teacup-gold.png",
+            "mount": "stand",
+            "aspect": 1.444,
+            "placement": {
+              "surfaceId": "fx2:s1",
+              "x": 81.7896,
+              "y": 30.79,
+              "scaleAdj": 1
+            },
+            "heightIn": 3.2
+          },
+          {
+            "id": "it-teacup-mint",
+            "image": "assets/items/it-teacup-mint.png",
+            "mount": "stand",
+            "aspect": 1.6495,
+            "placement": {
+              "surfaceId": "fx2:s1",
+              "x": 96.2608,
+              "y": 30.79,
+              "scaleAdj": 1
+            },
+            "heightIn": 3.2
+          },
+          {
+            "id": "it-teacup-black",
+            "image": "assets/items/it-teacup-black.png",
+            "mount": "stand",
+            "aspect": 1.6714,
+            "placement": {
+              "surfaceId": "fx2:s2",
+              "x": 88.82576,
+              "y": 39.59,
+              "scaleAdj": 1
+            },
+            "heightIn": 3.2
+          },
+          {
+            "id": "it-mug-brown",
+            "image": "assets/items/it-mug-brown.png",
+            "mount": "stand",
+            "aspect": 0.7875,
+            "placement": {
+              "surfaceId": "fx1:s1",
+              "x": 36.143,
+              "y": 76.93,
+              "scaleAdj": 1
+            },
+            "heightIn": 4
+          }
+        ]
+      },
+      "reel": {
+        "kind": "newest",
+        "items": [
+          {
+            "id": "it-mug-brown",
+            "title": "Brown-Dipped Stoneware Tankard",
+            "price": 12,
+            "image": "assets/items/it-mug-brown.png"
+          },
+          {
+            "id": "it-teacup-black",
+            "title": "Black & Gold Cup and Saucer",
+            "price": 22,
+            "image": "assets/items/it-teacup-black.png"
+          },
+          {
+            "id": "it-teacup-mint",
+            "title": "Lotus Teacup & Leaf Saucer",
+            "price": 18,
+            "image": "assets/items/it-teacup-mint.png"
+          },
+          {
+            "id": "it-teacup-gold",
+            "title": "Cream & Gold Teacup",
+            "price": 20,
+            "image": "assets/items/it-teacup-gold.png"
+          }
+        ]
+      }
     },
     {
-      "id": "bt-rust", "slug": "rust-and-rosewood", "boothNumber": 4, "name": "Rust & Rosewood",
+      "id": "bt-rust",
+      "slug": "rust-and-rosewood",
+      "boothNumber": 4,
+      "name": "Rust & Rosewood",
       "about": "Farmhouse iron, horseshoes, tools and the odd sturdy chair.",
-      "signStyle": "wood", "sellerName": "Hank", "itemCount": 12,
-      "categories": ["tools-hardware", "furniture", "collectibles-other"],
-      "itemTitles": ["Lucky Horseshoe", "Cast Iron Dump Truck", "Wingback Chair", "Hand Drill"],
-      "previews": ["assets/items/it-horseshoe.png", "assets/items/it-iron-truck.png", "assets/items/it-yellow-chair.png"],
-      "updatedAt": "2026-11-10T14:00:00Z"
+      "signStyle": "wood",
+      "sellerName": "Hank",
+      "itemCount": 2,
+      "categories": [
+        "tools-hardware",
+        "furniture",
+        "collectibles-other"
+      ],
+      "itemTitles": [
+        "Die-Cast Tipper Truck",
+        "Lucky Iron Horseshoe",
+        "Pretty Yellow Chair"
+      ],
+      "previews": [
+        "assets/items/it-iron-truck.png",
+        "assets/items/it-yellow-chair.png"
+      ],
+      "updatedAt": "2026-11-10T14:00:00Z",
+      "peek": {
+        "room": {
+          "wall": {
+            "type": "paint",
+            "paintId": "paint-mustard"
+          },
+          "floor": {
+            "textureId": "fl-terracotta",
+            "mode": "tile",
+            "scale": 1
+          },
+          "light": null,
+          "architecture": [
+            "wainscot-walnut",
+            "baseboard-walnut"
+          ],
+          "placeables": []
+        },
+        "fixtures": [
+          {
+            "id": "fx1",
+            "fixtureId": "table-work-rustic",
+            "x": 62,
+            "y": 66.71000000000001
+          },
+          {
+            "id": "fx2",
+            "fixtureId": "pegboard-36x24",
+            "x": 70,
+            "y": 18
+          },
+          {
+            "id": "fx3",
+            "fixtureId": "shelf-stack-2-oak",
+            "x": 8,
+            "y": 26
+          }
+        ],
+        "decor": [
+          {
+            "id": "dc1",
+            "decorId": "clock-wall",
+            "placement": {
+              "surfaceId": "wall",
+              "x": 36.604921000000004,
+              "y": 34,
+              "scaleAdj": 1
+            }
+          },
+          {
+            "id": "dc2",
+            "decorId": "lamp-oil",
+            "placement": {
+              "surfaceId": "fx1:s0",
+              "x": 96.6801625,
+              "y": 66.71000000000001,
+              "scaleAdj": 1
+            }
+          },
+          {
+            "id": "dc3",
+            "decorId": "plant-succulent",
+            "placement": {
+              "surfaceId": "fx3:s0",
+              "x": 18.8799,
+              "y": 26,
+              "scaleAdj": 1
+            }
+          }
+        ],
+        "boxes": [],
+        "items": [
+          {
+            "id": "it-iron-truck",
+            "image": "assets/items/it-iron-truck.png",
+            "mount": "stand",
+            "aspect": 2.046,
+            "placement": {
+              "surfaceId": "fx1:s0",
+              "x": 74.408,
+              "y": 66.71000000000001,
+              "scaleAdj": 1
+            },
+            "heightIn": 4
+          },
+          {
+            "id": "it-horseshoe",
+            "image": "assets/items/it-horseshoe.png",
+            "mount": "stand",
+            "aspect": 0.9125,
+            "placement": {
+              "surfaceId": "fx3:s0",
+              "x": 13.31875,
+              "y": 26,
+              "scaleAdj": 1
+            },
+            "heightIn": 5,
+            "sold": true
+          },
+          {
+            "id": "it-yellow-chair",
+            "image": "assets/items/it-yellow-chair.png",
+            "mount": "stand",
+            "aspect": 0.7177,
+            "placement": {
+              "surfaceId": "floor",
+              "x": 10.9283,
+              "y": 114,
+              "scaleAdj": 1
+            },
+            "heightIn": 42
+          }
+        ]
+      },
+      "reel": {
+        "kind": "newest",
+        "items": [
+          {
+            "id": "it-yellow-chair",
+            "title": "Pretty Yellow Chair",
+            "price": 245,
+            "image": "assets/items/it-yellow-chair.png"
+          },
+          {
+            "id": "it-iron-truck",
+            "title": "Die-Cast Tipper Truck",
+            "price": 95,
+            "image": "assets/items/it-iron-truck.png"
+          }
+        ]
+      }
     },
     {
-      "id": "bt-paper", "slug": "the-paper-trail", "boothNumber": 5, "name": "The Paper Trail",
+      "id": "bt-paper",
+      "slug": "the-paper-trail",
+      "boothNumber": 5,
+      "name": "The Paper Trail",
       "about": "Old books, marbled prints and framed ephemera.",
-      "signStyle": "cream", "sellerName": "Agnes", "itemCount": 31,
-      "categories": ["books-paper", "art-frames"],
-      "itemTitles": ["Stack of Cloth-bound Books", "Marbled Paper Print", "Victorian Cameo Frame"],
-      "previews": ["assets/items/it-book-stack.png", "assets/items/it-framed-art.png", "assets/items/it-cameo.png"],
-      "updatedAt": "2026-11-12T20:15:00Z"
+      "signStyle": "cream",
+      "sellerName": "Agnes",
+      "itemCount": 3,
+      "categories": [
+        "books-paper",
+        "art-frames"
+      ],
+      "itemTitles": [
+        "Stack of Vintage Storybooks",
+        "Blue Marbled Print, Framed",
+        "Cameo Portrait in Gilt Bow Frame"
+      ],
+      "previews": [
+        "assets/items/it-book-stack.png",
+        "assets/items/it-framed-art.png",
+        "assets/items/it-cameo.png"
+      ],
+      "updatedAt": "2026-11-12T20:15:00Z",
+      "peek": {
+        "room": {
+          "wall": {
+            "type": "wallpaper",
+            "textureId": "wp-parlour-stripe",
+            "mode": "tile",
+            "scale": 1
+          },
+          "floor": {
+            "textureId": "fl-wood-light",
+            "mode": "tile",
+            "scale": 1
+          },
+          "light": {
+            "presetId": "window-afternoon",
+            "intensity": 0.6
+          },
+          "architecture": [
+            "picturerail-walnut",
+            "baseboard-walnut"
+          ],
+          "placeables": []
+        },
+        "fixtures": [
+          {
+            "id": "fx1",
+            "fixtureId": "bookcase-rustic",
+            "x": 4,
+            "y": 29.569999999999993
+          },
+          {
+            "id": "fx2",
+            "fixtureId": "table-writing",
+            "x": 68,
+            "y": 70.43
+          }
+        ],
+        "decor": [
+          {
+            "id": "dc1",
+            "decorId": "lamp-oil",
+            "placement": {
+              "surfaceId": "fx2:s0",
+              "x": 97.0001625,
+              "y": 70.43,
+              "scaleAdj": 1
+            },
+            "lit": true
+          },
+          {
+            "id": "dc2",
+            "decorId": "plant-philodendron",
+            "placement": {
+              "surfaceId": "floor",
+              "x": 13.204268000000003,
+              "y": 91,
+              "scaleAdj": 1
+            }
+          }
+        ],
+        "boxes": [],
+        "items": [
+          {
+            "id": "it-book-stack",
+            "image": "assets/items/it-book-stack.png",
+            "mount": "stand",
+            "aspect": 1.3675,
+            "placement": {
+              "surfaceId": "fx2:s0",
+              "x": 76.752,
+              "y": 70.43,
+              "scaleAdj": 1
+            },
+            "heightIn": 8
+          },
+          {
+            "id": "it-framed-art",
+            "image": "assets/items/it-framed-art.png",
+            "mount": "wall",
+            "aspect": 0.72,
+            "placement": {
+              "surfaceId": "wall",
+              "x": 65.2,
+              "y": 62,
+              "scaleAdj": 1
+            },
+            "heightIn": 30
+          },
+          {
+            "id": "it-cameo",
+            "image": "assets/items/it-cameo.png",
+            "mount": "wall",
+            "aspect": 0.7212,
+            "placement": {
+              "surfaceId": "wall",
+              "x": 57.394,
+              "y": 52,
+              "scaleAdj": 1
+            },
+            "heightIn": 10
+          }
+        ]
+      },
+      "reel": {
+        "kind": "newest",
+        "items": [
+          {
+            "id": "it-cameo",
+            "title": "Cameo Portrait in Gilt Bow Frame",
+            "price": 55,
+            "image": "assets/items/it-cameo.png"
+          },
+          {
+            "id": "it-framed-art",
+            "title": "Blue Marbled Print, Framed",
+            "price": 120,
+            "image": "assets/items/it-framed-art.png"
+          },
+          {
+            "id": "it-book-stack",
+            "title": "Stack of Vintage Storybooks",
+            "price": 30,
+            "image": "assets/items/it-book-stack.png"
+          }
+        ]
+      }
     },
     {
-      "id": "bt-toybox", "slug": "toy-box-revival", "boothNumber": 7, "name": "Toy Box Revival",
+      "id": "bt-toybox",
+      "slug": "toy-box-revival",
+      "boothNumber": 7,
+      "name": "Toy Box Revival",
       "about": "Tin wind-ups, die-cast trucks and the toys from Grandpa's shelf.",
-      "signStyle": "brass", "sellerName": "Walt", "itemCount": 8,
-      "categories": ["toys-games", "collectibles-other"],
-      "itemTitles": ["Tin Motorcycle with Sidecar", "Cast Iron Dump Truck", "Rotary Telephone"],
-      "previews": ["assets/items/it-tin-motorcycle.png", "assets/items/it-iron-truck.png", "assets/items/it-rotary-phone.png"],
-      "updatedAt": "2026-11-14T11:30:00Z"
+      "signStyle": "brass",
+      "sellerName": "Walt",
+      "itemCount": 3,
+      "categories": [
+        "toys-games",
+        "collectibles-other"
+      ],
+      "itemTitles": [
+        "Tin Motorcycle with Sidecar",
+        "Die-Cast Tipper Truck",
+        "Black Bakelite Rotary Telephone"
+      ],
+      "previews": [
+        "assets/items/it-tin-motorcycle.png",
+        "assets/items/it-iron-truck.png",
+        "assets/items/it-rotary-phone.png"
+      ],
+      "updatedAt": "2026-11-14T11:30:00Z",
+      "peek": {
+        "room": {
+          "wall": {
+            "type": "wallpaper",
+            "textureId": "wp-yellow-stripe",
+            "mode": "tile",
+            "scale": 1
+          },
+          "floor": {
+            "textureId": "fl-checker",
+            "mode": "tile",
+            "scale": 1
+          },
+          "light": null,
+          "architecture": [
+            "baseboard-white"
+          ],
+          "placeables": [
+            {
+              "id": "ar1",
+              "archId": "window-sash",
+              "x": 8,
+              "y": 70
+            }
+          ]
+        },
+        "fixtures": [
+          {
+            "id": "fx1",
+            "fixtureId": "shelf-stack-3-oak",
+            "x": 80,
+            "y": 20
+          },
+          {
+            "id": "fx2",
+            "fixtureId": "case-counter-48",
+            "x": 52,
+            "y": 65.28999999999999
+          }
+        ],
+        "decor": [
+          {
+            "id": "dc1",
+            "decorId": "plant-succulent",
+            "placement": {
+              "surfaceId": "fx2:top",
+              "x": 53.129900000000006,
+              "y": 65.28999999999999,
+              "scaleAdj": 1
+            }
+          },
+          {
+            "id": "dc2",
+            "decorId": "clock-wall",
+            "placement": {
+              "surfaceId": "wall",
+              "x": 58.604921000000004,
+              "y": 36,
+              "scaleAdj": 1
+            }
+          }
+        ],
+        "boxes": [],
+        "items": [
+          {
+            "id": "it-tin-motorcycle",
+            "image": "assets/items/it-tin-motorcycle.png",
+            "mount": "stand",
+            "aspect": 1.2678,
+            "placement": {
+              "surfaceId": "fx1:s1",
+              "x": 91.8305,
+              "y": 28.990000000000002,
+              "scaleAdj": 1
+            },
+            "heightIn": 5
+          },
+          {
+            "id": "it-iron-truck",
+            "image": "assets/items/it-iron-truck.png",
+            "mount": "stand",
+            "aspect": 2.046,
+            "placement": {
+              "surfaceId": "fx2:top",
+              "x": 62.80800000000001,
+              "y": 65.28999999999999,
+              "scaleAdj": 1
+            },
+            "heightIn": 4
+          },
+          {
+            "id": "it-rotary-phone",
+            "image": "assets/items/it-rotary-phone.png",
+            "mount": "stand",
+            "aspect": 1.572,
+            "placement": {
+              "surfaceId": "fx2:top",
+              "x": 81.98700000000001,
+              "y": 65.28999999999999,
+              "scaleAdj": 1
+            },
+            "heightIn": 8
+          }
+        ]
+      },
+      "reel": {
+        "kind": "picks",
+        "items": [
+          {
+            "id": "it-tin-motorcycle",
+            "title": "Tin Motorcycle with Sidecar",
+            "price": 64,
+            "image": "assets/items/it-tin-motorcycle.png"
+          },
+          {
+            "id": "it-rotary-phone",
+            "title": "Black Bakelite Rotary Telephone",
+            "price": 70,
+            "image": "assets/items/it-rotary-phone.png"
+          },
+          {
+            "id": "it-iron-truck",
+            "title": "Die-Cast Tipper Truck",
+            "price": 95,
+            "image": "assets/items/it-iron-truck.png"
+          }
+        ]
+      }
     },
     {
-      "id": "bt-parlour", "slug": "porch-and-parlour", "boothNumber": 10, "name": "Porch & Parlour",
+      "id": "bt-parlour",
+      "slug": "porch-and-parlour",
+      "boothNumber": 10,
+      "name": "Porch & Parlour",
       "about": "Braided rugs, armchairs and everything for a front porch.",
-      "signStyle": "wood", "sellerName": "Dottie", "itemCount": 6,
-      "categories": ["textiles-linens", "furniture"],
-      "itemTitles": ["Braided Rag Rug", "Yellow Damask Wingback Chair"],
-      "previews": ["assets/items/it-braided-rug.png", "assets/items/it-yellow-chair.png"],
-      "updatedAt": "2026-11-02T16:45:00Z"
+      "signStyle": "wood",
+      "sellerName": "Dottie",
+      "itemCount": 2,
+      "categories": [
+        "textiles-linens",
+        "furniture"
+      ],
+      "itemTitles": [
+        "Peach Dragon Rug",
+        "Pretty Yellow Chair"
+      ],
+      "previews": [
+        "assets/items/it-braided-rug.png",
+        "assets/items/it-yellow-chair.png"
+      ],
+      "updatedAt": "2026-11-02T16:45:00Z",
+      "peek": {
+        "room": {
+          "wall": {
+            "type": "paint",
+            "paintId": "paint-duck-egg"
+          },
+          "floor": {
+            "textureId": "fl-octagon-lino",
+            "mode": "tile",
+            "scale": 1
+          },
+          "light": {
+            "presetId": "window-afternoon",
+            "intensity": 0.7
+          },
+          "architecture": [
+            "wainscot-cream",
+            "baseboard-white"
+          ],
+          "placeables": [
+            {
+              "id": "ar1",
+              "archId": "door-glass-oak",
+              "x": 72,
+              "y": 90
+            },
+            {
+              "id": "ar2",
+              "archId": "window-sash-wide",
+              "x": 10,
+              "y": 70
+            }
+          ]
+        },
+        "fixtures": [
+          {
+            "id": "fx1",
+            "fixtureId": "stand-plant-short",
+            "x": 2,
+            "y": 79.14
+          }
+        ],
+        "decor": [
+          {
+            "id": "dc1",
+            "decorId": "plant-fern",
+            "placement": {
+              "surfaceId": "floor",
+              "x": 0,
+              "y": 91,
+              "scaleAdj": 1
+            }
+          },
+          {
+            "id": "dc2",
+            "decorId": "plant-urn-tree",
+            "placement": {
+              "surfaceId": "floor",
+              "x": 96.859704,
+              "y": 112,
+              "scaleAdj": 1
+            }
+          }
+        ],
+        "boxes": [],
+        "items": [
+          {
+            "id": "it-braided-rug",
+            "image": "assets/items/it-braided-rug.png",
+            "mount": "flat",
+            "aspect": 3.2556,
+            "placement": {
+              "surfaceId": "floor",
+              "x": 16,
+              "y": 116,
+              "scaleAdj": 1
+            },
+            "flat": true,
+            "widthIn": 60
+          },
+          {
+            "id": "it-yellow-chair",
+            "image": "assets/items/it-yellow-chair.png",
+            "mount": "stand",
+            "aspect": 0.7177,
+            "placement": {
+              "surfaceId": "floor",
+              "x": 18.9283,
+              "y": 108,
+              "scaleAdj": 1
+            },
+            "heightIn": 42
+          }
+        ]
+      },
+      "reel": {
+        "kind": "newest",
+        "items": [
+          {
+            "id": "it-yellow-chair",
+            "title": "Pretty Yellow Chair",
+            "price": 245,
+            "image": "assets/items/it-yellow-chair.png"
+          },
+          {
+            "id": "it-braided-rug",
+            "title": "Peach Dragon Rug",
+            "price": 40,
+            "image": "assets/items/it-braided-rug.png"
+          }
+        ]
+      }
     },
     {
-      "id": "bt-velvet", "slug": "the-velvet-drawer", "boothNumber": 12, "name": "The Velvet Drawer",
+      "id": "bt-velvet",
+      "slug": "the-velvet-drawer",
+      "boothNumber": 12,
+      "name": "The Velvet Drawer",
       "about": "Cameos, brooches and brass goblets for the dressing table.",
-      "signStyle": "brass", "sellerName": "Clementine", "itemCount": 17,
-      "categories": ["jewelry-accessories", "glass-ceramics"],
-      "itemTitles": ["Shell Cameo in a Gilt Frame", "Brass Goblet", "Gold Rim Teacup"],
-      "previews": ["assets/items/it-cameo.png", "assets/items/it-goblet-brass.png", "assets/items/it-teacup-gold.png", "assets/items/it-mug-brown.png"],
-      "updatedAt": "2026-11-16T07:10:00Z"
+      "signStyle": "brass",
+      "sellerName": "Clementine",
+      "itemCount": 7,
+      "categories": [
+        "jewelry-accessories",
+        "glass-ceramics"
+      ],
+      "itemTitles": [
+        "Copper Pedestal Goblet",
+        "Brown-Dipped Stoneware Tankard",
+        "Lotus Teacup & Leaf Saucer",
+        "Cameo Portrait in Gilt Bow Frame",
+        "Cream & Gold Teacup",
+        "Lucky Iron Horseshoe",
+        "Black & Gold Cup and Saucer"
+      ],
+      "previews": [
+        "assets/items/it-goblet-brass.png",
+        "assets/items/it-mug-brown.png",
+        "assets/items/it-teacup-mint.png",
+        "assets/items/it-cameo.png"
+      ],
+      "updatedAt": "2026-11-16T07:10:00Z",
+      "peek": {
+        "room": {
+          "wall": {
+            "type": "wallpaper",
+            "textureId": "wp-cabbage-rose",
+            "mode": "tile",
+            "scale": 1
+          },
+          "floor": {
+            "textureId": "fl-wood-dark",
+            "mode": "tile",
+            "scale": 1
+          },
+          "light": null,
+          "architecture": [
+            "crown-white",
+            "picturerail-white",
+            "baseboard-white"
+          ],
+          "placeables": []
+        },
+        "fixtures": [
+          {
+            "id": "fx1",
+            "fixtureId": "dresser-carved",
+            "x": 8,
+            "y": 52.5
+          },
+          {
+            "id": "fx2",
+            "fixtureId": "case-glass-36",
+            "x": 76,
+            "y": 36.93000000000001
+          }
+        ],
+        "decor": [
+          {
+            "id": "dc1",
+            "decorId": "mirror-ornate",
+            "placement": {
+              "surfaceId": "wall",
+              "x": 22.430424,
+              "y": 50,
+              "scaleAdj": 1
+            }
+          },
+          {
+            "id": "dc2",
+            "decorId": "candelabra-brass",
+            "placement": {
+              "surfaceId": "fx1:s0",
+              "x": 41.21161,
+              "y": 52.5,
+              "scaleAdj": 1
+            }
+          }
+        ],
+        "boxes": [
+          {
+            "id": "bx1",
+            "style": "jewelry",
+            "lining": "plum",
+            "cols": 2,
+            "rows": 2,
+            "placement": {
+              "surfaceId": "fx1:s0",
+              "x": 19.5,
+              "y": 52.5
+            },
+            "slots": [
+              "it-cameo",
+              "it-teacup-gold",
+              "it-horseshoe",
+              "it-teacup-black"
+            ]
+          }
+        ],
+        "items": [
+          {
+            "id": "it-goblet-brass",
+            "image": "assets/items/it-goblet-brass.png",
+            "mount": "stand",
+            "aspect": 0.4684,
+            "placement": {
+              "surfaceId": "fx2:g1",
+              "x": 92.76060000000001,
+              "y": 68.36000000000001,
+              "scaleAdj": 1
+            },
+            "heightIn": 7
+          },
+          {
+            "id": "it-mug-brown",
+            "image": "assets/items/it-mug-brown.png",
+            "mount": "stand",
+            "aspect": 0.7875,
+            "placement": {
+              "surfaceId": "fx1:s0",
+              "x": 34.276999999999994,
+              "y": 52.5,
+              "scaleAdj": 1
+            },
+            "heightIn": 4
+          },
+          {
+            "id": "it-teacup-mint",
+            "image": "assets/items/it-teacup-mint.png",
+            "mount": "stand",
+            "aspect": 1.6495,
+            "placement": {
+              "surfaceId": "fx2:g2",
+              "x": 91.7608,
+              "y": 53.67,
+              "scaleAdj": 1
+            },
+            "heightIn": 3.2
+          },
+          {
+            "id": "it-cameo",
+            "image": "assets/items/it-cameo.png",
+            "mount": "wall",
+            "aspect": 0.7212,
+            "placement": null,
+            "heightIn": 10
+          },
+          {
+            "id": "it-teacup-gold",
+            "image": "assets/items/it-teacup-gold.png",
+            "mount": "stand",
+            "aspect": 1.444,
+            "placement": null,
+            "heightIn": 3.2
+          },
+          {
+            "id": "it-horseshoe",
+            "image": "assets/items/it-horseshoe.png",
+            "mount": "stand",
+            "aspect": 0.9125,
+            "placement": null,
+            "heightIn": 5
+          },
+          {
+            "id": "it-teacup-black",
+            "image": "assets/items/it-teacup-black.png",
+            "mount": "stand",
+            "aspect": 1.6714,
+            "placement": null,
+            "heightIn": 3.2
+          }
+        ]
+      },
+      "reel": {
+        "kind": "picks",
+        "items": [
+          {
+            "id": "it-cameo",
+            "title": "Cameo Portrait in Gilt Bow Frame",
+            "price": 55,
+            "image": "assets/items/it-cameo.png"
+          },
+          {
+            "id": "it-goblet-brass",
+            "title": "Copper Pedestal Goblet",
+            "price": 26,
+            "image": "assets/items/it-goblet-brass.png"
+          },
+          {
+            "id": "it-teacup-gold",
+            "title": "Cream & Gold Teacup",
+            "price": 20,
+            "image": "assets/items/it-teacup-gold.png"
+          }
+        ]
+      }
     }
   ],
   "collection": {
     "items": [
-      { "id": "it-amber-lamp", "title": "Amber Slag Glass Table Lamp", "price": 85, "image": "assets/items/it-amber-lamp.png", "status": "approved", "quantity": 1, "boothSlug": "lamplight-lane", "boothName": "Lamplight Lane" },
-      { "id": "it-teacup-gold", "title": "Gold Rim Teacup and Saucer", "price": 20, "image": "assets/items/it-teacup-gold.png", "status": "approved", "quantity": 2, "boothSlug": "the-teacup-shelf", "boothName": "The Teacup Shelf" },
-      { "id": "it-horseshoe", "title": "Lucky Horseshoe", "price": 14, "image": "assets/items/it-horseshoe.png", "status": "sold", "quantity": 0, "boothSlug": "rust-and-rosewood", "boothName": "Rust & Rosewood" },
-      { "id": "it-rotary-phone", "title": "Black Rotary Telephone", "price": 70, "image": "assets/items/it-rotary-phone.png", "status": "approved", "quantity": 0, "boothSlug": "toy-box-revival", "boothName": "Toy Box Revival" },
-      { "id": "it-cameo", "title": "Shell Cameo in a Gilt Frame", "price": 55, "image": "assets/items/it-cameo.png", "status": "approved", "quantity": 1, "boothSlug": "the-velvet-drawer", "boothName": "The Velvet Drawer" }
+      {
+        "id": "it-amber-lamp",
+        "title": "Amber Slag Glass Table Lamp",
+        "price": 85,
+        "image": "assets/items/it-amber-lamp.png",
+        "status": "approved",
+        "quantity": 1,
+        "boothSlug": "lamplight-lane",
+        "boothName": "Lamplight Lane"
+      },
+      {
+        "id": "it-teacup-gold",
+        "title": "Gold Rim Teacup and Saucer",
+        "price": 20,
+        "image": "assets/items/it-teacup-gold.png",
+        "status": "approved",
+        "quantity": 2,
+        "boothSlug": "the-teacup-shelf",
+        "boothName": "The Teacup Shelf"
+      },
+      {
+        "id": "it-horseshoe",
+        "title": "Lucky Horseshoe",
+        "price": 14,
+        "image": "assets/items/it-horseshoe.png",
+        "status": "sold",
+        "quantity": 0,
+        "boothSlug": "rust-and-rosewood",
+        "boothName": "Rust & Rosewood"
+      },
+      {
+        "id": "it-rotary-phone",
+        "title": "Black Rotary Telephone",
+        "price": 70,
+        "image": "assets/items/it-rotary-phone.png",
+        "status": "approved",
+        "quantity": 0,
+        "boothSlug": "toy-box-revival",
+        "boothName": "Toy Box Revival"
+      },
+      {
+        "id": "it-cameo",
+        "title": "Shell Cameo in a Gilt Frame",
+        "price": 55,
+        "image": "assets/items/it-cameo.png",
+        "status": "approved",
+        "quantity": 1,
+        "boothSlug": "the-velvet-drawer",
+        "boothName": "The Velvet Drawer"
+      }
     ]
   }
 }

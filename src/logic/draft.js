@@ -1,5 +1,6 @@
 // Draft <-> booth. The draft is everything a seller arranges in the editor:
-//   { room, fixtures, decor, boxes, placements: { [itemId]: {surfaceId, x, y, scaleAdj} | null } }
+//   { room, fixtures, decor, boxes, highlights, placements: { [itemId]: {surfaceId, x, y, scaleAdj} | null } }
+// highlights: up to six item ids the seller features in the directory card's reel (logic/reel.js).
 // boxes: collectibles boxes (shape in logic/boxes.js); items in a box have a null placement.
 // Item details (title, price, photos) are NOT part of the draft; only where each item sits.
 // A null placement means the item waits in the storage crate.
@@ -25,6 +26,7 @@ export function toDraft(booth) {
     fixtures: clone(booth.fixtures ?? []),
     decor: clone(booth.decor ?? []),
     boxes: clone(booth.boxes ?? []),
+    highlights: clone(booth.highlights ?? []),
     placements: Object.fromEntries((booth.items ?? []).map((it) => [it.id, draftPlacement(it.placement, itemTweak(it))])),
   };
 }
@@ -40,6 +42,7 @@ export function applyDraft(booth, draft) {
   if (draft.fixtures) b.fixtures = clone(draft.fixtures);
   if (draft.decor) b.decor = clone(draft.decor);
   if (draft.boxes) b.boxes = clone(draft.boxes);
+  if (Array.isArray(draft.highlights)) b.highlights = clone(draft.highlights);
   const pl = draft.placements ?? {};
   b.items = (b.items ?? []).map((it) => {
     if (!Object.prototype.hasOwnProperty.call(pl, it.id)) return it;

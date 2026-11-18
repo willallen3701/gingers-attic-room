@@ -73,6 +73,43 @@ button:focus-visible, select:focus-visible, input:focus-visible { outline: 3px s
    cqw sizes (fractions of a 120 in room) come out right; the box is clipped to the sign. */
 .signclip { position: relative; width: 84%; max-width: 300px; margin: 0 auto 10px; aspect-ratio: 26 / 11; overflow: hidden; }
 .signroom { position: absolute; top: 0; left: -180.7692%; width: 461.5385%; aspect-ratio: 1 / 1; container-type: inline-size; pointer-events: none; }
+/* Room peek: a small, look-only view into the booth's room (room-render, as the booth view draws it), the whole
+   square room. Not cropped: things on top of tall shelves reach the ceiling. The room's own sign and the price
+   tags are left out at this size (the card has the sign above it). The card's Visit overlay takes the clicks. */
+.peek {
+  position: relative; isolation: isolate; overflow: hidden; aspect-ratio: 1 / 1; margin: 0 0 10px;
+  border-radius: 6px; pointer-events: none; background: #e9dfc8;
+  box-shadow: 0 0 0 1px #b99a66, 0 0 0 4px #e3d1a8, 0 0 0 5px #b99a66, 0 6px 14px rgba(50,30,15,.22);
+}
+.peek .sign, .peek .tags { display: none; }
+.peek .item img { transition: none; }
+/* Listing reel: up to six listings between the room peek and the bio, scrolled by hand (swipe, wheel/trackpad,
+   the round buttons, or the arrow keys). It sits above the card's Visit overlay so it gets its own taps. */
+.reel { position: relative; z-index: 2; margin: 0 0 10px; min-width: 0; }
+.reelhead { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 28px; margin-bottom: 4px; }
+.reeltag { font: 12px/1 var(--type); letter-spacing: .06em; text-transform: uppercase; color: var(--plum-dark); }
+.reelnav { display: flex; gap: 6px; }
+.reelnav[hidden] { display: none; }
+.rnav {
+  display: inline-grid; place-items: center; width: 40px; height: 40px; padding: 0 0 3px; border: 1px solid #d8c59c; border-radius: 50%;
+  background: #fffaf0; color: var(--purple); font: 700 24px/1 var(--serif); cursor: pointer;
+}
+.rnav:hover:not([disabled]) { border-color: var(--purple); }
+.rnav[disabled] { opacity: .4; cursor: default; }
+.reeltrack {
+  display: flex; gap: 8px; margin: 0; padding: 2px 2px 6px; list-style: none;
+  overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory; scroll-padding: 2px;
+  scrollbar-width: thin; scrollbar-color: #c9b58a transparent; -webkit-overflow-scrolling: touch;
+}
+.reeltrack li { flex: 0 0 auto; scroll-snap-align: start; }
+.ritem {
+  display: flex; flex-direction: column; align-items: stretch; gap: 3px; width: 76px; padding: 0; border: 0; background: none; cursor: pointer;
+}
+.rimg { display: grid; place-items: center; width: 76px; height: 76px; overflow: hidden; border: 1px solid #e3d3ad; border-radius: 6px; background: #fffaf0; }
+.rimg img { width: 86%; height: 86%; object-fit: contain; pointer-events: none; }
+.rprice { font: 700 14px/1.2 var(--serif); color: var(--ink); text-align: center; }
+.ritem:hover .rimg { border-color: var(--purple); }
+.bcard .ritem:focus-visible, .bcard .rnav:focus-visible { outline: 3px solid var(--purple); outline-offset: 2px; }
 .by { margin: 0; font: 13px/1.35 var(--type); color: var(--ink-soft); overflow-wrap: anywhere; }
 .babout {
   margin: 6px 0 0; font: italic 15px/1.4 var(--serif); color: var(--ink);

@@ -5,7 +5,7 @@ Two plain-JS web components that run inside Wix HTML (iframe) elements and talk 
 
 - `<attic-booth>` (view mode, `index.html` / `embed.html`): a shopper's view of one booth. It shows a square, front-on room
   with wallpaper, floor, fixtures, windows and doors, decor, real-size items, price tags and an item card.
-- `<attic-editor>` (edit mode, `editor.html`): the seller's booth editor. A left panel has tabs (Walls, Floor, Lighting,
+- `<attic-editor>` (edit mode, `editor.html`): the seller's booth editor. A left panel has tabs (Walls, Floor, Light & sound,
   Fixtures, Decor, My Items, Booth sign) and the room sits on the right. Things snap to the wall, shelves and floor.
   The editor has undo/redo, a draft that autosaves, an "Open my booth" / "Update booth" button, a 7-step setup guide
   shown on the first visit, and speech-bubble tips on later visits. Below 768 px wide it shows a read-only room and
@@ -52,7 +52,10 @@ the allowlist, fixes the origin for every later message. Every page repeats `rea
   - `toggle-favourite` {itemId, on}
   - `toggle-favourite-booth` {boothId, on}: the heart in the booth's name bar
   - `visit-booth` {itemId}
-  - `sound-toggle` {on}
+  - `sound-toggle` {on}: the shopper pressed the Sound button (shown only when the seller picked a booth sound;
+    `room.sound`, see `src/logic/sounds.js`). Nothing plays until the shopper presses it. Booth sounds are currently
+    switched OFF by the single switch `SOUNDS_ENABLED` in `src/logic/sounds.js` (no Sound button, no picker; saved
+    choices are kept). Set it to `true` to turn them back on.
 - **In:**
   - `load-booth` {booth, library?}. Without `library`, the app's own `library-src` is used.
   - `set-favourites` {itemIds?, boothIds?}. Either list may come alone; a list that isn't sent is left as it was.
@@ -72,11 +75,14 @@ magnified close-up.
 - `save-draft` {draft}. Debounced 1.5 s after the last change, and retried with backoff (2 s, 4 s, … up to 30 s) when
   `save-result` fails or no answer comes within 15 s. The draft is:
   `{ room, fixtures, decor, boxes, placements: { [itemId]: {surfaceId,x,y,scaleAdj} | null } }`, where:
-  - `room` = `{ wall, floor, light|null, architecture:[stripIds], placeables:[…], sign:{style} }`
+  - `room` = `{ wall, floor, light|null, architecture:[stripIds], placeables:[…], sign:{style}, sound }`; `sound` is
+    `fireplace`, `rain`, `record`, `clock`, `shop` or null (files and licences: `assets/sounds/LICENSES.md`)
   - `wall` = `{type:'wallpaper', textureId|src+uploadId+tileIn, mode:'tile'|'fill', scale}` or `{type:'paint', paintId}`
   - `floor` = `{textureId|src+uploadId+tileIn, mode, scale}`
   - `decor[]` = `{id, decorId, placement:{surfaceId,x,y,scaleAdj}, lit?}`; `lit: true|false` only on lighting decor
     (new lamps start `false`)
+  - `highlights[]` = up to 6 of the seller's item ids for the directory card's listing reel (`logic/reel.js`); they go
+    live with "Update booth", like the layout
   - `boxes[]` = collectibles boxes (at most 3):
     `{id:'bx1', style:'crate'|'jewelry'|'curio', lining:'plum'|'green'|'red'|'blue'|'cream', cols:2..4, rows:2..4,
     placement:{surfaceId,x,y}, slots:[itemId|null, ...]}`; `slots` has exactly `cols * rows` entries, row by row from
@@ -123,13 +129,28 @@ seller's tick, sent as `lightWeightConfirmed: true`. There is no local pickup: e
 (see `src/cutout-spec.js` and CREDITS.md).
 
 ### Booth directory (`<attic-directory>`, `directory.html`, the Booths page)
-**Out:** `ready` {mode:'directory'} (about every second until `load-directory`), `open-booth` {slug},
+**Out:** `ready` {mode:'directory'} (about every second until `load-directory`), `open-booth` {slug, itemId?} (itemId from
+the listing reel; the Booths page opens `/booth?b=<slug>&i=<itemId>` and the booth page sends `open-item`),
 `toggle-favourite-booth` {boothId, on}, `toggle-favourite` {itemId, on:false}, `login-request` {}, `get-collection` {},
 `add-to-cart` {itemId, quantity:1}
 **In:** `load-directory` {booths:[{id, slug, boothNumber, name, about, signStyle, sellerName, itemCount, categories,
-itemTitles, previews, updatedAt}], loggedIn, favourites:{boothIds, itemIds}, categories:[{id, label}]},
+itemTitles, previews, updatedAt, peek?, reel?}], loggedIn, favourites:{boothIds, itemIds}, categories:[{id, label}]},
 `set-favourites` {boothIds?, itemIds?}, `collection` {booths, items:[{id, title, price, image, status, quantity, boothSlug,
 boothName}]}, `cart-result` {itemId, ok, message?}
+
+**Room peek.** `peek` = `{room, fixtures, decor, boxes, items:[{id, image, mount, aspect, heightIn|widthIn+flat, placement|null, sold?}]}`,
+built by the site's `publicPeek()` (`site/src/backend/boothShape.js`): the room's look and only the approved or sold items
+that are out in the room or in a box, with no titles, prices or owner data. The card then shows a small, look-only view of
+the whole room (`logic/peek.js` drops malformed rows; no sign or price tags; inert, the card itself opens the booth)
+instead of the thumbnails. It needs `library-src` on the element (`directory.html` sets `data/library.json`); without a
+peek, or if the library can't load, the card shows `previews` as before. Sample peeks:
+`node scripts/make-sample-peeks.mjs` (`--check` only compares).
+
+**Listing reel.** `reel` = `{kind:'picks'|'newest', items:[{id, title, price, image}]}` (at most 6), built by the site's
+`publicReel()`: the seller's live highlights that are still for sale, in their order, else the newest listings for sale.
+The card shows it between the room peek and the bio (`logic/reel.js` drops malformed rows): photo and price per item,
+scrolled only by hand (swipe, wheel, the back/forward buttons shown when it overflows, or the arrow keys, Home and End
+on its single tab stop). Sellers pick highlights with the star in the editor's My Items tab (`draft.highlights`).
 
 ### FAQ (`<attic-faq>`, `faq.html`)
 Questions ship with the app in `data/faq.json`. **Out:** `ready` {mode:'faq'} (about every second until `load-faq`),
@@ -153,7 +174,7 @@ The allowlist covers `https://*.wixsite.com`, `https://*.wix.com` (the editor an
   - `history` is the undo/redo stack
   - `downscale` sizes uploads
   - `lamps` places lamp glows; `boxes` is the collectibles box shape; `directory` searches and sorts booths;
-    `listing` holds the listing rules
+    `peek` cleans a directory card's room peek; `listing` holds the listing rules
 - `src/room-render.js`: shared room HTML, used by both components
 - `src/attic-booth.js` + `src/styles.js`: view component
 - `src/attic-editor.js` + `src/editor-styles.js`: editor component
@@ -164,5 +185,7 @@ The allowlist covers `https://*.wixsite.com`, `https://*.wix.com` (the editor an
   the editor
 - `scripts/make-agreement-docs.mjs`: regenerates `../docs/seller-agreement.md` and `../docs/prohibited-items.md` from
   `data/agreement.json` (`--check` only compares)
+- `scripts/make-sample-peeks.mjs`: arranges the sample booths' rooms with the editor's own operations and writes their
+  peeks (through the site's `publicPeek()`) into `data/sample-directory.json` (`--check` only compares)
 - `data/library.json`: wallpapers, floors, paints, lights, architecture (strips and placeables), fixtures and decor
 - `data/demo-booth.json`: demo booth
