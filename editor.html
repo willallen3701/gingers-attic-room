@@ -22,6 +22,8 @@
       ?select=kind:id     select something (kind = item|fixture|decor|placeable)
       ?storage=id,id      put these demo items in the storage crate
       ?drag=kind:id:dx:dy show a drag in progress (inches)
+      ?fresh=1            a brand-new booth: default room, every item in the crate
+      ?now=2026-12-30T10:00:00  pretend it is this date (the Christmas template is offered until December 31)
   -->
   <attic-editor library-src="data/library.json"></attic-editor>
   <script type="module">
@@ -40,6 +42,8 @@
           const [kind, id] = q.get('select').split(':');
           opts.select = { kind, id };
         }
+        if (q.has('now')) opts.now = q.get('now');
+        if (q.get('fresh') === '1') opts.fresh = true;
         if (q.has('storage')) opts.storage = q.get('storage').split(',').filter(Boolean);
         if (q.has('drag')) {
           const [kind, id, dx, dy] = q.get('drag').split(':');
