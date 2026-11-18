@@ -146,8 +146,8 @@ export const TEMPLATES = Object.freeze([
       { k: 'console', id: 'table-console-carved', x: 4, base: 108 },
     ],
     decor: [
-      { id: 'xmas-garland', on: { wall: true, x: 45, base: 22 } },
-      { id: 'xmas-wreath', on: { wall: true, x: 24, base: 56 } },
+      { id: 'xmas-garland', on: { wall: true, x: 21, base: 28 } },
+      { id: 'xmas-wreath', on: { wall: true, x: 21, base: 57 } },
       { id: 'xmas-stockings', on: { wall: true, x: 63, base: 52 } },
       { id: 'xmas-candles', on: { fx: 'console', s: 's0', u: 0.2 }, lit: true },
       { id: 'lamp-oil', on: { fx: 'console', s: 's0', u: 0.62 }, lit: true },
