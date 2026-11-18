@@ -81,6 +81,60 @@
     "w": 8,
     "h": 8
    }
+  },
+  {
+   "id": "wp-crimson-damask",
+   "name": "Crimson Damask",
+   "src": "assets/textures/wallpapers/wp-crimson-damask.jpg",
+   "tileIn": {
+    "w": 16.4,
+    "h": 18.8
+   }
+  },
+  {
+   "id": "wp-red-roses",
+   "name": "Red Rose Bouquets",
+   "src": "assets/textures/wallpapers/wp-red-roses.jpg",
+   "tileIn": {
+    "w": 16.4,
+    "h": 16.3
+   }
+  },
+  {
+   "id": "wp-coral-damask",
+   "name": "Coral Damask",
+   "src": "assets/textures/wallpapers/wp-coral-damask.jpg",
+   "tileIn": {
+    "w": 16.4,
+    "h": 18.2
+   }
+  },
+  {
+   "id": "wp-acanthus-leaf",
+   "name": "Acanthus Leaf",
+   "src": "assets/textures/wallpapers/wp-acanthus-leaf.jpg",
+   "tileIn": {
+    "w": 16.4,
+    "h": 23.7
+   }
+  },
+  {
+   "id": "wp-cranberry-plaid",
+   "name": "Cranberry Tartan",
+   "src": "assets/textures/wallpapers/wp-cranberry-plaid.jpg",
+   "tileIn": {
+    "w": 8,
+    "h": 8
+   }
+  },
+  {
+   "id": "wp-evergreen-stripe",
+   "name": "Evergreen Stripe",
+   "src": "assets/textures/wallpapers/wp-evergreen-stripe.jpg",
+   "tileIn": {
+    "w": 6,
+    "h": 6
+   }
   }
  ],
  "floors": [
@@ -154,6 +208,42 @@
    "tileIn": {
     "w": 78.3,
     "h": 78.3
+   }
+  },
+  {
+   "id": "fl-red-oak",
+   "name": "Red Oak Planks",
+   "src": "assets/textures/floors/fl-red-oak.jpg",
+   "tileIn": {
+    "w": 47.2,
+    "h": 47.2
+   }
+  },
+  {
+   "id": "fl-rustic-pine",
+   "name": "Rustic Pine Boards",
+   "src": "assets/textures/floors/fl-rustic-pine.jpg",
+   "tileIn": {
+    "w": 74.4,
+    "h": 74.4
+   }
+  },
+  {
+   "id": "fl-chestnut",
+   "name": "Chestnut Hardwood",
+   "src": "assets/textures/floors/fl-chestnut.jpg",
+   "tileIn": {
+    "w": 47.2,
+    "h": 47.2
+   }
+  },
+  {
+   "id": "fl-quarry-tile",
+   "name": "Quarry Tile",
+   "src": "assets/textures/floors/fl-quarry-tile.jpg",
+   "tileIn": {
+    "w": 66.9,
+    "h": 66.9
    }
   }
  ],
@@ -2034,6 +2124,105 @@
  ],
  "decor": [
   {
+   "id": "basket-wicker",
+   "name": "Woven wicker tray basket",
+   "category": "basket",
+   "mount": "stand",
+   "heightIn": 5.5,
+   "widthIn": 15.07,
+   "aspect": 2.74,
+   "image": "assets/decor/basket-wicker.webp",
+   "src": "assets/decor/basket-wicker.webp"
+  },
+  {
+   "id": "books-leather-set",
+   "name": "Leather-bound book set",
+   "category": "books",
+   "mount": "stand",
+   "heightIn": 9.86,
+   "widthIn": 21.71,
+   "aspect": 2.2018,
+   "image": "assets/decor/books-leather-set.webp",
+   "src": "assets/decor/books-leather-set.webp"
+  },
+  {
+   "id": "xmas-garland",
+   "name": "Fir garland with bows",
+   "category": "christmas",
+   "mount": "wall",
+   "heightIn": 15.79,
+   "widthIn": 74.93,
+   "aspect": 4.7454,
+   "image": "assets/decor/xmas-garland.webp",
+   "src": "assets/decor/xmas-garland.webp"
+  },
+  {
+   "id": "xmas-gifts",
+   "name": "Stack of wrapped gifts",
+   "category": "christmas",
+   "mount": "stand",
+   "heightIn": 22.0,
+   "widthIn": 31.14,
+   "aspect": 1.4155,
+   "image": "assets/decor/xmas-gifts.webp",
+   "src": "assets/decor/xmas-gifts.webp"
+  },
+  {
+   "id": "xmas-nutcracker",
+   "name": "Nutcracker soldier",
+   "category": "christmas",
+   "mount": "stand",
+   "heightIn": 32.86,
+   "widthIn": 10.71,
+   "aspect": 0.3259,
+   "image": "assets/decor/xmas-nutcracker.webp",
+   "src": "assets/decor/xmas-nutcracker.webp"
+  },
+  {
+   "id": "xmas-stockings",
+   "name": "Stockings on a peg bar",
+   "category": "christmas",
+   "mount": "wall",
+   "heightIn": 24.93,
+   "widthIn": 43.21,
+   "aspect": 1.7333,
+   "image": "assets/decor/xmas-stockings.webp",
+   "src": "assets/decor/xmas-stockings.webp"
+  },
+  {
+   "id": "xmas-tree",
+   "name": "Christmas tree",
+   "category": "christmas",
+   "mount": "floor",
+   "heightIn": 69.07,
+   "widthIn": 49.21,
+   "aspect": 0.7125,
+   "image": "assets/decor/xmas-tree.webp",
+   "src": "assets/decor/xmas-tree.webp"
+  },
+  {
+   "id": "xmas-tree-tabletop",
+   "name": "Tabletop Christmas tree",
+   "category": "christmas",
+   "mount": "stand",
+   "heightIn": 32.93,
+   "widthIn": 29.29,
+   "aspect": 0.8895,
+   "image": "assets/decor/xmas-tree-tabletop.webp",
+   "src": "assets/decor/xmas-tree-tabletop.webp"
+  },
+  {
+   "id": "xmas-wreath",
+   "name": "Christmas wreath",
+   "category": "christmas",
+   "mount": "wall",
+   "heightIn": 32.0,
+   "widthIn": 30.43,
+   "aspect": 0.9509,
+   "image": "assets/decor/xmas-wreath.webp",
+   "src": "assets/decor/xmas-wreath.webp"
+  },
+  {
    "id": "clock-grandfather",
    "name": "Grandfather clock",
    "category": "clock",
@@ -2045,6 +2234,17 @@
    "src": "assets/decor/clock-grandfather.webp"
   },
   {
+   "id": "clock-mantel",
+   "name": "Walnut mantel clock",
+   "category": "clock",
+   "mount": "stand",
+   "heightIn": 6.64,
+   "widthIn": 13.5,
+   "aspect": 2.0331,
+   "image": "assets/decor/clock-mantel.webp",
+   "src": "assets/decor/clock-mantel.webp"
+  },
+  {
    "id": "clock-wall",
    "name": "Walnut wall clock",
    "category": "clock",
@@ -2054,6 +2254,50 @@
    "aspect": 0.9953,
    "image": "assets/decor/clock-wall.webp",
    "src": "assets/decor/clock-wall.webp"
+  },
+  {
+   "id": "frame-landscape",
+   "name": "Gilt-framed landscape painting",
+   "category": "frame",
+   "mount": "wall",
+   "heightIn": 18.29,
+   "widthIn": 23.71,
+   "aspect": 1.2963,
+   "image": "assets/decor/frame-landscape.webp",
+   "src": "assets/decor/frame-landscape.webp"
+  },
+  {
+   "id": "frame-oval-mahogany",
+   "name": "Oval mahogany photo frame",
+   "category": "frame",
+   "mount": "wall",
+   "heightIn": 19.71,
+   "widthIn": 15.14,
+   "aspect": 0.7681,
+   "image": "assets/decor/frame-oval-mahogany.webp",
+   "src": "assets/decor/frame-oval-mahogany.webp"
+  },
+  {
+   "id": "frame-street-scene",
+   "name": "Ornate gilt-framed street scene",
+   "category": "frame",
+   "mount": "wall",
+   "heightIn": 30.29,
+   "widthIn": 26.0,
+   "aspect": 0.8584,
+   "image": "assets/decor/frame-street-scene.webp",
+   "src": "assets/decor/frame-street-scene.webp"
+  },
+  {
+   "id": "chair-rocking",
+   "name": "Wooden rocking chair",
+   "category": "furniture",
+   "mount": "floor",
+   "heightIn": 40.29,
+   "widthIn": 27.86,
+   "aspect": 0.6915,
+   "image": "assets/decor/chair-rocking.webp",
+   "src": "assets/decor/chair-rocking.webp"
   },
   {
    "id": "candelabra-brass",
@@ -2099,6 +2343,17 @@
    "image": "assets/decor/lantern-hanging.webp",
    "src": "assets/decor/lantern-hanging.webp",
    "anchor": "ceiling"
+  },
+  {
+   "id": "xmas-candles",
+   "name": "Advent candles on a brass tray",
+   "category": "lighting",
+   "mount": "stand",
+   "heightIn": 13.93,
+   "widthIn": 22.64,
+   "aspect": 1.6253,
+   "image": "assets/decor/xmas-candles.webp",
+   "src": "assets/decor/xmas-candles.webp"
   },
   {
    "id": "mirror-ornate",
@@ -2156,6 +2411,17 @@
    "src": "assets/decor/plant-urn-tree.webp"
   },
   {
+   "id": "bust-marble",
+   "name": "Marble bust on a plinth",
+   "category": "sculpture",
+   "mount": "stand",
+   "heightIn": 20.5,
+   "widthIn": 10.71,
+   "aspect": 0.5224,
+   "image": "assets/decor/bust-marble.webp",
+   "src": "assets/decor/bust-marble.webp"
+  },
+  {
    "id": "curtains-lace",
    "name": "Sheer cream curtains",
    "category": "textile",
@@ -2176,6 +2442,17 @@
    "aspect": 0.6952,
    "image": "assets/decor/curtains-velvet.webp",
    "src": "assets/decor/curtains-velvet.webp"
+  },
+  {
+   "id": "vase-blue-white",
+   "name": "Blue and white porcelain vase",
+   "category": "vase",
+   "mount": "stand",
+   "heightIn": 17.86,
+   "widthIn": 10.07,
+   "aspect": 0.5638,
+   "image": "assets/decor/vase-blue-white.webp",
+   "src": "assets/decor/vase-blue-white.webp"
   }
  ]
 }

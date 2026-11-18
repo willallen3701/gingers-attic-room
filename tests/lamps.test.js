@@ -17,7 +17,7 @@ const close = (a, b, eps = 1e-6) => Math.abs(a - b) < eps;
 
 describe('which decor is a lamp', () => {
   it('every lighting decor in the library is a lamp and has a light position', () => {
-    expect(lamps.map((d) => d.id).sort()).toEqual(['candelabra-brass', 'lamp-floor-fringe', 'lamp-oil', 'lantern-hanging']);
+    expect(lamps.map((d) => d.id).sort()).toEqual(['candelabra-brass', 'lamp-floor-fringe', 'lamp-oil', 'lantern-hanging', 'xmas-candles']);
     for (const d of lamps) {
       expect(isLampDef(d)).toBe(true);
       expect(LAMP_LIGHTS[d.id], d.id).toBeTruthy();
