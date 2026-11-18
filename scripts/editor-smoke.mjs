@@ -246,7 +246,7 @@ try {
     const f = ${S}.querySelector('.itemform');
     const set = (n, v) => { const el = f.querySelector('[name="' + n + '"]'); el.value = v; el.dispatchEvent(new Event('input', { bubbles: true })); };
     set('title', 'Smoke Test Stoneware Vase'); set('description', 'Brown glazed stoneware vase. No chips.');
-    set('category', 'glass-ceramics'); set('era', '1970s'); set('heightIn', '11'); set('widthIn', '7'); set('weightLb', '2'); set('weightOz', '4');
+    set('category', 'glass-ceramics'); set('era', '1970s'); set('heightIn', '11'); set('widthIn', '7'); set('depthIn', '7'); set('weightLb', '2'); set('weightOz', '4');
     set('price', '45'); set('quantity', '1');
     f.querySelector('[name="condition"][value="very-good"]').checked = true;
   })()`);

@@ -2,7 +2,8 @@
 // phone layouts, with headless Chrome over the DevTools protocol (Node's built-in WebSocket; nothing installed).
 // The embeds run inside an iframe on a same-origin harness page that plays the Wix page: it posts the page's
 // messages and records what the embed sends, so the real postMessage protocol is exercised both ways.
-// Also saves screenshots (desktop and 375 px) to screenshots/.
+// Also saves screenshots (desktop and 375 px) to screenshots/, and compares Firefox with Chrome (WebDriver BiDi,
+// scripts/firefox-bidi.mjs) for the directory, the booth view and the editor.
 // Usage: node scripts/pages-smoke.mjs
 import { spawn } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
@@ -10,6 +11,8 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { filterBooths } from '../src/logic/directory.js';
+import { applyDraft } from '../src/logic/draft.js';
+import { launchFirefox } from './firefox-bidi.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const shotsDir = join(root, 'screenshots');
@@ -65,6 +68,17 @@ async function navigate(url, readyExpr) {
   await send('Page.navigate', { url });
   await sleep(150);
   if (readyExpr && !(await waitFor(readyExpr, 15000))) throw new Error(`page not ready: ${url}`);
+}
+const KEYS = { ArrowLeft: 37, ArrowRight: 39, End: 35, Home: 36, Escape: 27 };
+async function key(k) {
+  const vk = KEYS[k];
+  await send('Input.dispatchKeyEvent', { type: 'rawKeyDown', key: k, code: k, windowsVirtualKeyCode: vk, nativeVirtualKeyCode: vk });
+  await send('Input.dispatchKeyEvent', { type: 'keyUp', key: k, code: k, windowsVirtualKeyCode: vk, nativeVirtualKeyCode: vk });
+  await sleep(70);
+}
+async function hover(p) {
+  await mouse('mouseMoved', p.x, p.y, { buttons: 0 });
+  await sleep(250);
 }
 async function viewport(width, height, mobile = false, scale = 1) {
   await send('Emulation.setDeviceMetricsOverride', { width, height, deviceScaleFactor: scale, mobile });
@@ -154,6 +168,27 @@ async function shot(name, { width, height, mobile = false, scale = 1, url, ready
 }
 
 const shotsSaved = [];
+/** Screenshot of a region (rect from rectOf, in viewport px) plus a margin. */
+async function clipShot(name, r, pad = 24) {
+  const o = await evaluate('({ x: scrollX, y: scrollY, w: innerWidth, h: innerHeight })');
+  const x = Math.max(0, r.l - pad);
+  const y = Math.max(0, r.t - pad);
+  const clip = { x: x + o.x, y: y + o.y, width: Math.min(o.w - x, r.w + 2 * pad), height: Math.min(o.h - y, r.h + 2 * pad), scale: 1 };
+  const { data } = await send('Page.captureScreenshot', { format: 'png', clip, captureBeyondViewport: true });
+  const file = join(shotsDir, name);
+  writeFileSync(file, Buffer.from(data, 'base64'));
+  console.log(`saved ${file}`);
+  shotsSaved.push(file);
+  return file;
+}
+
+// Test pieces: an 80 in armoire and two 2 in thimbles (artwork in assets/placeholder), added to the demo booth.
+const TEST_ITEMS = [
+  { id: 'it-armoire', title: 'Walnut armoire', description: 'Two-door walnut armoire with a drawer.', price: 450, quantity: 1, status: 'approved', category: 'Furniture', image: 'assets/placeholder/item-armoire.svg', aspect: 0.55, heightIn: 80, widthIn: 44, mount: 'stand', dims: { h: 80, w: 44, d: 22 }, weightLb: 60, placement: null },
+  { id: 'it-thimble', title: 'Brass thimble', description: 'Brass sewing thimble, worn top.', price: 12, quantity: 1, status: 'approved', category: 'Collectibles', image: 'assets/placeholder/item-thimble.svg', aspect: 0.85, heightIn: 2, widthIn: 1.7, mount: 'stand', dims: { h: 2, w: 1.7, d: 1.7 }, weightLb: 0.05, placement: null },
+  { id: 'it-thimble2', title: 'Silver thimble', description: 'Silver thimble with a floral band.', price: 18, quantity: 1, status: 'approved', category: 'Collectibles', image: 'assets/placeholder/item-thimble.svg', aspect: 0.85, heightIn: 2, widthIn: 1.7, mount: 'stand', dims: { h: 2, w: 1.7, d: 1.7 }, weightLb: 0.05, placement: null },
+];
+let shopBooth = null; // the test booth as the shop sees it after the editor saved it (with a box)
 try {
   let target;
   for (let i = 0; i < 60 && !target; i++) {
@@ -419,7 +454,148 @@ try {
   await post('contact-result', { requestId: cs2.requestId, ok: false, message: 'Our mail is down, try later.' });
   check('contact-result failure keeps the message and shows the error', (await evaluate(`${FQ}.querySelector('.cerr').textContent`)) === 'Our mail is down, try later.' && (await evaluate(`${FQ}.querySelector('.cform [name="message"]').value`)) === 'Second question');
 
-  // =========================================================== 6. Phones: no sideways scroll, 40 px tap targets
+  // =========================================================== 6. Sizing, magnifier, collectibles boxes, listing rules
+  console.log('\n-- sizing, magnifier, collectibles boxes');
+  const text = (sel) => evaluate(`${ED}.querySelector(${JSON.stringify(sel)})?.textContent ?? null`);
+  const count = (sel) => evaluate(`${ED}.querySelectorAll(${JSON.stringify(sel)}).length`);
+  await viewport(1440, 1000);
+  const demoBase = JSON.parse(readFileSync(join(root, 'data/demo-booth.json'), 'utf8'));
+  const testBooth = { ...demoBase, items: [...demoBase.items, ...TEST_ITEMS], boxes: [] };
+  await navigate(`${origin}/editor.html?coach=0&tab=items`, `!!document.querySelector('attic-editor')?.shadowRoot?.querySelector('.room.edit .item')`);
+  await evaluate(`(async () => {
+    window.__ev = []; document.addEventListener('attic-booth:event', (e) => window.__ev.push(JSON.parse(JSON.stringify(e.detail))));
+    const el = document.querySelector('attic-editor');
+    await el.loadEditor({ booth: ${JSON.stringify(testBooth)}, library: await (await fetch('data/library.json')).json(), meta: { boothStatus: 'live' } });
+    el.debugSetup({ coach: false, tab: 'items' });
+    return true;
+  })()`);
+  const inches = (sel) => evaluate(`(() => { const room = ${ED}.querySelector('.room.edit').getBoundingClientRect(); const r = ${ED}.querySelector(${JSON.stringify(sel)}).getBoundingClientRect(); return { h: r.height / room.width * 120, w: r.width / room.width * 120, inside: r.top >= room.top - 1 && r.bottom <= room.bottom + 1 && r.left >= room.left - 1 && r.right <= room.right + 1 }; })()`);
+  const ARM = '.room.edit .item[data-id="it-armoire"]';
+  await clickAt(await rectOf(`${ED}.querySelector('[data-act="place"][data-id="it-armoire"]')`));
+  const arm = await inches(ARM);
+  check('an 80 in armoire is drawn 80 in tall on the 120 in booth (the wall is 90 in)', Math.abs(arm.h - 80) < 0.8 && Math.abs(arm.w - 44) < 0.8 && arm.inside, `${arm.h.toFixed(1)} x ${arm.w.toFixed(1)} in`);
+  await clipShot('armoire-editor.png', await rectOf(`${ED}.querySelector('.room.edit')`), 8);
+  const SL = `${ED}.querySelector('.selbar input[data-act="sel-scale"]')`;
+  const sl0 = await evaluate(`(() => { const s = ${SL}; return s ? { min: +s.min, max: +s.max, v: +s.value, off: s.disabled } : null; })()`);
+  check('the selected armoire has a size slider from 80 to 120 %', sl0 && sl0.min === 80 && sl0.max === 120 && sl0.v === 100 && !sl0.off, JSON.stringify(sl0));
+  await evaluate(`${SL}.focus()`);
+  for (let i = 0; i < 10; i++) await key('ArrowLeft');
+  await sleep(250);
+  const small = await inches(ARM);
+  check('the slider shrinks it (90 % = 72 in)', Math.abs(small.h - 72) < 0.8 && (await evaluate(`+${SL}.value`)) === 90, `${small.h.toFixed(1)} in`);
+  for (let i = 0; i < 20; i++) await key('ArrowRight');
+  await sleep(250);
+  const big = await inches(ARM);
+  const bigPct = await evaluate(`+${SL}.value`);
+  check('...and grows it again (to 110 %, or as far as it fits), without snapping back', big.h > small.h + 5 && Math.abs(big.h - 0.8 * bigPct) < 0.8, `${big.h.toFixed(1)} in at ${bigPct} %`);
+  await evaluate(`${ED}.querySelector('.room.edit').focus()`);
+  const armL0 = (await rectOf(`${ED}.querySelector(${JSON.stringify(ARM)})`)).l;
+  await key('ArrowRight');
+  await key('ArrowRight');
+  await sleep(250);
+  const moved = await inches(ARM);
+  const armL1 = (await rectOf(`${ED}.querySelector(${JSON.stringify(ARM)})`)).l;
+  check('moving it keeps the new size (no reset)', Math.abs(moved.h - big.h) < 0.1 && (await evaluate(`+${SL}.value`)) === bigPct, `moved ${Math.round(armL1 - armL0)} px, ${moved.h.toFixed(1)} in`);
+  await sleep(2300);
+  const draftNow = async () => (await evaluate(`window.__ev.filter((m) => m.type === 'save-draft').at(-1)?.draft ?? null`)) ?? {};
+  check('the saved draft keeps the size', Math.abs(((await draftNow()).placements?.['it-armoire']?.scaleAdj ?? 0) - bigPct / 100) < 0.011);
+  await evaluate(`${SL}.focus()`);
+  await key('End');
+  await sleep(300);
+  const maxed = await inches(ARM);
+  const hit = await evaluate(`(() => { const R = ${ED}; const r = R.querySelector(${JSON.stringify(ARM)}).getBoundingClientRect(); const el = R.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); return el?.closest('[data-kind]')?.dataset.id ?? null; })()`);
+  check('at its largest it stays inside the room and on top: the point at its centre is the armoire', maxed.inside && hit === 'it-armoire' && maxed.h <= 96.01, `${maxed.h.toFixed(1)} in, hit ${hit}`);
+  await clickAt(await rectOf(`${ED}.querySelector('[data-act="sel-done"]')`));
+  const spot = await evaluate(`(() => { const R = ${ED}; const r = R.querySelector(${JSON.stringify(ARM)}).getBoundingClientRect(); for (let fy = 0.2; fy < 0.95; fy += 0.1) for (let fx = 0.2; fx < 0.85; fx += 0.15) { const x = r.left + r.width * fx; const y = r.top + r.height * fy; if (R.elementFromPoint(x, y)?.closest('[data-kind]')?.dataset.id === 'it-armoire') return { x, y }; } return null; })()`);
+  if (spot) await clickAt(spot);
+  check('after Done it can still be clicked and selected', !!spot && (await text('.selbar .selname b')) === 'Walnut armoire');
+  await clickAt(await rectOf(`${ED}.querySelector('[data-act="sel-done"]')`));
+  await clickAt(await rectOf(`${ED}.querySelector('.tab[data-tab="items"]')`));
+  await clickAt(await rectOf(`${ED}.querySelector('[data-act="show-item"][data-id="it-armoire"]')`));
+  check('"Show me" in My Items selects it from the list too', (await text('.selbar .selname b')) === 'Walnut armoire');
+  // a 2 in thimble: drawn at the 4 in minimum, with the magnifier on hover
+  await clickAt(await rectOf(`${ED}.querySelector('[data-act="place"][data-id="it-thimble"]')`));
+  const th = await inches('.room.edit .item[data-id="it-thimble"]');
+  check('a 2 in thimble is drawn at the 4 in minimum', Math.abs(th.h - 4) < 0.15, `${th.h.toFixed(2)} in tall`);
+  await clickAt(await rectOf(`${ED}.querySelector('[data-act="sel-done"]')`));
+  await hover(await rectOf(`${ED}.querySelector('.room.edit .item[data-id="it-thimble"]')`));
+  const lensEd = await evaluate(`(() => { const l = ${ED}.querySelector('.lens'); if (!l || l.hidden) return null; const i = l.querySelector('img').getBoundingClientRect(); return { h: i.height, cap: l.querySelector('.cap')?.textContent }; })()`);
+  check('hovering it in the editor shows the magnifier', lensEd && lensEd.h >= 120 && /Brass thimble/.test(lensEd.cap ?? ''), JSON.stringify(lensEd));
+  // a collectibles box: place it, fill a compartment
+  await clickAt(await rectOf(`${ED}.querySelector('.tab[data-tab="fixtures"]')`));
+  await clickAt(await rectOf(`${ED}.querySelector('.srccard[data-src-kind="box"][data-src-id="jewelry"]')`));
+  check('clicking the jewelry box card places a box and selects it', (await count('.room.edit .box')) === 1 && (await text('.selbar .selname b')) === 'Jewelry box');
+  await clickAt(await rectOf(`${ED}.querySelector('[data-act="box-fill"]')`));
+  check('"Fill the compartments" opens the box sheet', (await count('.boxhost .bxcell')) === 9);
+  await clickAt(await rectOf(`${ED}.querySelector('.boxhost [data-bx-slot="4"]')`));
+  await clickAt(await rectOf(`${ED}.querySelector('.boxhost [data-bx-item="it-thimble2"]')`));
+  check('picking an item puts it in the chosen compartment', !!(await evaluate(`!!${ED}.querySelector('.boxhost [data-bx-slot="4"] img')`)));
+  await clickAt(await rectOf(`${ED}.querySelector('.boxhost .lining[data-bx-lining="blue"]')`));
+  await clickAt(await rectOf(`${ED}.querySelector('.boxhost .sheetbtns [data-bx="close"]')`));
+  await sleep(2300);
+  const bd = await draftNow();
+  const bx = bd.boxes?.[0];
+  check('the draft saves the box: {id, style, lining, cols, rows, placement, slots}', bd.boxes?.length === 1 && JSON.stringify(Object.keys(bx).sort()) === JSON.stringify(['cols', 'id', 'lining', 'placement', 'rows', 'slots', 'style']) && bx.style === 'jewelry' && bx.lining === 'blue' && bx.slots.length === 9 && bx.slots[4] === 'it-thimble2' && bd.placements['it-thimble2'] === null, JSON.stringify(bx));
+  check('the box draws its item in the room', (await count('.room.edit .box .cell img')) === 1);
+  shopBooth = applyDraft(testBooth, bd);
+  // the shop view: open the box up close, then the item's card; the magnifier on the thimble
+  await harness('embed.html', 1240, 900);
+  const BVS = `${FRAME}.contentDocument.querySelector('attic-booth').shadowRoot`;
+  await waitMsg('ready');
+  await post('load-booth', { booth: shopBooth });
+  await waitFor(`!!${BVS}.querySelector('.room .box')`);
+  check('the shop view draws the box', (await evaluate(`${BVS}.querySelectorAll('.room .box .cell').length`)) === 9);
+  await clipShot('armoire-shop.png', await rectOf(`${BVS}.querySelector('.room')`), 4);
+  await clickAt(await rectOf(`${BVS}.querySelector('.room .box')`));
+  const bvOpen = await evaluate(`(() => { const v = ${BVS}.querySelector('.boxview'); return v && !v.hidden ? { cells: v.querySelectorAll('.bvcell').length, items: v.querySelectorAll('.bvcell[data-id]').length, title: v.querySelector('h3')?.textContent } : null; })()`);
+  check('clicking the box opens it up close', bvOpen && bvOpen.cells === 9 && bvOpen.items === 1 && bvOpen.title === 'Jewelry box', JSON.stringify(bvOpen));
+  await sleep(300);
+  await clipShot('box-closeup.png', await rectOf(`${BVS}.querySelector('.boxview')`), 30);
+  await clickAt(await rectOf(`${BVS}.querySelector('.bvcell[data-id="it-thimble2"]')`));
+  check('an item in the box opens its normal card', (await evaluate(`(() => { const c = ${BVS}.querySelector('.card'); return !c.hidden && c.querySelector('#card-title')?.textContent; })()`)) === 'Silver thimble' && (await lastMsg('item-open'))?.itemId === 'it-thimble2');
+  await key('Escape');
+  await key('Escape');
+  check('Escape closes the card, then the box', (await evaluate(`${BVS}.querySelector('.card').hidden && ${BVS}.querySelector('.boxview').hidden`)) === true);
+  const tRect = await rectOf(`${BVS}.querySelector('.room .item[data-id="it-thimble"]')`);
+  await hover(tRect);
+  const lensShop = await evaluate(`(() => { const l = ${BVS}.querySelector('.lens'); if (!l || l.hidden) return null; const r = l.getBoundingClientRect(); const i = l.querySelector('img').getBoundingClientRect(); return { h: i.height, l: r.left, t: r.top, w: r.width, hh: r.height }; })()`);
+  check('hovering a 4 in item in the shop shows the magnifier', lensShop && lensShop.h >= 120, JSON.stringify(lensShop));
+  if (lensShop) {
+    const fr = await evaluate(`(() => { const r = ${FRAME}.getBoundingClientRect(); return { x: r.left, y: r.top }; })()`);
+    const lx = Math.min(lensShop.l + fr.x, tRect.l);
+    const ly = Math.min(lensShop.t + fr.y, tRect.t);
+    await clipShot('magnifier.png', { l: lx, t: ly, w: Math.max(lensShop.l + fr.x + lensShop.w, tRect.l + tRect.w) - lx, h: Math.max(lensShop.t + fr.y + lensShop.hh, tRect.t + tRect.h) - ly }, 40);
+  }
+  // listing rules in the add/edit sheet: a very light weight needs the tick before it goes
+  await navigate(`${origin}/editor.html?coach=0&tab=items`, `!!document.querySelector('attic-editor')?.shadowRoot?.querySelector('[data-act="edit-item"][data-id="it-mug-brown"]')`);
+  await clickAt(await rectOf(`${ED}.querySelector('[data-act="edit-item"][data-id="it-mug-brown"]')`));
+  if (await waitFor(`!!${ED}.querySelector('.agreebox h3')`, 5000)) {
+    await evaluate(`${ED}.querySelector('[data-agree="check"]').click()`);
+    await clickAt(await rectOf(`${ED}.querySelector('[data-sheet="agree"]')`));
+  }
+  await waitFor(`!!${ED}.querySelector('.itemform')`, 5000);
+  const setField = (n, v) => evaluate(`(() => { const el = ${ED}.querySelector('.itemform [name="${n}"]'); el.value = ${JSON.stringify(v)}; el.dispatchEvent(new Event('input', { bubbles: true })); return true; })()`);
+  // The demo mug's old free-text category, era and condition aren't list values: pick real ones first.
+  const validRest = () => evaluate(`(() => { const f = ${ED}.querySelector('.itemform'); f.querySelector('[name="category"]').value = 'kitchen-barware'; f.querySelector('[name="era"]').value = '1950s'; f.querySelector('[name="condition"][value="good"]').checked = true; return true; })()`);
+  await validRest();
+  for (const [n, v] of [['heightIn', '10'], ['widthIn', '8'], ['depthIn', '8'], ['weightLb', '0'], ['weightOz', '1']]) await setField(n, v);
+  await clickAt(await rectOf(`${ED}.querySelector('.itemform [type="submit"]')`));
+  const warn = await evaluate(`(() => { const w = ${ED}.querySelector('.weightwarn'); return w ? { text: w.querySelector('.note').textContent, tick: !!w.querySelector('[name="lightWeightOk"]') } : null; })()`);
+  check('a very light weight (1 oz for 10 x 8 x 8 in) asks for a tick before sending', warn && warn.tick && /very light for its size/.test(warn.text) && !!(await evaluate(`!!${ED}.querySelector('.itemform')`)) && (await evaluate(`${ED}.querySelectorAll('.itemform .ferr').length`)) === 0, JSON.stringify(warn));
+  await clickAt(await rectOf(`${ED}.querySelector('.weightwarn [name="lightWeightOk"]')`));
+  await clickAt(await rectOf(`${ED}.querySelector('.itemform [type="submit"]')`));
+  check('...and goes once the tick is set', await waitFor(`!${ED}.querySelector('.sheethost .sheet')`, 6000));
+  await clickAt(await rectOf(`${ED}.querySelector('[data-act="edit-item"][data-id="it-mug-brown"]')`));
+  await waitFor(`!!${ED}.querySelector('.itemform')`, 5000);
+  await validRest();
+  await setField('weightLb', '70');
+  await clickAt(await rectOf(`${ED}.querySelector('.itemform [type="submit"]')`));
+  const errs = await evaluate(`[...${ED}.querySelectorAll('.itemform .ferr')].map((e) => e.textContent)`);
+  check('over 65 lb is refused with the USPS message', errs.length === 1 && /USPS takes up to 70 lb including packing/.test(errs[0]), errs.join(' | '));
+  const btns = await evaluate(`[...${ED}.querySelectorAll('.sheet button.primary, .sheet button.wb2')].map((b) => b.textContent.trim())`);
+  check('the sheet buttons say what they do (no bare "Send" / "Looks good")', !btns.some((t) => /^(Send|Looks good)$/.test(t)) && btns.some((t) => /approval|price and quantity/.test(t)), btns.join(' | '));
+
+  // =========================================================== 7. Phones: no sideways scroll, 40 px tap targets
   console.log('\n-- phone widths');
   const pages = [
     { name: 'directory', url: 'directory.html', ready: `${'document.querySelector("attic-directory")?.shadowRoot?.querySelectorAll(".bcard").length > 0'}` },
@@ -428,6 +604,7 @@ try {
     { name: 'faq', url: 'faq.html#q-prohibited', ready: 'document.querySelector("attic-faq")?.shadowRoot?.querySelectorAll("details.qa").length > 0' },
     { name: 'booth view', url: 'embed.html', ready: '!!document.querySelector("attic-booth")?.shadowRoot?.querySelector(".room .item")' },
     { name: 'booth view + item card', url: 'embed.html', ready: '!!document.querySelector("attic-booth")?.shadowRoot?.querySelector(".room .item")', after: `document.querySelector('attic-booth').openItem('it-amber-lamp'); true` },
+    { name: 'booth view + box close-up', url: 'embed.html', ready: '!!document.querySelector("attic-booth")?.shadowRoot?.querySelector(".room .item")', after: `(async () => { const el = document.querySelector('attic-booth'); el.load(${JSON.stringify(shopBooth)}, await (await fetch('data/library.json')).json()); await new Promise((r) => setTimeout(r, 300)); el.shadowRoot.querySelector('.room .box').click(); return true; })()`, wait: '!document.querySelector("attic-booth").shadowRoot.querySelector(".boxview").hidden' },
     { name: 'editor', url: 'editor.html?coach=0', ready: '!!document.querySelector("attic-editor")?.shadowRoot?.querySelector(".narrowmode .room")' },
     { name: 'editor add-item sheet', url: 'editor.html?coach=0', ready: '!!document.querySelector("attic-editor")?.shadowRoot?.querySelector(".narrowmode .room")', after: `document.querySelector('attic-editor').shadowRoot.querySelector('[data-act="add-item"]').click(); true`, wait: '!!document.querySelector("attic-editor").shadowRoot.querySelector(".agreebox")' },
   ];
@@ -449,13 +626,13 @@ try {
     check(`no horizontal scrolling at ${w} px (${pages.length} views)`, bad.length === 0, bad.join(', '));
   }
 
-  // =========================================================== 7. Screenshots
+  // =========================================================== 8. Screenshots
   console.log('\n-- screenshots');
   const dirReady = 'document.querySelector("attic-directory")?.shadowRoot?.querySelectorAll(".bcard").length > 0';
   const colReady = 'document.querySelector("attic-directory")?.shadowRoot?.querySelectorAll(".icard").length > 0';
   const faqReady = 'document.querySelector("attic-faq")?.shadowRoot?.querySelectorAll("details.qa").length > 0';
   const boothReady = '!!document.querySelector("attic-booth")?.shadowRoot?.querySelector(".lamps .glow .core")';
-  const openFaq = () => evaluate(`(() => { const r = document.querySelector('attic-faq').shadowRoot; ['q-shipping-cost', 'q-local-pickup'].forEach((id) => { r.getElementById(id).open = true; }); window.scrollTo(0, 0); return true; })()`);
+  const openFaq = () => evaluate(`(() => { const r = document.querySelector('attic-faq').shadowRoot; ['q-shipping', 'q-collectibles-box'].forEach((id) => { r.getElementById(id).open = true; }); window.scrollTo(0, 0); return true; })()`);
   for (const [name, opts] of [
     ['directory-desktop.png', { width: 1280, height: 900, url: `${origin}/directory.html`, ready: dirReady }],
     ['directory-375.png', { width: 375, height: 812, mobile: true, scale: 2, url: `${origin}/directory.html`, ready: dirReady }],
@@ -468,7 +645,65 @@ try {
   ]) {
     shotsSaved.push(await shot(name, opts));
   }
-  check('8 screenshots saved', shotsSaved.length === 8);
+  check('the screenshots are saved (4 sizing/box shots + 8 page shots)', shotsSaved.length === 12, `${shotsSaved.length}`);
+
+  // =========================================================== 9. Firefox vs Chrome
+  console.log('\n-- firefox vs chrome');
+  let ff = null;
+  try {
+    ff = await launchFirefox({ port: 9347 });
+  } catch (e) {
+    console.log(`  ${e.message}`);
+  }
+  check('Firefox starts (WebDriver BiDi)', !!ff);
+  if (ff) {
+    const views = [
+      { name: 'directory', url: 'directory.html', ready: 'document.querySelector("attic-directory")?.shadowRoot?.querySelectorAll(".bcard").length > 0', count: 'document.querySelector("attic-directory").shadowRoot.querySelectorAll(".bcard").length' },
+      { name: 'booth', url: 'embed.html', ready: '!!document.querySelector("attic-booth")?.shadowRoot?.querySelector(".lamps .glow .core")', count: 'document.querySelector("attic-booth").shadowRoot.querySelectorAll(".room .item").length' },
+      { name: 'editor', url: 'editor.html?coach=0', ready: '!!document.querySelector("attic-editor")?.shadowRoot?.querySelector(".room.edit .item")', count: 'document.querySelector("attic-editor").shadowRoot.querySelectorAll(".room.edit [data-kind]").length' },
+    ];
+    for (const v of views) {
+      await shot(`compare-chrome-${v.name}.png`, { width: 1280, height: 900, url: `${origin}/${v.url}`, ready: v.ready });
+      const chromeN = await evaluate(v.count);
+      await ff.viewport(1280, 900);
+      await ff.navigate(`${origin}/${v.url}`);
+      const ok = await ff.waitFor(v.ready, 15000);
+      await sleep(1200);
+      const ffN = ok ? await ff.evaluate(v.count) : -1;
+      const side = await ff.evaluate('document.scrollingElement.scrollWidth <= innerWidth');
+      const file = join(shotsDir, `compare-firefox-${v.name}.png`);
+      writeFileSync(file, await ff.screenshot());
+      console.log(`saved ${file}`);
+      shotsSaved.push(file);
+      check(`Firefox draws the ${v.name} like Chrome (${chromeN} pieces), with no sideways scroll`, ok && ffN === chromeN && side, `firefox ${ffN}`);
+    }
+    // The embedded handshake: Firefox has no location.ancestorOrigins, and Wix may withhold the referrer.
+    const demoNow = JSON.parse(readFileSync(join(root, 'data/demo-booth.json'), 'utf8'));
+    const embeds = [
+      { name: 'embed', page: 'embed.html', reply: { type: 'load-booth', booth: demoNow }, loaded: `!!document.querySelector('iframe').contentDocument.querySelector('attic-booth')?.shadowRoot?.querySelector('.room .item')` },
+      { name: 'directory', page: 'directory.html', reply: { type: 'load-directory', booths: sample.booths, loggedIn: true, favourites: sample.favourites, categories: sample.categories }, loaded: `document.querySelector('iframe').contentDocument.querySelector('attic-directory')?.shadowRoot?.querySelectorAll('.bcard').length > 0` },
+      { name: 'editor', page: 'editor.html', reply: { type: 'load-editor', booth: demoNow, meta: { boothStatus: 'live', isFirstVisit: false } }, loaded: `!!document.querySelector('iframe').contentDocument.querySelector('attic-editor')?.shadowRoot?.querySelector('.room.edit .item')` },
+    ];
+    await ff.viewport(1240, 860);
+    for (const e of embeds) {
+      await ff.navigate(`${origin}/__harness`);
+      await ff.evaluate(`(() => {
+        document.documentElement.innerHTML = '<head><style>body{margin:0;background:#633761;font:15px Georgia;color:#fee6c4} p{margin:6px 10px}</style></head><body><p>Harness = the Wix page. Embed in an iframe without a referrer; the page sends its data when the embed says ready.</p></body>';
+        window.__m = [];
+        const f = document.createElement('iframe'); f.referrerPolicy = 'no-referrer'; f.src = '/${e.page}'; f.style.cssText = 'display:block;border:0;width:1220px;height:800px;margin:0 10px'; document.body.append(f);
+        addEventListener('message', (m) => { if (!m.data || m.data.source !== 'attic-booth') return; __m.push(m.data.type); if (m.data.type === 'ready') f.contentWindow.postMessage(Object.assign({ target: 'attic-booth', version: 1 }, ${JSON.stringify(e.reply)}), location.origin); });
+        return true; })()`);
+      const loaded = await ff.waitFor(e.loaded, 12000);
+      await sleep(1200);
+      const file = join(shotsDir, `firefox-after-${e.name}.png`);
+      writeFileSync(file, await ff.screenshot());
+      console.log(`saved ${file}`);
+      shotsSaved.push(file);
+      check(`Firefox, embedded without a referrer: the ${e.name} says ready and loads`, loaded && (await ff.evaluate('window.__m.includes("ready")')));
+    }
+    check('no JavaScript errors in Firefox', ff.errors.length === 0, ff.errors.slice(0, 3).join(' | '));
+    await ff.close();
+  }
 } catch (e) {
   console.error('ERROR', e.message);
   results.push({ name: 'harness', ok: false });

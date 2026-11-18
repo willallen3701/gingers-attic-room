@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 400" width="220" height="400">
+  <!-- Placeholder walnut armoire for tests and demos (80 x 44 in: aspect 0.55). Drawn for this app; no licence needed. -->
+  <defs>
+    <linearGradient id="wood" x1="0" x2="1">
+      <stop offset="0" stop-color="#5a3219"/><stop offset=".45" stop-color="#7a4a26"/><stop offset="1" stop-color="#4c2a14"/>
+    </linearGradient>
+    <linearGradient id="panel" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#8a5a32"/><stop offset="1" stop-color="#6a4022"/>
+    </linearGradient>
+    <radialGradient id="brass" cx=".35" cy=".35" r=".7"><stop offset="0" stop-color="#f3dc8e"/><stop offset="1" stop-color="#9a7428"/></radialGradient>
+  </defs>
+  <path d="M6 30 L214 30 L206 14 L14 14 Z" fill="#4a2814"/>
+  <rect x="2" y="4" width="216" height="12" rx="3" fill="#6b3d1e"/>
+  <rect x="14" y="30" width="192" height="318" fill="url(#wood)"/>
+  <rect x="24" y="44" width="83" height="250" rx="3" fill="#4f2c16"/>
+  <rect x="113" y="44" width="83" height="250" rx="3" fill="#4f2c16"/>
+  <rect x="34" y="56" width="63" height="104" rx="6" fill="url(#panel)" stroke="#3e2210" stroke-width="3"/>
+  <rect x="123" y="56" width="63" height="104" rx="6" fill="url(#panel)" stroke="#3e2210" stroke-width="3"/>
+  <rect x="34" y="174" width="63" height="108" rx="6" fill="url(#panel)" stroke="#3e2210" stroke-width="3"/>
+  <rect x="123" y="174" width="63" height="108" rx="6" fill="url(#panel)" stroke="#3e2210" stroke-width="3"/>
+  <circle cx="101" cy="168" r="5" fill="url(#brass)"/>
+  <circle cx="119" cy="168" r="5" fill="url(#brass)"/>
+  <rect x="24" y="304" width="172" height="34" rx="3" fill="#4f2c16"/>
+  <rect x="34" y="310" width="152" height="22" rx="4" fill="url(#panel)" stroke="#3e2210" stroke-width="2"/>
+  <circle cx="110" cy="321" r="4.5" fill="url(#brass)"/>
+  <rect x="8" y="346" width="204" height="12" rx="3" fill="#4a2814"/>
+  <path d="M14 358 h34 l-6 40 h-22 z M172 358 h34 l-6 40 h-22 z" fill="#3e2210"/>
+</svg>

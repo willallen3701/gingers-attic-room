@@ -43,10 +43,32 @@ export const LIMITS = Object.freeze({
   eraNote: [0, 40],
   price: [1, 100000],
   quantity: [1, 99],
-  sizeIn: [0.25, 240],
-  weightLb: [0.01, 500],
+  sizeIn: [0.25, 108],
+  weightLb: [0.05, 65],
   shippingPrice: [0, 1000],
 });
+
+// USPS parcel rules (the site's server checks the same numbers). Everything ships by USPS within the US.
+export const SHIP = Object.freeze({
+  packingIn: 4, // added to every dimension for the box and padding
+  maxLengthGirthIn: 130, // length + girth of the packed parcel
+  maxLbPerIn3: 0.3, // heavier than this is denser than solid iron: the numbers must be wrong
+  lightLbPerIn3: 0.0002, // lighter than this (for anything over 50 in3) asks the seller to confirm
+  lightMinVolumeIn3: 50,
+});
+
+export const MESSAGES = Object.freeze({
+  tooBig: "Too big to ship by USPS. Large furniture can't be listed yet.",
+  tooHeavy: "USPS takes up to 70 lb including packing, so items over 65 lb can't be listed yet.",
+  impossible: "That's heavier than solid iron for its size. Check the weight and the measurements.",
+  veryLight: "That's very light for its size. Check the weight and the measurements: USPS prices shipping from them.",
+});
+
+/** Length + girth of the packed parcel: add 4 in to each side, length = the longest, girth = 2 x the other two. */
+export function lengthPlusGirth(h, w, d) {
+  const [length, a, b] = [h, w, d].map((v) => v + SHIP.packingIn).sort((x, y) => y - x);
+  return length + 2 * (a + b);
+}
 
 const ids = (list) => new Set(list.map((x) => x.id));
 const CAT_IDS = ids(CATEGORIES);
@@ -67,8 +89,10 @@ export function parseNumber(v) {
 const round2 = (n) => Math.round(n * 100) / 100;
 
 /**
- * Check the details form. `form` holds raw strings/booleans from the inputs plus weightLb/weightOz.
- * @returns {{ ok: boolean, errors: Record<string,string>, listing?: object }}
+ * Check the details form. `form` holds raw strings/booleans from the inputs plus weightLb/weightOz, and
+ * lightWeightOk (the seller's tick under the very-light warning).
+ * @returns {{ ok: boolean, errors: Record<string,string>, warnings: Record<string,string>, needsConfirm: boolean, listing?: object }}
+ *   needsConfirm: the weight is very light for the size and the tick isn't set yet (a warning, not an error)
  */
 export function validateListing(form) {
   const errors = {};
@@ -96,28 +120,44 @@ export function validateListing(form) {
   if (eraNote.length > LIMITS.eraNote[1]) errors.eraNote = `Keep the note under ${LIMITS.eraNote[1]} characters.`;
   const mount = MOUNT_IDS.has(form.mount) ? form.mount : 'stand';
 
-  const heightIn = parseNumber(form.heightIn);
-  const widthIn = parseNumber(form.widthIn);
-  const depthRaw = text('depthIn');
-  const depthIn = depthRaw === '' ? null : parseNumber(depthRaw);
-  if (!between(heightIn, LIMITS.sizeIn)) errors.heightIn = mount === 'flat' ? 'Enter the length in inches.' : 'Enter the height in inches.';
-  if (!between(widthIn, LIMITS.sizeIn)) errors.widthIn = 'Enter the width in inches.';
-  if (depthIn !== null && !between(depthIn, LIMITS.sizeIn)) errors.depthIn = 'Depth is in inches (or leave it blank).';
+  // Height, width and depth are all required, each 0.25 to 108 in (a rug's "height" is its length).
+  const [lo, hi] = LIMITS.sizeIn;
+  const dim = (k, name) => {
+    const v = parseNumber(form[k]);
+    if (!between(v, LIMITS.sizeIn)) errors[k] = `Enter the ${name} in inches, from ${lo} to ${hi}.`;
+    return v;
+  };
+  const heightIn = dim('heightIn', mount === 'flat' ? 'length' : 'height');
+  const widthIn = dim('widthIn', 'width');
+  const depthIn = dim('depthIn', mount === 'flat' ? 'thickness' : 'depth');
+  const sizeOk = !errors.heightIn && !errors.widthIn && !errors.depthIn;
+  if (sizeOk && lengthPlusGirth(heightIn, widthIn, depthIn) > SHIP.maxLengthGirthIn) errors.size = MESSAGES.tooBig;
 
   const lb = text('weightLb') === '' ? 0 : parseNumber(form.weightLb);
   const oz = text('weightOz') === '' ? 0 : parseNumber(form.weightOz);
   const weightLb = round2((Number.isFinite(lb) ? lb : NaN) + (Number.isFinite(oz) ? oz : NaN) / 16);
-  if (!Number.isFinite(lb) || !Number.isFinite(oz) || oz >= 16 || !between(weightLb, LIMITS.weightLb)) {
+  if (!Number.isFinite(lb) || !Number.isFinite(oz) || oz >= 16 || !(weightLb >= LIMITS.weightLb[0])) {
     errors.weight = 'Enter the weight (pounds and ounces) so shipping can be worked out.';
+  } else if (weightLb > LIMITS.weightLb[1]) {
+    errors.weight = MESSAGES.tooHeavy;
   }
 
-  const localPickupOnly = !!form.localPickupOnly;
-  // Shipping is calculated by USPS at checkout from weight and size (2026-11-17), so sellers no longer set a price.
+  // Weight against size: denser than iron is impossible; very light (over 50 in3) must be confirmed with a tick.
+  let warnings = {};
+  if (sizeOk && !errors.weight) {
+    const volume = heightIn * widthIn * depthIn;
+    if (weightLb > volume * SHIP.maxLbPerIn3) errors.weight = MESSAGES.impossible;
+    else if (volume > SHIP.lightMinVolumeIn3 && weightLb < volume * SHIP.lightLbPerIn3) warnings = { weight: MESSAGES.veryLight };
+  }
+  const lightWeightConfirmed = !!warnings.weight && !!form.lightWeightOk;
+  const needsConfirm = !!warnings.weight && !lightWeightConfirmed;
 
-  if (Object.keys(errors).length) return { ok: false, errors };
+  if (Object.keys(errors).length || needsConfirm) return { ok: false, errors, warnings, needsConfirm };
   return {
     ok: true,
     errors,
+    warnings,
+    needsConfirm: false,
     listing: {
       title,
       description,
@@ -130,9 +170,9 @@ export function validateListing(form) {
       mount,
       heightIn: round2(heightIn),
       widthIn: round2(widthIn),
-      depthIn: depthIn === null ? null : round2(depthIn),
+      depthIn: round2(depthIn),
       weightLb,
-      localPickupOnly,
+      lightWeightConfirmed,
       shippingPrice: null,
     },
   };
@@ -161,7 +201,7 @@ export function formFromItem(item) {
     depthIn: str(src.dims?.d ?? src.depthIn),
     weightLb: w ? String(lb) : '',
     weightOz: w ? String(oz) : '',
-    localPickupOnly: !!src.localPickupOnly,
+    lightWeightOk: false,
   };
 }
 

@@ -96,12 +96,14 @@ export function moveFixture(booth, fixtureInstanceId, to) {
     fixtures: booth.fixtures.map((f) => (f.id === fixtureInstanceId ? { ...f, x: to.x, y: to.y } : f)),
     items: (booth.items ?? []).map((it) => (ridesOn(it.placement, fixtureInstanceId) ? { ...it, placement: shift(it.placement) } : it)),
     decor: (booth.decor ?? []).map((d) => (ridesOn(d.placement, fixtureInstanceId) ? { ...d, placement: shift(d.placement) } : d)),
+    ...(booth.boxes ? { boxes: booth.boxes.map((b) => (ridesOn(b.placement, fixtureInstanceId) ? { ...b, placement: shift(b.placement) } : b)) } : {}),
   };
 }
 
 /**
- * Remove a fixture. Items on it go back to the storage crate; decor on it is removed (decor is free to re-add).
- * @returns {{booth:object, storedIds:string[], removedDecorIds:string[]}}
+ * Remove a fixture. Items on it go back to the storage crate; decor on it is removed (decor is free to re-add);
+ * a collectibles box on it is removed and its items go back to the crate too.
+ * @returns {{booth:object, storedIds:string[], removedDecorIds:string[], removedBoxIds:string[]}}
  */
 export function removeFixture(booth, fixtureInstanceId) {
   const storedIds = [];
@@ -116,10 +118,18 @@ export function removeFixture(booth, fixtureInstanceId) {
     removedDecorIds.push(d.id);
     return false;
   });
+  const removedBoxIds = [];
+  const boxes = (booth.boxes ?? []).filter((b) => {
+    if (!ridesOn(b.placement, fixtureInstanceId)) return true;
+    removedBoxIds.push(b.id);
+    storedIds.push(...(b.slots ?? []).filter(Boolean));
+    return false;
+  });
   return {
-    booth: { ...booth, fixtures: (booth.fixtures ?? []).filter((f) => f.id !== fixtureInstanceId), items, decor },
+    booth: { ...booth, fixtures: (booth.fixtures ?? []).filter((f) => f.id !== fixtureInstanceId), items, decor, ...(booth.boxes ? { boxes } : {}) },
     storedIds,
     removedDecorIds,
+    removedBoxIds,
   };
 }
 

@@ -9,7 +9,7 @@ const MOUNT = { stand: 'Stands on a shelf/table/floor', wall: 'Hangs on the wall
 const FIELD_LABEL = {
   title: 'Name', description: 'Description', price: 'Price', quantity: 'Quantity', category: 'Category', condition: 'Condition',
   era: 'Era', eraNote: 'Era', mount: 'Display', heightIn: 'Size', widthIn: 'Size', depthIn: 'Size', weightLb: 'Weight',
-  localPickupOnly: 'Shipping', shippingPrice: 'Shipping', cutoutUrl: 'Cutout photo', photos: 'Extra photos',
+  shippingPrice: 'Shipping', cutoutUrl: 'Cutout photo', photos: 'Extra photos',
 };
 
 const css = /* css */ `
@@ -202,7 +202,7 @@ export class AtticApprovals extends HTMLElement {
             <dt>Size</dt><dd>${mark(['heightIn', 'widthIn', 'depthIn'], esc(size(p)), esc(c ? size(c) : ''))}</dd>
             <dt>Display</dt><dd>${mark(['mount'], esc(MOUNT[p.mount] ?? p.mount), esc(c ? MOUNT[c.mount] ?? c.mount : ''))}</dd>
             <dt>Weight</dt><dd>${mark(['weightLb'], `${esc(String(p.weightLb))} lb`, c ? `${esc(String(c.weightLb))} lb` : '')}</dd>
-            <dt>Shipping</dt><dd>${mark(['shippingPrice', 'localPickupOnly'], esc(p.shipping), esc(c?.shipping ?? ''))}</dd>
+            <dt>Shipping</dt><dd>${mark(['shippingPrice'], esc(p.shipping), esc(c?.shipping ?? ''))}</dd>
           </dl>
           ${it.kind === 'edit' && ch.size ? `<p class="counts">Changed: ${esc([...new Set([...ch].map((k) => FIELD_LABEL[k] ?? k))].join(', '))}</p>` : ''}
           ${this.#actsHtml(key, { itemId: it.id })}

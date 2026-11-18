@@ -13,6 +13,9 @@ import { normalizeLibrary } from './logic/library.js';
 import { isAllowedOrigin, DEFAULT_ALLOWED_ORIGINS } from './logic/origin.js';
 import { esc, money, ensureFonts, roomInnerHtml, paintSurfaces } from './room-render.js';
 import { anyLampLit } from './logic/lamps.js';
+import { ANNOUNCE_TYPES } from './bridge.js';
+import { Lens } from './lens.js';
+import { boxOfItem, boxedItemIds, styleOf, liningOf } from './logic/boxes.js';
 
 const NARROW_PX = 600;
 const ZOOM_MIN = 1;
@@ -49,6 +52,9 @@ export class AtticBooth extends HTMLElement {
   #zoom = 1;
   #favourites = new Set();
   #favBooths = new Set(); // booth ids the visitor saved (set-favourites boothIds)
+  #lens = null; // magnifier
+  #anchor = null; // the element the open card points at (an item in the room or a box compartment)
+  #openBoxId = null; // collectibles box shown up close
   #openId = null;
   #fromSearch = false;
   #audio = null;
@@ -133,8 +139,15 @@ export class AtticBooth extends HTMLElement {
 
   /** Open an item's card, e.g. when arriving from search (fromSearch shows "Visit booth"). */
   openItem(itemId, { fromSearch = false } = {}) {
-    const el = this.#root.querySelector(`.item[data-id="${CSS.escape(itemId)}"]`);
-    if (!el) return;
+    let el = this.#root.querySelector(`.item[data-id="${CSS.escape(itemId)}"]`);
+    if (!el) {
+      // An item in a collectibles box: open the box, then the item's card on its compartment.
+      const inBox = boxOfItem(this.#booth, itemId);
+      if (!inBox) return;
+      this.#openBox(inBox.boxId);
+      el = this.#root.querySelector(`.bvcell[data-id="${CSS.escape(itemId)}"]`);
+      if (!el) return;
+    }
     this.#fromSearch = fromSearch;
     this.#openCard(itemId, el);
   }
@@ -147,7 +160,8 @@ export class AtticBooth extends HTMLElement {
     const shell = this.#root.querySelector('.booth');
     const initial = esc((b.seller?.displayName ?? b.name ?? '?').trim().charAt(0).toUpperCase());
     const avatar = b.seller?.avatarSrc ? `<img src="${esc(b.seller.avatarSrc)}" alt="">` : initial;
-    const forSale = L.items.filter((e) => e.item.status !== 'sold').length;
+    const boxed = boxedItemIds(b);
+    const forSale = L.items.filter((e) => e.item.status !== 'sold').length + (b.items ?? []).filter((i) => boxed.has(i.id) && i.status !== 'sold').length;
     // The Lights switch appears for a lighting preset or for lamps the seller left on; lit lamps start on.
     const hasLights = !!b.room?.light?.presetId || anyLampLit(L);
     const favBooth = this.#favBooths.has(b.id);
@@ -173,9 +187,12 @@ export class AtticBooth extends HTMLElement {
           ${this.hasAttribute('demo') ? '<div class="badge">Demo items &middot; not for sale</div>' : ''}
         </div>
       </div>
+      <div class="boxview" role="dialog" aria-modal="false" aria-labelledby="bv-title" hidden></div>
       <div class="card" role="dialog" aria-modal="false" aria-labelledby="card-title" hidden></div>
       <div class="toast" role="status" aria-live="polite"></div>`;
 
+    this.#lens = new Lens(shell);
+    this.#openBoxId = null;
     paintSurfaces(this.#root, this.#booth, lib);
     this.#wire(shell);
     this.#applyZoom(this.#zoom);
@@ -196,8 +213,35 @@ export class AtticBooth extends HTMLElement {
         this.#fromSearch = false;
         this.#openCard(el.dataset.id, el);
       });
-      el.addEventListener('pointerenter', () => this.#swing(el.dataset.id));
-      el.addEventListener('focus', () => this.#swing(el.dataset.id));
+      // Magnifier: hover with a mouse or pen, keyboard focus, or a tap on a touch screen.
+      el.addEventListener('pointerenter', (e) => {
+        this.#swing(el.dataset.id);
+        if (e.pointerType !== 'touch') this.#magnify(el);
+      });
+      el.addEventListener('pointerleave', (e) => {
+        if (e.pointerType !== 'touch') this.#lens?.hide();
+      });
+      el.addEventListener('pointerdown', (e) => {
+        if (e.pointerType === 'touch') this.#magnify(el);
+      });
+      el.addEventListener('focus', () => {
+        this.#swing(el.dataset.id);
+        this.#magnify(el);
+      });
+      el.addEventListener('blur', () => this.#lens?.hide());
+    });
+    shell.querySelectorAll('.box').forEach((el) => el.addEventListener('click', () => this.#openBox(el.dataset.id)));
+    const bv = shell.querySelector('.boxview');
+    bv.addEventListener('click', (e) => {
+      if (e.target.closest('.bvclose')) {
+        this.#closeBox(true);
+        return;
+      }
+      const cell = e.target.closest('.bvcell[data-id]');
+      if (cell) {
+        this.#fromSearch = false;
+        this.#openCard(cell.dataset.id, cell);
+      }
     });
     shell.querySelectorAll('.tag').forEach((t) =>
       t.addEventListener('click', () => {
@@ -218,16 +262,73 @@ export class AtticBooth extends HTMLElement {
     shell.querySelector('.zoom-in').addEventListener('click', () => this.#applyZoom(this.#zoom + 0.5));
     shell.querySelector('.zoom-out').addEventListener('click', () => this.#applyZoom(this.#zoom - 0.5));
     const vp = shell.querySelector('.viewport');
-    vp.addEventListener('scroll', () => this.#openId && this.#positionCard(), { passive: true });
+    vp.addEventListener(
+      'scroll',
+      () => {
+        this.#lens?.hide();
+        if (this.#openId) this.#positionCard();
+      },
+      { passive: true },
+    );
     vp.addEventListener('pointerdown', (e) => this.#pinch(e, 'down'));
     vp.addEventListener('pointermove', (e) => this.#pinch(e, 'move'));
     ['pointerup', 'pointercancel', 'pointerleave'].forEach((t) => vp.addEventListener(t, (e) => this.#pinch(e, 'up')));
     shell.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && this.#openId) this.#closeCard(true);
+      if (e.key !== 'Escape') return;
+      if (this.#openId) this.#closeCard(true);
+      else if (this.#openBoxId) this.#closeBox(true);
     });
     shell.querySelector('.room').addEventListener('click', (e) => {
-      if (!e.target.closest('.item, .tag')) this.#closeCard(false);
+      if (!e.target.closest('.item, .tag, .box')) {
+        this.#closeCard(false);
+        this.#closeBox(false);
+      }
     });
+  }
+
+  /** The magnifier over one item in the room. */
+  #magnify(el) {
+    const it = this.#item(el.dataset.id);
+    if (!it || !this.#lens) return;
+    this.#lens.show(el, { id: it.id, src: it.image, title: it.title, sub: it.status === 'sold' ? 'Sold' : money(it.price) });
+  }
+
+  // ---------------------------------------------------------------- collectibles box, up close
+  #openBox(boxId) {
+    const box = (this.#booth.boxes ?? []).find((b) => b.id === boxId);
+    const bv = this.#root.querySelector('.boxview');
+    if (!box || !bv) return;
+    this.#closeCard(false);
+    this.#lens?.hide();
+    this.#openBoxId = boxId;
+    const items = (box.slots ?? []).map((id) => (id ? this.#item(id) : null));
+    const n = items.filter(Boolean).length;
+    bv.innerHTML = `
+      <div class="bvhead">
+        <div style="flex:1"><h3 id="bv-title" tabindex="-1">${esc(styleOf(box.style).name)}</h3><p>${n} item${n === 1 ? '' : 's'} &middot; click one for its details</p></div>
+        <button class="bvclose" type="button" aria-label="Close the box">&times;</button>
+      </div>
+      <div class="bvbox style-${esc(styleOf(box.style).id)}" style="grid-template-columns:repeat(${box.cols},1fr);--lining:${esc(liningOf(box.lining).color)}">
+        ${items
+          .map((it) => {
+            if (!it) return '<span class="bvcell empty" aria-hidden="true"></span>';
+            const sold = it.status === 'sold';
+            return `<button class="bvcell" type="button" data-id="${esc(it.id)}" aria-label="${esc(`${it.title}, ${sold ? 'sold' : money(it.price)}`)}"><img src="${esc(it.image)}" alt=""><span class="bvtag${sold ? ' sold' : ''}">${sold ? 'SOLD' : esc(money(it.price))}</span></button>`;
+          })
+          .join('')}
+      </div>`;
+    bv.hidden = false;
+    bv.querySelector('#bv-title').focus({ preventScroll: true });
+  }
+
+  #closeBox(restoreFocus) {
+    const bv = this.#root.querySelector('.boxview');
+    if (!bv || bv.hidden) return;
+    this.#closeCard(false);
+    bv.hidden = true;
+    const id = this.#openBoxId;
+    this.#openBoxId = null;
+    if (restoreFocus) this.#root.querySelector(`.box[data-id="${CSS.escape(id ?? '')}"]`)?.focus();
   }
 
   #swing(id) {
@@ -290,20 +391,21 @@ export class AtticBooth extends HTMLElement {
 
   // ---------------------------------------------------------------- card
   #item(id) {
-    return this.#layout.items.find((e) => e.item.id === id)?.item;
+    return (this.#booth?.items ?? []).find((i) => i.id === id) ?? null;
   }
 
   #openCard(id, el) {
     const item = this.#item(id);
     if (!item) return;
-    this.#root.querySelectorAll('.item.active').forEach((n) => n.classList.remove('active'));
+    this.#root.querySelectorAll('.item.active, .bvcell.active').forEach((n) => n.classList.remove('active'));
     el.classList.add('active');
+    this.#anchor = el;
     this.#openId = id;
     const card = this.#root.querySelector('.card');
     const sold = item.status === 'sold';
     const fav = this.#favourites.has(id);
     const size = item.dims ? `${item.dims.h} &times; ${item.dims.w} &times; ${item.dims.d} in (H &times; W &times; D)` : '';
-    const ship = item.localPickupOnly ? 'Local pickup only (arranged with the seller after purchase)' : 'Ships by USPS, calculated at checkout';
+    const ship = 'Ships by USPS within the US; the price is calculated at checkout';
     card.innerHTML = `
       <div class="grab" aria-hidden="true"></div>
       <button class="close" type="button" aria-label="Close">&times;</button>
@@ -324,7 +426,7 @@ export class AtticBooth extends HTMLElement {
         <button class="cart" type="button" ${sold ? 'disabled' : ''}>${ICONS.cart}<span>${sold ? 'Sold' : 'Add to cart'}</span></button>
       </div>
       <div class="links">
-        <button class="ask" type="button">Ask the seller</button>
+        <button class="ask" type="button">Ask about this item</button>
         <button class="visit" type="button" ${this.#fromSearch ? '' : 'hidden'}>Visit booth</button>
       </div>`;
     card.hidden = false;
@@ -341,7 +443,7 @@ export class AtticBooth extends HTMLElement {
   #positionCard() {
     const card = this.#root.querySelector('.card');
     const shell = this.#root.querySelector('.booth');
-    const el = this.#root.querySelector(`.item[data-id="${CSS.escape(this.#openId ?? '')}"]`);
+    const el = this.#anchor?.isConnected ? this.#anchor : this.#root.querySelector(`.item[data-id="${CSS.escape(this.#openId ?? '')}"]`);
     if (!card || !el || card.hidden) return;
     if (shell.classList.contains('narrow')) {
       card.style.left = card.style.top = '';
@@ -373,10 +475,12 @@ export class AtticBooth extends HTMLElement {
     const card = this.#root.querySelector('.card');
     if (!card || card.hidden) return;
     card.hidden = true;
-    const el = this.#root.querySelector(`.item[data-id="${CSS.escape(this.#openId ?? '')}"]`);
+    const el = this.#anchor?.isConnected ? this.#anchor : this.#root.querySelector(`.item[data-id="${CSS.escape(this.#openId ?? '')}"]`);
     el?.classList.remove('active');
     if (restoreFocus) el?.focus();
     this.#openId = null;
+    this.#anchor = null;
+    this.#lens?.hide();
   }
 
   #toggleFav(id, btn) {
@@ -434,7 +538,8 @@ export class AtticBooth extends HTMLElement {
     if (!ok) this.#toast(message || "Couldn't add to cart. Please try again.");
   }
 
-  // Ask the seller: a small form inside the card; the Wix page stores and forwards it.
+  // Ask about this item: a small form inside the card. The question goes to GingersAttic (the Wix page stores
+  // it), which asks the seller and emails the answer back; buyers and sellers never contact each other directly.
   #openAskForm(id) {
     const card = this.#root.querySelector('.card');
     if (!card || card.querySelector('.askform')) return;
@@ -442,8 +547,9 @@ export class AtticBooth extends HTMLElement {
     form.className = 'askform';
     form.noValidate = false;
     form.innerHTML = `
+      <p class="askhow">Your question goes to GingersAttic. We ask the seller and email you their answer: buyers and sellers don't contact each other directly.</p>
       <label>Your name<input name="fromName" maxlength="100" autocomplete="name"></label>
-      <label>Your email (the seller replies here)<input name="fromEmail" type="email" required maxlength="200" autocomplete="email"></label>
+      <label>Your email (we send the answer here)<input name="fromEmail" type="email" required maxlength="200" autocomplete="email"></label>
       <label>Your question<textarea name="message" required minlength="3" maxlength="2000" rows="3"></textarea></label>
       <div class="askbtns"><button class="send" type="submit">Send question</button><button class="askcancel" type="button">Cancel</button></div>`;
     card.querySelector('.links').after(form);
@@ -479,7 +585,7 @@ export class AtticBooth extends HTMLElement {
     if (ok) {
       const p = document.createElement('p');
       p.className = 'asksent';
-      p.textContent = message || 'Sent! The seller will email you back.';
+      p.textContent = message || 'Sent! GingersAttic will email you the answer.';
       form.replaceWith(p);
     } else {
       const send = form.querySelector('.send');
@@ -532,6 +638,8 @@ export class AtticBooth extends HTMLElement {
     this.dispatchEvent(new CustomEvent('attic-booth:event', { detail: msg, bubbles: true, composed: true }));
     if (this.#hasParent()) {
       if (this.#parentOrigin) window.parent.postMessage(msg, this.#parentOrigin);
+      // Firefox: no ancestorOrigins and maybe no referrer, so the origin can be unknown until the page answers.
+      else if (ANNOUNCE_TYPES.includes(type)) window.parent.postMessage(msg, '*');
       else console.warn('[attic-booth] parent origin not allowed; message not sent', type);
     }
   }

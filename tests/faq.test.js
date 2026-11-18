@@ -37,12 +37,33 @@ describe('faq.json', () => {
   it('states the settled shipping and sales facts', () => {
     expect(text).toMatch(/USPS calculates shipping at checkout/);
     expect(text).toMatch(/Ground Advantage, Priority Mail and Priority Mail Express/);
-    expect(text).toMatch(/within the US only/);
+    expect(text).toMatch(/within the US only for now/);
     expect(text).toMatch(/within 3 business days/);
     expect(text).toMatch(/All sales are final/);
     expect(text).toMatch(/approves every item before it goes on sale/);
     expect(text).toMatch(/member account can open one booth/);
-    expect(text).toMatch(/the seller arranges the pickup with you/);
     expect(text).toMatch(/15% commission/);
+  });
+  it('has no local pickup any more: everything ships by USPS (2026-11-17 batch 2)', () => {
+    expect(text.toLowerCase()).not.toMatch(/pickup|pick up|pick-up/);
+    expect(text).toMatch(/Everything ships by USPS/);
+    expect(JSON.stringify(agreement).toLowerCase()).not.toMatch(/pickup/);
+  });
+  it('defines a booth, explains asking about an item and the collectibles box, and allows disclosed hair items', () => {
+    expect(all.map((q) => q.id)).toEqual(expect.arrayContaining(['what-is-a-booth', 'ask-about-an-item', 'collectibles-box']));
+    expect(text).toMatch(/A booth is one seller's own space/);
+    expect(text).toMatch(/goes to GingersAttic, which asks the seller/);
+    expect(text).toMatch(/Victorian hair lockets and mourning jewelry, are allowed/);
+    expect(text).toMatch(/2 × 2 to 4 × 4/);
+  });
+  it('the agreement keeps its version, says "immediately", and has the new clauses', () => {
+    const a = JSON.stringify(agreement);
+    expect(agreement.version).toBe('2026-11-17');
+    expect(a).not.toMatch(/straight away/);
+    expect(a).toMatch(/deal with each other only through GingersAttic/);
+    expect(a).toMatch(/Why: it protects buyers and sellers/);
+    expect(a).toMatch(/human hair.*allowed if they are antique or vintage and the listing says/);
+    expect(a).toMatch(/Other human remains, such as teeth and bone, stay prohibited/);
+    expect(a).toContain("GingersAttic ships within the United States only for now. When international sales open, buyers pay any customs duties and import taxes, and sellers must follow export rules; items that can't legally be exported to the buyer's country will not be sold there.");
   });
 });

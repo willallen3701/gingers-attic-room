@@ -1,5 +1,5 @@
 {
-  "_note": "FAQ for faq.html. Every answer comes only from data/agreement.json (version 2026-11-17), docs/prohibited-items.md and the owner's settled facts of 2026-11-17 (USPS shipping at checkout, US only, local pickup, ship within 3 business days, all sales final, every item approved, one booth per member account). 'source' says where each answer comes from; it isn't shown. tests/faq.test.js checks the prohibited list matches agreement.json.",
+  "_note": "FAQ for faq.html. Answers come only from data/agreement.json (version 2026-11-17), docs/prohibited-items.md, the owner's settled facts of 2026-11-17 (USPS shipping at checkout, US only for now, ship within 3 business days, all sales final, every item approved, one booth per member account, everything ships, questions relayed by GingersAttic) and the booth app itself (booths, collectibles boxes). 'source' says where each answer comes from; it isn't shown. tests/faq.test.js checks the prohibited list matches agreement.json.",
   "version": "2026-11-17",
   "groups": [
     {
@@ -15,13 +15,30 @@
           "source": "agreement intro"
         },
         {
+          "id": "what-is-a-booth",
+          "q": "What's a booth?",
+          "a": [
+            "A booth is one seller's own space in the mall: a little room they decorate with wallpaper, flooring, shelves, tables and decor, with their items set out in it. Click an item in a booth to see its photos, price and details.",
+            "Small things can sit together in a collectibles box: click the box to see its items up close."
+          ],
+          "source": "the booth app; settled fact (one booth per member account)"
+        },
+        {
           "id": "who-am-i-buying-from",
           "q": "Who am I buying from?",
           "a": [
-            "Each item belongs to the seller whose booth it's in. GingersAttic sells it for them through its online store, so you pay GingersAttic.",
+            "Each item belongs to the seller whose booth it's in. GingersAttic sells it for them through its online store, so you pay GingersAttic, and buyers and sellers deal with each other only through GingersAttic.",
             "GingersAttic collects sales tax on store sales where the law requires it."
           ],
-          "source": "agreement 1, 9"
+          "source": "agreement 1, 9, 10"
+        },
+        {
+          "id": "ask-about-an-item",
+          "q": "Can I ask a question about an item?",
+          "a": [
+            "Yes: open the item and choose \"Ask about this item\". Your question goes to GingersAttic, which asks the seller and emails you their answer. Buyers and sellers don't contact each other directly."
+          ],
+          "source": "settled fact; agreement 9"
         },
         {
           "id": "are-items-checked",
@@ -33,34 +50,18 @@
           "source": "settled fact; agreement 2, 3"
         },
         {
-          "id": "shipping-cost",
-          "q": "How much is shipping?",
+          "id": "shipping",
+          "q": "How does shipping work?",
           "a": [
-            "USPS calculates shipping at checkout from the item's weight and size, with USPS Ground Advantage, Priority Mail and Priority Mail Express rates."
+            "Everything ships by USPS. USPS calculates shipping at checkout from the item's weight and size, with USPS Ground Advantage, Priority Mail and Priority Mail Express rates, and sellers ship within 3 business days."
           ],
-          "source": "settled fact; agreement 4, 6"
+          "source": "settled facts; agreement 6"
         },
         {
           "id": "ship-outside-us",
           "q": "Do you ship outside the US?",
           "a": [
-            "Not yet. For now GingersAttic ships within the US only."
-          ],
-          "source": "settled fact"
-        },
-        {
-          "id": "local-pickup",
-          "q": "What does \"local pickup only\" mean?",
-          "a": [
-            "Items too big or too fragile to mail can be marked local pickup only. They aren't shipped: after you buy one, the seller arranges the pickup with you."
-          ],
-          "source": "settled fact; agreement 6"
-        },
-        {
-          "id": "when-ships",
-          "q": "When will my order ship?",
-          "a": [
-            "Sellers ship within 3 business days."
+            "Not yet: GingersAttic ships within the US only for now."
           ],
           "source": "settled fact; agreement 6"
         },
@@ -93,35 +94,36 @@
           "q": "Does GingersAttic check my items?",
           "a": [
             "Yes. GingersAttic reviews every new item before shoppers can see it, and may decline or remove any listing at any time.",
-            "Price and quantity changes go live straight away. Changes to photos, the title, the description or the details go back for review; the approved version stays up meanwhile."
+            "Price and quantity changes go live immediately. Changes to photos, the title, the description or the details go back for review; the approved version stays up meanwhile."
           ],
           "source": "agreement 3"
         },
         {
-          "id": "fees",
-          "q": "What does it cost to sell?",
+          "id": "collectibles-box",
+          "q": "What's a collectibles box?",
           "a": [
-            "GingersAttic keeps a 15% commission on each item's sale price. The shipping the buyer pays at checkout (calculated by USPS from the item's weight and size) is passed to you to cover postage."
+            "A display box for small things such as thimbles, buttons and rings. Choose a wooden crate, a jewelry box or a curio drawer, pick a lining colour and a grid from 2 × 2 to 4 × 4 compartments, and put one item in each compartment.",
+            "You can place up to 3 boxes in your booth, and each box counts as one piece of the 40 you can have out at once. Shoppers click a box to see its items up close."
           ],
-          "source": "agreement 4"
+          "source": "the booth app"
+        },
+        {
+          "id": "fees",
+          "q": "What does it cost to sell, and when am I paid?",
+          "a": [
+            "GingersAttic keeps a 15% commission on each item's sale price. The shipping the buyer pays at checkout (calculated by USPS from the item's weight and size) is passed to you to cover postage.",
+            "Payouts are made once a month for items that have been delivered. An item counts as delivered once you've marked it shipped and either 14 days have passed or GingersAttic has confirmed delivery. GingersAttic will ask you how you'd like to be paid before your first payout."
+          ],
+          "source": "agreement 4, 5"
         },
         {
           "id": "when-it-sells",
           "q": "What happens when my item sells?",
           "a": [
-            "You'll get an email and see the order on your My Sales page. Ship it within 3 business days, packed well enough to survive the trip, and add the tracking number on My Sales. Insured shipping is strongly recommended for anything fragile or over $100.",
-            "If the item is local pickup only, you arrange the pickup with the buyer."
+            "You'll get an email and see the order on your My Sales page. Ship it by USPS within 3 business days, packed well enough to survive the trip, and add the tracking number on My Sales. Insured shipping is strongly recommended for anything fragile or over $100.",
+            "Shoppers' questions reach you through GingersAttic too: don't share your phone number, email or address, and don't sell outside GingersAttic."
           ],
-          "source": "agreement 6; settled fact"
-        },
-        {
-          "id": "payouts",
-          "q": "When do I get paid?",
-          "a": [
-            "Payouts are made once a month for items that have been delivered. An item counts as delivered once you've marked it shipped and either 14 days have passed or GingersAttic has confirmed delivery.",
-            "GingersAttic will ask you how you'd like to be paid before your first payout."
-          ],
-          "source": "agreement 5"
+          "source": "agreement 6, 9"
         },
         {
           "id": "prohibited",
@@ -132,7 +134,7 @@
           "list": [
             "Firearms, ammunition, gun parts, explosives, fireworks, and weapons such as switchblades or brass knuckles",
             "Ivory, tortoiseshell, rhino horn, and parts of endangered or protected animals (including feathers and taxidermy of protected species)",
-            "Human remains, including skulls, bones, hair and teeth",
+            "Human remains, including skulls, bones and teeth (antique or vintage items made with human hair are allowed when the listing says so)",
             "Hazardous materials: asbestos items, mercury, radioactive items (other than ordinary uranium glass), pesticides and chemicals",
             "Recalled or unsafe children's items: cribs, car seats, baby walkers, toys with lead paint sold for children's use",
             "Alcohol, tobacco, vaping products, drugs, drug paraphernalia, prescription medicine and medical devices",
@@ -146,9 +148,10 @@
             "Items that copy someone else's trademark or artwork without permission"
           ],
           "after": [
-            "GingersAttic may remove such items without notice, and repeated attempts can close your booth."
+            "Items made with human hair, such as Victorian hair lockets and mourning jewelry, are allowed if they are antique or vintage and the listing says they contain human hair.",
+            "GingersAttic may remove prohibited items without notice, and repeated attempts can close your booth."
           ],
-          "source": "prohibited-items.md; agreement 11"
+          "source": "prohibited-items.md; agreement 12"
         }
       ]
     }

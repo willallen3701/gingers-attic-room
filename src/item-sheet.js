@@ -7,7 +7,9 @@ import { brushLine, opaqueShare } from './logic/mask.js';
 import { loadBitmap, workingPixels, photoJpeg, encodeCutout } from './imageio.js';
 import { cutOut, warmUp, onModelStatus, modelReady, modelSizeMB } from './cutout.js';
 
-const STEP_LABELS = { photo: 'Photo', cutout: 'Cutout', details: 'Details', send: 'Send' };
+// Step names in the header: numbered text, not buttons (the buttons at the bottom say what they do).
+const STEP_LABELS = { photo: '1. Photo', cutout: '2. Cut out', details: '3. Details', send: '4. Sending' };
+const SIZE_FIELDS = ['heightIn', 'widthIn', 'depthIn', 'weightLb', 'weightOz'];
 const UNDO_MAX = 12;
 
 const opt = (list, cur) => list.map((o) => `<option value="${esc(o.id)}"${o.id === cur ? ' selected' : ''}>${esc(o.label)}</option>`).join('');
@@ -36,6 +38,7 @@ export class ItemSheet {
   #photos = []; // [{ id?, url?, dataUrl? }]
   #form = null;
   #errors = {};
+  #warnings = {}; // e.g. a very light weight the seller must confirm with a tick
   #dirty = false;
   #confirmClose = false;
   #sendLines = [];
@@ -76,6 +79,7 @@ export class ItemSheet {
     this.#undo = [];
     this.#newCutout = null;
     this.#errors = {};
+    this.#warnings = {};
     this.#dirty = false;
     this.#confirmClose = false;
     this.#cutState = 'idle';
@@ -112,7 +116,7 @@ export class ItemSheet {
         <div class="sheetcard" tabindex="-1">
           <header class="sheethead">
             <h2>${esc(title)}</h2>
-            ${this.#step === 'agree' ? '' : `<ol class="sheetsteps">${steps.map((s, i) => `<li class="${i === cur ? 'cur' : i < cur ? 'done' : ''}">${STEP_LABELS[s]}</li>`).join('')}</ol>`}
+            ${this.#step === 'agree' ? '' : `<ol class="sheetsteps" aria-label="Steps">${steps.map((s, i) => `<li class="${i === cur ? 'cur' : i < cur ? 'done' : ''}"${i === cur ? ' aria-current="step"' : ''}>${STEP_LABELS[s]}</li>`).join('')}</ol>`}
             <button class="sheetx" type="button" data-sheet="close" aria-label="Close">&times;</button>
           </header>
           ${this.#confirmClose ? `<div class="sheetconfirm" role="alert"><span>Discard this ${editing ? 'edit' : 'item'}?</span><button class="mini" type="button" data-sheet="discard">Discard</button><button class="mini" type="button" data-sheet="keep">Keep going</button></div>` : ''}
@@ -174,7 +178,7 @@ export class ItemSheet {
         <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>
         <span>Take or choose a photo</span>
       </label>
-      ${this.#item ? '<div class="sheetbtns"><button class="wb2" type="button" data-go="details">Keep the current photo</button></div>' : ''}`;
+      ${this.#item ? '<div class="sheetbtns"><button class="wb2" type="button" data-go="details">Keep the current photo: go to the details</button></div>' : ''}`;
   }
 
   #cutoutHtml() {
@@ -204,7 +208,7 @@ export class ItemSheet {
         <button class="tb" type="button" data-cut="whole">Keep whole photo</button>
       </div>
       <p class="hint">Paint over anything that isn't part of the item with <b>Erase</b>. <b>Restore</b> brings back bits that went missing; the faint picture shows what you can restore.</p>
-      <div class="sheetbtns"><button class="wb2" type="button" data-go="photo">Use a different photo</button><button class="primary" type="button" data-go="details">Looks good</button></div>`;
+      <div class="sheetbtns"><button class="wb2" type="button" data-go="photo">Choose a different photo</button><button class="primary" type="button" data-go="details">Use this cutout: next, the details</button></div>`;
   }
 
   #detailsHtml() {
@@ -216,7 +220,7 @@ export class ItemSheet {
     let banner = '';
     if (it?.status === 'rejected' && it.rejectionNote) banner = `<p class="note warn"><b>GingersAttic asked for changes:</b> ${esc(it.rejectionNote)}</p>`;
     else if (it?.status === 'approved') {
-      banner = `<p class="note">Price and quantity changes go live straight away. Other changes go to GingersAttic for a quick check; your item stays up as it is meanwhile.${it.rejectionNote ? ` <br><b>Last edit not approved:</b> ${esc(it.rejectionNote)}` : ''}</p>`;
+      banner = `<p class="note">Price and quantity changes go live immediately. Other changes go to GingersAttic for a quick check; your item stays up as it is meanwhile.${it.rejectionNote ? ` <br><b>Last edit not approved:</b> ${esc(it.rejectionNote)}` : ''}</p>`;
     } else if (it?.status === 'pending') banner = '<p class="note">This item is private until it is approved. Changes you make now are checked together.</p>';
     const photoSlots = this.#photos
       .map((p, i) => `<li><img src="${esc(p.dataUrl ?? p.url)}" alt="Extra photo ${i + 1}"><button type="button" class="ph-x" data-photo-remove="${i}" aria-label="Remove photo ${i + 1}">&times;</button></li>`)
@@ -240,13 +244,13 @@ export class ItemSheet {
             <fieldset class="fld"><legend>In your booth it...</legend>
               ${MOUNTS.map((m) => `<label class="radio"><input type="radio" name="mount" value="${m.id}"${f.mount === m.id ? ' checked' : ''}><span>${esc(m.label)}</span></label>`).join('')}
             </fieldset>
-            <fieldset class="fld"><legend>Size in inches <small>(it's shown at real size)</small></legend>
+            <fieldset class="fld"><legend>Size in inches <small>(all three; it's shown at real size)</small></legend>
               <div class="row3">
                 <label>${flat ? 'Length' : 'Height'}<input name="heightIn" inputmode="decimal" value="${esc(f.heightIn)}"></label>
                 <label>Width<input name="widthIn" inputmode="decimal" value="${esc(f.widthIn)}"></label>
-                <label>Depth <small>(opt.)</small><input name="depthIn" inputmode="decimal" value="${esc(f.depthIn)}"></label>
+                <label>${flat ? 'Thickness' : 'Depth'}<input name="depthIn" inputmode="decimal" value="${esc(f.depthIn)}"></label>
               </div>
-              ${fieldErr(e, 'heightIn')}${fieldErr(e, 'widthIn')}${fieldErr(e, 'depthIn')}
+              ${fieldErr(e, 'heightIn')}${fieldErr(e, 'widthIn')}${fieldErr(e, 'depthIn')}${fieldErr(e, 'size')}
             </fieldset>
             <fieldset class="fld"><legend>Weight</legend>
               <div class="row2 tight">
@@ -254,19 +258,19 @@ export class ItemSheet {
                 <label><input name="weightOz" inputmode="decimal" value="${esc(f.weightOz)}"> oz</label>
               </div>
               ${fieldErr(e, 'weight')}
+              ${this.#warnings.weight ? `<div class="weightwarn"><p class="note warn" role="alert">${esc(this.#warnings.weight)}</p><label class="check"><input type="checkbox" name="lightWeightOk" ${f.lightWeightOk ? 'checked' : ''}> Yes, the weight and the measurements are right</label></div>` : ''}
             </fieldset>
             <div class="row2">
               <label class="fld">Price ($)<input name="price" inputmode="decimal" value="${esc(f.price)}">${fieldErr(e, 'price')}</label>
               <label class="fld">Quantity<input name="quantity" inputmode="numeric" value="${esc(f.quantity)}">${fieldErr(e, 'quantity')}</label>
             </div>
             <fieldset class="fld"><legend>Shipping</legend>
-              <p class="dim">USPS works out the shipping price at checkout from the weight and size above, so make them accurate. You ship within 3 business days of a sale.</p>
-              <label class="check"><input type="checkbox" name="localPickupOnly" ${f.localPickupOnly ? 'checked' : ''}> Local pickup only: too big or fragile to mail; the buyer arranges pickup with you</label>
+              <p class="dim">Everything ships by USPS within the US. USPS works out the shipping price at checkout from the size and weight above, so measure and weigh carefully. You ship within 3 business days of a sale.</p>
             </fieldset>
           </div>
           <aside class="formside">
             <div class="cutprev">${cutSrc ? `<img src="${esc(cutSrc)}" alt="Your cutout">` : '<span class="dim">No cutout yet</span>'}</div>
-            <button class="wb2" type="button" data-go="photo">${it ? 'Change the main photo' : 'Retake the photo'}</button>
+            <button class="wb2" type="button" data-go="photo">${it ? 'Change the main photo' : 'Take a different photo'}</button>
             <h4>Extra photos <small>(up to ${MAX_PHOTOS})</small></h4>
             <p class="dim">The back, maker's marks, close-ups of any flaws. They show in the item card.</p>
             <ul class="photogrid">${photoSlots}</ul>
@@ -282,11 +286,11 @@ export class ItemSheet {
 
   #submitLabel() {
     const it = this.#item;
-    if (!it) return 'Send for approval';
+    if (!it) return 'Send to GingersAttic for approval';
     if (it.status !== 'approved') return 'Save and send for approval';
-    const v = validateListing(this.#form);
-    if (v.ok && !this.#newCutout && !this.#photosChanged() && needsReview(this.#beforeListing(), v.listing).length === 0) return 'Save price & quantity';
-    return 'Save changes';
+    const v = validateListing({ ...this.#form, lightWeightOk: true });
+    if (v.ok && !this.#newCutout && !this.#photosChanged() && needsReview(this.#beforeListing(), v.listing).length === 0) return 'Save the new price and quantity';
+    return 'Send the changes for approval';
   }
 
   #sendHtml() {
@@ -539,12 +543,12 @@ export class ItemSheet {
     }
     f.condition = fd.get('condition') ?? f.condition;
     f.mount = fd.get('mount') ?? f.mount;
-    f.localPickupOnly = fd.has('localPickupOnly');
+    if (form.querySelector('[name="lightWeightOk"]')) f.lightWeightOk = fd.has('lightWeightOk');
     this.#form = f;
   }
 
   #beforeListing() {
-    const v = validateListing(formFromItem({ ...this.#item, pendingEdit: null }));
+    const v = validateListing({ ...formFromItem({ ...this.#item, pendingEdit: null }), lightWeightOk: true });
     return v.ok ? v.listing : {};
   }
 
@@ -578,9 +582,11 @@ export class ItemSheet {
     this.#readForm();
     const v = validateListing(this.#form);
     this.#errors = v.errors;
+    this.#warnings = v.warnings ?? {};
     if (!v.ok) {
       this.#render();
-      const first = this.#host.querySelector('.ferr');
+      // An error first; otherwise the very-light weight that needs its tick.
+      const first = this.#host.querySelector('.ferr') ?? this.#host.querySelector('.weightwarn');
       first?.closest('.fld, fieldset')?.scrollIntoView({ block: 'center', behavior: 'smooth' });
       return;
     }
@@ -732,7 +738,7 @@ export class ItemSheet {
     }
     if (t.closest?.('.itemform')) {
       this.#dirty = true;
-      if (t.name === 'localPickupOnly' || t.name === 'mount') {
+      if (t.name === 'mount') {
         this.#readForm();
         this.#render();
       } else if (this.#item?.status === 'approved') {
@@ -745,7 +751,15 @@ export class ItemSheet {
 
   #onInput(e) {
     if (e.target.dataset?.brush === 'size') this.#brushPx = Number(e.target.value) || 26;
-    else if (e.target.closest?.('.itemform')) this.#dirty = true;
+    else if (e.target.closest?.('.itemform')) {
+      this.#dirty = true;
+      // A new size or weight needs a new confirmation of a very light weight.
+      if (SIZE_FIELDS.includes(e.target.name)) {
+        const tick = this.#host.querySelector('[name="lightWeightOk"]');
+        if (tick) tick.checked = false;
+        if (this.#form) this.#form.lightWeightOk = false;
+      }
+    }
   }
 
   handleSubmit(e) {

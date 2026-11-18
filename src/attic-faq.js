@@ -120,7 +120,7 @@ export class AtticFaq extends HTMLElement {
       })
       .join('');
     this.#root.querySelector('.groups').innerHTML = html || '<p class="fmsg">No questions yet.</p>';
-    // faq.html#q-shipping-cost opens that question.
+    // faq.html#q-shipping opens that question.
     const id = decodeURIComponent(location.hash.slice(1));
     const target = id && this.#root.getElementById(id);
     if (target?.tagName === 'DETAILS') {

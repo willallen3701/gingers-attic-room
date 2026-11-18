@@ -14,10 +14,9 @@ const good = {
   mount: 'stand',
   heightIn: '9.5',
   widthIn: '4',
-  depthIn: '',
+  depthIn: '4',
   weightLb: '1',
   weightOz: '8',
-  localPickupOnly: false,
 };
 
 describe('listing rules', () => {
@@ -38,21 +37,23 @@ describe('listing rules', () => {
   it('accepts a complete listing and normalises it', () => {
     const v = validateListing(good);
     expect(v.ok).toBe(true);
-    expect(v.listing).toMatchObject({ price: 1250.5, quantity: 1, weightLb: 1.5, depthIn: null, shippingPrice: null, localPickupOnly: false });
+    expect(v.listing).toMatchObject({ price: 1250.5, quantity: 1, weightLb: 1.5, depthIn: 4, shippingPrice: null, lightWeightConfirmed: false });
+    expect('localPickupOnly' in v.listing).toBe(false);
   });
 
   it('reports each missing field', () => {
-    const v = validateListing({ ...good, title: 'x', description: '', price: '0', category: '', condition: '', era: '', heightIn: '', weightLb: '', weightOz: '' });
+    const v = validateListing({ ...good, title: 'x', description: '', price: '0', category: '', condition: '', era: '', heightIn: '', depthIn: '', weightLb: '', weightOz: '' });
     expect(v.ok).toBe(false);
-    expect(Object.keys(v.errors).sort()).toEqual(['category', 'condition', 'description', 'era', 'heightIn', 'price', 'title', 'weight'].sort());
+    expect(Object.keys(v.errors).sort()).toEqual(['category', 'condition', 'depthIn', 'description', 'era', 'heightIn', 'price', 'title', 'weight'].sort());
   });
 
-  it('has no shipping price to enter (USPS at checkout); pickup-only stays', () => {
-    // USPS calculates shipping at checkout: no price to enter, pickup-only still allowed.
+  it('has no shipping price to enter (USPS at checkout) and no local pickup', () => {
+    // USPS calculates shipping at checkout and everything ships within the US: no price, no pickup option.
     expect(validateListing(good).errors.shippingPrice).toBeUndefined();
-    const pickup = validateListing({ ...good, localPickupOnly: true });
-    expect(pickup.ok).toBe(true);
-    expect(pickup.listing.shippingPrice).toBeNull();
+    const old = validateListing({ ...good, localPickupOnly: true });
+    expect(old.ok).toBe(true);
+    expect(old.listing.shippingPrice).toBeNull();
+    expect('localPickupOnly' in old.listing).toBe(false);
   });
 
   it('rejects 16 oz or more and fractional quantities', () => {
@@ -61,10 +62,12 @@ describe('listing rules', () => {
   });
 
   it('round-trips an item into the form (pending edit wins)', () => {
-    const item = { title: 'Old', description: 'Old description here', price: 10, quantity: 2, category: 'lighting', condition: 'good', era: '1950s', mount: 'stand', dims: { h: 9, w: 4, d: null }, weightLb: 2.25, shippingPrice: 5, pendingEdit: { title: 'New name' } };
+    const item = { title: 'Old', description: 'Old description here', price: 10, quantity: 2, category: 'lighting', condition: 'good', era: '1950s', mount: 'stand', dims: { h: 9, w: 4, d: 3 }, weightLb: 2.25, shippingPrice: 5, pendingEdit: { title: 'New name' } };
     const f = formFromItem(item);
-    expect(f).toMatchObject({ title: 'New name', price: '10', heightIn: '9', depthIn: '', weightLb: '2', weightOz: '4' });
+    expect(f).toMatchObject({ title: 'New name', price: '10', heightIn: '9', depthIn: '3', weightLb: '2', weightOz: '4' });
     expect(validateListing(f).ok).toBe(true);
+    // an older item saved without a depth now has to get one
+    expect(validateListing(formFromItem({ ...item, dims: { h: 9, w: 4, d: null } })).errors.depthIn).toBeTruthy();
   });
 
   it('only price and quantity skip review', () => {

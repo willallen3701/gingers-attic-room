@@ -6,11 +6,11 @@ import { ROOM } from './room.js';
 import { buildLayout } from './layout.js';
 import { snapToSurface } from './snap.js';
 import { snapFixture, moveFixture, removeFixture, nextId, FLOOR_BAND } from './fixtures.js';
-import { itemSizeIn, clampTweak } from './scale.js';
+import { itemSizeIn, clampItemTweak } from './scale.js';
 import { itemTweak } from './draft.js';
-import { canPlaceAnother } from './validate.js';
 import { normalizeLibrary, byId } from './library.js';
 import { isLampDef } from './lamps.js';
+import { MAX_BOXES, newBox, normalizeBox, regrid, boxSizeIn, unbox, roomForAnother, styleOf, liningOf } from './boxes.js';
 
 export const REASONS = Object.freeze({
   OVERLAP: 'That would overlap something already there.',
@@ -23,7 +23,9 @@ export const REASONS = Object.freeze({
   WRONG_MOUNT: "That can't go there.",
   NO_SURFACE: 'There is nothing there for it to stand on.',
   NO_SPOT: 'No free spot left for that. Move something or add another shelf.',
-  OVER_LIMIT: 'Your room is full: 40 items is the limit. Move one to the storage crate first.',
+  OVER_LIMIT: 'Your room is full: 40 pieces is the limit (a collectibles box counts as one). Move one to the storage crate first.',
+  MAX_BOXES: 'You can have up to 3 collectibles boxes.',
+  NO_ROOM_TO_GROW: "There's no room for it to grow here. Move it somewhere roomier first.",
   UNKNOWN: "That can't be placed right now.",
 });
 
@@ -67,39 +69,74 @@ export function placeItem(booth, libIn, itemId, drop) {
   const lib = normalizeLibrary(libIn);
   const item = (booth.items ?? []).find((i) => i.id === itemId);
   if (!item) return fail('UNKNOWN', booth);
-  const placed = booth.items.filter((i) => i.placement).length;
-  if (!item.placement && !canPlaceAnother(placed)) return fail('OVER_LIMIT', booth);
+  if (!item.placement && !roomForAnother(booth)) return fail('OVER_LIMIT', booth);
   const size = sizeOfItem(item);
   const { surfaces } = buildLayout(booth, lib);
   const p = snapToSurface(drop, size, surfaces, item.mount);
   if (!p) return fail('NO_SURFACE', booth);
-  const tweak = itemTweak(item);
-  const next = setItem(booth, itemId, { placement: { ...p, scaleAdj: tweak }, sizeTweak: tweak });
+  const tweak = clampItemTweak(item, itemTweak(item));
+  let next = setItem(booth, itemId, { placement: { ...p, scaleAdj: tweak }, sizeTweak: tweak });
+  if (booth.boxes) next = { ...next, boxes: unbox(booth.boxes, itemId) }; // out of its box, into the room
   return judge(booth, next, lib, [itemId]);
 }
 
-/** Back to the storage crate. Always allowed. */
+/** Back to the storage crate (out of the room or out of a box). Always allowed. */
 export function storeItem(booth, itemId) {
-  return ok(setItem(booth, itemId, { placement: null, sizeTweak: 1 }));
+  const next = setItem(booth, itemId, { placement: null, sizeTweak: 1 });
+  return ok(booth.boxes ? { ...next, boxes: unbox(booth.boxes, itemId) } : next);
 }
 
-/** Change an item's size tweak (0.8..1.2), keeping its bottom-centre where it was. */
+/**
+ * Resize to tweak `want`. When the full size would bump into something, grow only as far as it fits here
+ * (largest tweak found by halving), so the slider never snaps back to where it was.
+ * `attempt(t)` -> judge result for tweak t. Returns the result plus { tweak, limited }.
+ */
+function fitResize(attempt, current, want) {
+  const r = attempt(want);
+  if (r.ok || want <= current + 1e-9) return { ...r, tweak: want, limited: false };
+  let lo = current;
+  let hi = want;
+  let found = false;
+  for (let i = 0; i < 14; i++) {
+    const mid = (lo + hi) / 2;
+    if (attempt(mid).ok) {
+      lo = mid;
+      found = true;
+    } else hi = mid;
+  }
+  const t = Math.floor(lo * 100) / 100;
+  const none = { ...r, ok: false, errors: [{ code: 'NO_ROOM_TO_GROW' }], tweak: current, limited: true };
+  if (!found || t <= current + 1e-9) return none;
+  const best = attempt(t);
+  return best.ok ? { ...best, tweak: t, limited: true } : none;
+}
+
+/**
+ * Change an item's size tweak, keeping its bottom-centre where it was. The tweak is clamped to the item's own
+ * range (logic/scale.js: real size, 4 in minimum, room-sized maximum); if the size asked for doesn't fit here,
+ * the item grows as far as it can ({ limited: true }) instead of refusing.
+ * @returns {{ok:boolean, booth:object, errors:Array, tweak:number, limited:boolean}}
+ */
 export function setItemScale(booth, libIn, itemId, scaleAdj) {
   const lib = normalizeLibrary(libIn);
   const item = (booth.items ?? []).find((i) => i.id === itemId);
   if (!item?.placement) return fail('UNKNOWN', booth);
-  const t = clampTweak(scaleAdj);
+  const current = clampItemTweak(item, itemTweak(item));
   const oldSize = sizeOfItem(item);
-  const newSize = itemSizeIn(item, t);
-  const x = Math.round((item.placement.x + (oldSize.w - newSize.w) / 2) * 100) / 100;
-  const next = setItem(booth, itemId, { placement: { ...item.placement, x, scaleAdj: t }, sizeTweak: t });
-  return judge(booth, next, lib, [itemId]);
+  const attempt = (t) => {
+    const newSize = itemSizeIn(item, t);
+    const x = Math.round((item.placement.x + (oldSize.w - newSize.w) / 2) * 100) / 100;
+    const next = setItem(booth, itemId, { placement: { ...item.placement, x, scaleAdj: t }, sizeTweak: t });
+    return judge(booth, next, lib, [itemId]);
+  };
+  return fitResize(attempt, current, clampItemTweak(item, scaleAdj));
 }
 
 // ------------------------------------------------------------------ decor
 
+const decorShape = (def) => ({ heightIn: def.heightIn, widthIn: def.widthIn, aspect: def.aspect, flat: def.mount === 'flat', mount: def.mount });
 function decorSize(def, scaleAdj = 1) {
-  return itemSizeIn({ heightIn: def.heightIn, widthIn: def.widthIn, aspect: def.aspect, flat: def.mount === 'flat' }, scaleAdj);
+  return itemSizeIn(decorShape(def), scaleAdj);
 }
 const decorMount = (m) => (m === 'floor' ? 'floor' : m === 'wall' ? 'wall' : m === 'flat' ? 'flat' : 'stand');
 
@@ -143,19 +180,111 @@ export function setDecorScale(booth, libIn, instanceId, scaleAdj) {
   const d = (booth.decor ?? []).find((x) => x.id === instanceId);
   const def = d && byId(lib.decor)[d.decorId];
   if (!def || !d.placement) return fail('UNKNOWN', booth);
-  const t = clampTweak(scaleAdj);
-  const oldSize = decorSize(def, d.placement.scaleAdj ?? 1);
-  const newSize = decorSize(def, t);
-  const x = Math.round((d.placement.x + (oldSize.w - newSize.w) / 2) * 100) / 100;
-  const next = { ...booth, decor: booth.decor.map((x0) => (x0.id === instanceId ? { ...x0, placement: { ...x0.placement, x, scaleAdj: t } } : x0)) };
-  return judge(booth, next, lib, [instanceId]);
+  const current = clampItemTweak(decorShape(def), d.placement.scaleAdj ?? 1);
+  const oldSize = decorSize(def, current);
+  const attempt = (t) => {
+    const newSize = decorSize(def, t);
+    const x = Math.round((d.placement.x + (oldSize.w - newSize.w) / 2) * 100) / 100;
+    const next = { ...booth, decor: booth.decor.map((x0) => (x0.id === instanceId ? { ...x0, placement: { ...x0.placement, x, scaleAdj: t } } : x0)) };
+    return judge(booth, next, lib, [instanceId]);
+  };
+  return fitResize(attempt, current, clampItemTweak(decorShape(def), scaleAdj));
+}
+
+// ------------------------------------------------------------------ collectibles boxes (logic/boxes.js)
+
+const setBox = (booth, id, fn) => ({ ...booth, boxes: (booth.boxes ?? []).map((b) => (b.id === id ? fn(b) : b)) });
+
+/** Add a box of a style at `drop` (bottom-centre), or at the first spot that fits when drop is null. */
+export function addBox(booth, libIn, style, drop = null) {
+  const lib = normalizeLibrary(libIn);
+  const boxes = booth.boxes ?? [];
+  if (boxes.length >= MAX_BOXES) return fail('MAX_BOXES', booth);
+  if (!roomForAnother(booth)) return fail('OVER_LIMIT', booth);
+  const id = nextId('bx', boxes.map((b) => b.id));
+  const box = newBox(id, styleOf(style).id);
+  const size = boxSizeIn(box);
+  const { surfaces } = buildLayout(booth, lib);
+  const tryAt = (d) => {
+    const p = snapToSurface(d, size, surfaces, 'stand');
+    if (!p) return fail('NO_SURFACE', booth);
+    const next = { ...booth, boxes: [...boxes, { ...box, placement: p }] };
+    return { ...judge(booth, next, lib, [id]), id };
+  };
+  if (drop) return tryAt(drop);
+  return { ...firstThatFits(autoDrops(booth, lib, 'stand'), tryAt), id };
+}
+
+/** Move a box so its bottom-centre lands near `drop`. */
+export function placeBox(booth, libIn, boxId, drop) {
+  const lib = normalizeLibrary(libIn);
+  const box = (booth.boxes ?? []).find((b) => b.id === boxId);
+  if (!box) return fail('UNKNOWN', booth);
+  const { surfaces } = buildLayout(booth, lib);
+  const p = snapToSurface(drop, boxSizeIn(box), surfaces, 'stand');
+  if (!p) return fail('NO_SURFACE', booth);
+  return judge(booth, setBox(booth, boxId, (b) => ({ ...b, placement: p })), lib, [boxId]);
+}
+
+/** Remove a box; its items go back to the storage crate. */
+export function removeBox(booth, boxId) {
+  const box = (booth.boxes ?? []).find((b) => b.id === boxId);
+  return { ...ok({ ...booth, boxes: (booth.boxes ?? []).filter((b) => b.id !== boxId) }), freedIds: (box?.slots ?? []).filter(Boolean) };
+}
+
+/** Change the compartment grid (2..4 each way), keeping the box's bottom-centre; freed items go to the crate. */
+export function setBoxGrid(booth, libIn, boxId, cols, rows) {
+  const lib = normalizeLibrary(libIn);
+  const box = (booth.boxes ?? []).find((b) => b.id === boxId);
+  if (!box) return fail('UNKNOWN', booth);
+  const { box: re, freed } = regrid(normalizeBox(box), cols, rows);
+  const old = boxSizeIn(box);
+  const now = boxSizeIn(re);
+  const placement = box.placement ? { ...box.placement, x: Math.round((box.placement.x + (old.w - now.w) / 2) * 100) / 100 } : null;
+  const next = setBox(booth, boxId, () => ({ ...re, placement }));
+  return { ...judge(booth, next, lib, [boxId]), freedIds: freed };
+}
+
+/** Change a box's style and/or lining colour. */
+export function setBoxLook(booth, boxId, { style, lining } = {}) {
+  const box = (booth.boxes ?? []).find((b) => b.id === boxId);
+  if (!box) return fail('UNKNOWN', booth);
+  return ok(setBox(booth, boxId, (b) => ({ ...b, style: style ? styleOf(style).id : b.style, lining: lining ? liningOf(lining).id : b.lining })));
+}
+
+/**
+ * Put an item in a compartment. It leaves the room or any other compartment; an item already in that
+ * compartment goes back to the crate ({ freedIds }).
+ */
+export function assignToBox(booth, boxId, slot, itemId) {
+  const box = (booth.boxes ?? []).find((b) => b.id === boxId);
+  const item = (booth.items ?? []).find((i) => i.id === itemId);
+  if (!box || !item || !Number.isInteger(slot) || slot < 0 || slot >= box.slots.length) return fail('UNKNOWN', booth);
+  const was = box.slots[slot];
+  const freedIds = was && was !== itemId ? [was] : [];
+  let next = setItem(booth, itemId, { placement: null, sizeTweak: 1 });
+  next = { ...next, boxes: unbox(next.boxes, itemId) };
+  next = setBox(next, boxId, (b) => ({ ...b, slots: b.slots.map((s, i) => (i === slot ? itemId : s)) }));
+  return { ...ok(next), freedIds };
+}
+
+/** Empty one compartment; its item goes back to the crate. */
+export function clearBoxSlot(booth, boxId, slot) {
+  const box = (booth.boxes ?? []).find((b) => b.id === boxId);
+  if (!box || !Number.isInteger(slot) || slot < 0 || slot >= box.slots.length) return fail('UNKNOWN', booth);
+  const next = setBox(booth, boxId, (b) => ({ ...b, slots: b.slots.map((s, i) => (i === slot ? null : s)) }));
+  return { ...ok(next), freedIds: box.slots[slot] ? [box.slots[slot]] : [] };
 }
 
 // ------------------------------------------------------------------ fixtures
 
 const ridingIds = (booth, fixtureInstanceId) => {
   const on = (p) => p?.surfaceId?.startsWith(`${fixtureInstanceId}:`);
-  return [...(booth.items ?? []).filter((i) => on(i.placement)).map((i) => i.id), ...(booth.decor ?? []).filter((d) => on(d.placement)).map((d) => d.id)];
+  return [
+    ...(booth.items ?? []).filter((i) => on(i.placement)).map((i) => i.id),
+    ...(booth.decor ?? []).filter((d) => on(d.placement)).map((d) => d.id),
+    ...(booth.boxes ?? []).filter((b) => on(b.placement)).map((b) => b.id),
+  ];
 };
 
 /** Move a fixture to a proposed top-left; contents ride along. */
@@ -193,7 +322,7 @@ export function addFixture(booth, libIn, fixtureId, pos = null) {
 
 export function deleteFixture(booth, fixtureInstanceId) {
   const r = removeFixture(booth, fixtureInstanceId);
-  return { ok: true, booth: r.booth, errors: [], storedIds: r.storedIds, removedDecorIds: r.removedDecorIds };
+  return { ok: true, booth: r.booth, errors: [], storedIds: r.storedIds, removedDecorIds: r.removedDecorIds, removedBoxIds: r.removedBoxIds ?? [] };
 }
 
 /** Candidate top-left positions for auto-placing a fixture: centre-out, top to bottom. */
@@ -262,6 +391,45 @@ export function autoDrops(booth, libIn, mount) {
   if (mount !== 'flat' && mount !== 'floor') for (const s of surfaces.filter((s) => s.kind === 'line')) along(s.x1, s.x2, s.y);
   for (let y = ROOM.heightIn - 2; y >= FLOOR_BAND.yMin + 2; y -= 4) along(0, ROOM.widthIn, y);
   return drops;
+}
+
+/**
+ * Click "Place": try the spots that hide the least first (no other item, decor, box or fixture behind or in front
+ * of it is best; standing on a rug doesn't count), keeping the usual scan order among equals.
+ */
+export function autoPlaceItem(booth, libIn, itemId) {
+  const lib = normalizeLibrary(libIn);
+  const item = (booth.items ?? []).find((i) => i.id === itemId);
+  if (!item) return fail('UNKNOWN', booth);
+  const L = buildLayout(booth, lib);
+  const size = sizeOfItem(item);
+  const rect = (x, top, w, h, extra = {}) => ({ x1: x, x2: x + w, y1: top, y2: top + h, ...extra });
+  const rects = [
+    ...L.items.filter((e) => e.item.id !== itemId && e.item.mount !== 'flat').map((e) => rect(e.x, e.top, e.size.w, e.size.h)),
+    ...L.decor.filter((e) => e.mount !== 'flat').map((e) => rect(e.x, e.top, e.size.w, e.size.h)),
+    ...L.boxes.map((e) => rect(e.x, e.top, e.size.w, e.size.h)),
+    ...L.fixtures.map((f) => rect(f.x, f.y, f.w, f.h, { fixtureId: f.id })),
+  ];
+  const covered = (d) => {
+    const p = snapToSurface(d, size, L.surfaces, item.mount);
+    if (!p) return Infinity;
+    const r = rect(p.x, p.y - size.h, size.w, size.h);
+    const on = p.surfaceId.split(':')[0];
+    let area = 0;
+    for (const o of rects) {
+      if (o.fixtureId === on) continue; // the shelf or table it stands on
+      const w = Math.min(r.x2, o.x2) - Math.max(r.x1, o.x1);
+      const h = Math.min(r.y2, o.y2) - Math.max(r.y1, o.y1);
+      if (w > 0.01 && h > 0.01) area += w * h;
+    }
+    return area;
+  };
+  const drops = autoDrops(booth, lib, item.mount)
+    .map((d, i) => ({ d, i, area: covered(d) }))
+    .filter((x) => x.area < Infinity)
+    .sort((a, b) => a.area - b.area || a.i - b.i)
+    .map((x) => x.d);
+  return firstThatFits(drops, (d) => placeItem(booth, lib, itemId, d));
 }
 
 /** First drop that works, via `tryDrop(drop) -> result`. */

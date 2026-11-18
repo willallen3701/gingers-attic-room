@@ -5,6 +5,7 @@ import { validatePlacement } from './validate.js';
 import { validateFixture, fixtureRect } from './fixtures.js';
 import { normalizeLibrary, byId } from './library.js';
 import { itemTweak } from './draft.js';
+import { boxSizeIn, boxedItemIds } from './boxes.js';
 
 // Turns booth data + library into a render model: rectangles in room inches, draw order, and
 // per-entity placement problems. Pure: no DOM.
@@ -12,6 +13,7 @@ import { itemTweak } from './draft.js';
 //   booth.items[]             {id, ..., mount, heightIn|widthIn, aspect, placement|null, sizeTweak?}
 //   booth.decor[]             {id, decorId, placement:{surfaceId,x,y,scaleAdj?}}   (never for sale)
 //   booth.room.placeables[]   {id, archId, x, y}               (windows/doors; x = left, y = BASE)
+//   booth.boxes[]             {id, style, lining, cols, rows, placement, slots}  (collectibles boxes, logic/boxes.js)
 
 const Z = Object.freeze({ placeable: 40, wall: 100, flat: 900, depth: 1000 });
 
@@ -24,6 +26,7 @@ const decorMount = (m) => (m === 'floor' ? 'floor' : m === 'wall' ? 'wall' : m =
  *   items: Array<{item:object, size:{w:number,h:number}, x:number, y:number, top:number, z:number, placed:boolean}>,
  *   decor: Array<{decor:object, def:object, size:{w:number,h:number}, x:number, y:number, top:number, z:number, mount:string}>,
  *   placeables: Array<{id:string, def:object, x:number, y:number, top:number, w:number, h:number, z:number}>,
+ *   boxes: Array<{box:object, size:{w:number,h:number}, x:number, y:number, top:number, z:number, cells:Array<object|null>}>,
  *   storage: object[],
  *   surfaces: Array,
  *   problems: Record<string, Array>,
@@ -79,9 +82,10 @@ export function buildLayout(booth, libraryIn) {
 
   const storage = [];
   const items = [];
+  const boxed = boxedItemIds(booth);
   for (const item of booth.items ?? []) {
     if (!item.placement) {
-      storage.push(item);
+      if (!boxed.has(item.id)) storage.push(item); // boxed items live in their box, not the crate
       continue;
     }
     const size = itemSizeIn(item, itemTweak(item));
@@ -98,14 +102,24 @@ export function buildLayout(booth, libraryIn) {
     }
     if (!d.placement) continue;
     const mount = decorMount(def.mount);
-    const size = itemSizeIn({ heightIn: def.heightIn, widthIn: def.widthIn, aspect: def.aspect, flat: mount === 'flat' }, d.placement.scaleAdj ?? 1);
+    const size = itemSizeIn({ heightIn: def.heightIn, widthIn: def.widthIn, aspect: def.aspect, flat: mount === 'flat', mount }, d.placement.scaleAdj ?? 1);
     const p = d.placement;
     decor.push({ decor: d, def, mount, size, x: p.x, y: p.y, top: p.y - size.h, z: zFor(mount, p) });
+  }
+
+  const itemById = new Map((booth.items ?? []).map((i) => [i.id, i]));
+  const boxes = [];
+  for (const b of booth.boxes ?? []) {
+    if (!b.placement) continue;
+    const size = boxSizeIn(b);
+    const p = b.placement;
+    boxes.push({ box: b, size, x: p.x, y: p.y, top: p.y - size.h, z: zFor('stand', p), cells: (b.slots ?? []).map((id) => (id ? itemById.get(id) ?? null : null)) });
   }
 
   const others = [
     ...items.map((e) => ({ id: e.item.id, mount: e.item.mount, size: e.size, placement: e.item.placement })),
     ...decor.map((e) => ({ id: e.decor.id, mount: e.mount, size: e.size, placement: e.decor.placement })),
+    ...boxes.map((e) => ({ id: e.box.id, mount: 'stand', size: e.size, placement: e.box.placement })),
   ];
   for (const o of others) {
     const errs = validatePlacement(o, { surfaces, others, fixtureRects });
@@ -124,8 +138,10 @@ export function buildLayout(booth, libraryIn) {
     }
     if (errs.length) problems[p.id] = errs;
   }
-  if (items.length > ROOM.maxPlacedItems) {
-    problems._room = [{ code: 'OVER_LIMIT', placed: items.length, max: ROOM.maxPlacedItems }];
+  // A collectibles box counts as one placed piece; the items inside it don't count separately.
+  const pieces = items.length + boxes.length;
+  if (pieces > ROOM.maxPlacedItems) {
+    problems._room = [{ code: 'OVER_LIMIT', placed: pieces, max: ROOM.maxPlacedItems }];
   }
-  return { fixtures, items, decor, placeables, storage, surfaces, problems, placedCount: items.length };
+  return { fixtures, items, decor, placeables, boxes, storage, surfaces, problems, placedCount: pieces };
 }

@@ -221,6 +221,63 @@ kbd { padding: 0 4px; border: 1px solid #cbb385; border-bottom-width: 2px; borde
 .nudges { display: flex; gap: 3px; }
 .nudges .tb { padding: 6px 9px; }
 
+/* ---------- selected things come to the front, so they can always be grabbed ---------- */
+.room.edit .item.sel, .room.edit .box.sel { z-index: 3800 !important; }
+.room.edit .box.movable { cursor: grab; }
+.room.edit .box:hover .boxin { transform: none; }
+.tb.primaryish { background: var(--plum); color: var(--paper); border-color: var(--plum); }
+.tb.primaryish:hover { background: var(--plum-dark); }
+.srccard[disabled] { opacity: .5; cursor: not-allowed; }
+
+/* ---------- collectibles boxes: little pictures and the "fill the compartments" sheet ---------- */
+.minibox { display: inline-grid; gap: 2px; width: 54px; height: 54px; padding: 4px; border-radius: 4px; box-shadow: 0 2px 4px rgba(30,15,5,.3); }
+.minibox i { background: var(--lining); border-radius: 1px; box-shadow: inset 0 1px 2px rgba(0,0,0,.45); }
+.minibox.style-crate { background: repeating-linear-gradient(0deg, #c99d63 0 5px, #b98c52 5px 6px); border: 2px solid #8c6236; }
+.minibox.style-jewelry { background: linear-gradient(160deg, #6b2a17, #3d160b 70%); border: 2px solid #2a0f07; box-shadow: inset 0 0 0 2px #c9a14a, 0 2px 4px rgba(30,15,5,.3); }
+.minibox.style-curio { background: linear-gradient(180deg, #b07c4a, #8a5c33); border: 2px solid #5e3c1f; }
+.selbar .thumb .minibox { width: 34px; height: 34px; padding: 2px; gap: 1px; }
+.boxsheet .sheetcard { width: min(920px, 100%); }
+.bxcols { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; }
+.bxgrid { gap: 8px; padding: 12px; }
+.bxcellwrap { position: relative; min-width: 0; }
+.bxcell {
+  display: grid; place-items: center; width: 100%; aspect-ratio: 1; padding: 0; border: 0; border-radius: 6px; cursor: pointer;
+  background: radial-gradient(ellipse at 50% 35%, rgba(255,255,255,.16), transparent 70%), var(--lining, #5b2a4a);
+  box-shadow: inset 0 3px 6px rgba(0,0,0,.45); color: rgba(255,255,255,.65); font: 700 15px var(--type);
+}
+.bxcell img { width: 80%; height: 80%; object-fit: contain; filter: drop-shadow(0 2px 2px rgba(0,0,0,.4)); }
+.bxcell.sel { box-shadow: inset 0 3px 6px rgba(0,0,0,.45), 0 0 0 3px #fffaf0, 0 0 0 6px var(--plum); }
+.bxcell:focus-visible { outline: 2px dashed #fffaf0; outline-offset: -5px; }
+.bxclear {
+  position: absolute; top: -8px; right: -8px; width: 28px; height: 28px; border: 2px solid #fffaf0; border-radius: 50%;
+  background: #1d1612; color: #fff; cursor: pointer; font: 16px/1 var(--serif);
+}
+.bxfs { margin: 0 0 14px; padding: 0; border: 0; min-width: 0; }
+.bxfs legend, .bxh { margin: 0 0 6px; padding: 0; font: 700 12px/1.2 var(--type); letter-spacing: .1em; text-transform: uppercase; color: var(--plum-dark); }
+.bxh small { font-weight: 400; letter-spacing: 0; text-transform: none; color: var(--ink-soft); }
+.bxfs .seg { margin: 0; }
+.linings { display: flex; flex-wrap: wrap; gap: 8px; }
+.lining { width: 40px; height: 40px; padding: 4px; border: 2px solid #d8c59c; border-radius: 50%; background: #fffaf0; cursor: pointer; }
+.lining i { display: block; width: 100%; height: 100%; border-radius: 50%; box-shadow: inset 0 1px 3px rgba(0,0,0,.4); }
+.lining.on { border-color: var(--plum); box-shadow: 0 0 0 2px var(--plum); }
+.bxdims { display: flex; align-items: flex-end; gap: 8px; font: 15px var(--serif); color: var(--ink-soft); }
+.bxdims label { display: flex; flex-direction: column; gap: 3px; font: 12px var(--type); color: var(--plum-dark); }
+.bxdims select { min-height: 38px; padding: 4px 10px; border: 1px solid #cbb385; border-radius: 6px; background: #fffdf7; font: 15px var(--serif); color: var(--ink); }
+.bxitems { display: flex; flex-direction: column; gap: 6px; max-height: 300px; margin: 0; padding: 0 4px 0 0; overflow: auto; list-style: none; }
+.bxitems .empty { padding: 8px; }
+.bxitem {
+  display: flex; align-items: center; gap: 8px; width: 100%; padding: 6px; border: 1px solid #e0cfa8; border-radius: 6px;
+  background: #fffaf0; cursor: pointer; text-align: left; font: inherit; color: var(--ink);
+}
+.bxitem:hover { border-color: var(--plum-soft); }
+.bxitem.here { border-color: var(--plum); background: #f3e3ee; }
+.bxitem .thumb { display: grid; place-items: center; width: 40px; height: 40px; flex: none; border-radius: 4px; background: #f3e8d0; }
+.bxitem img { max-width: 36px; max-height: 36px; object-fit: contain; }
+.bxitem .txt { display: flex; flex-direction: column; min-width: 0; }
+.bxitem .nm { font: 14px/1.25 var(--serif); }
+.bxitem .dim { font: 11.5px/1.3 var(--type); color: var(--ink-soft); }
+@media (max-width: 720px) { .bxcols { grid-template-columns: 1fr; } }
+
 /* ---------- a selected lamp's On/Off switch ---------- */
 .lampswitch {
   display: inline-flex; align-items: center; gap: 8px; min-height: 36px; padding: 4px 12px 4px 6px; cursor: pointer;
@@ -329,9 +386,12 @@ kbd { padding: 0 4px; border: 1px solid #cbb385; border-bottom-width: 2px; borde
 .sheethead { display: flex; align-items: center; gap: 14px; padding: 12px 16px; border-bottom: 1px dashed #cdb88c; background: #f7efdc; }
 .sheethead h2 { flex: 1; min-width: 0; margin: 0; font: 700 20px/1.2 var(--serif); color: var(--plum-dark); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .sheetsteps { display: flex; gap: 6px; margin: 0; padding: 0; list-style: none; font: 12px var(--type); color: var(--ink-soft); }
-.sheetsteps li { padding: 3px 8px; border-radius: 10px; background: #efe2c4; }
-.sheetsteps li.cur { background: var(--plum); color: var(--paper); }
-.sheetsteps li.done { background: #d9c3d2; color: var(--plum-dark); }
+/* Steps read as plain text, not as buttons (testers took a "Send" chip for a button next to "Looks good"). */
+.sheetsteps li { padding: 2px 0; color: var(--ink-soft); }
+.sheetsteps li + li::before { content: "A"; margin-right: 6px; color: #b9a684; }
+.sheetsteps li.cur { color: var(--plum-dark); font-weight: 700; text-decoration: underline; text-underline-offset: 4px; }
+.sheetsteps li.done { color: var(--ink-soft); }
+.weightwarn .note { margin-top: 6px; }
 .sheetx { width: 34px; height: 34px; border: 0; border-radius: 50%; background: none; cursor: pointer; font: 26px/1 var(--serif); color: var(--plum-dark); }
 .sheetx:hover { background: #efe2c4; }
 .sheetconfirm { display: flex; align-items: center; gap: 10px; padding: 8px 16px; background: #f6d6cf; font: 14px var(--serif); color: #8a2b1a; }

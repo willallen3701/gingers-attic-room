@@ -7,6 +7,12 @@ import { isAllowedOrigin, DEFAULT_ALLOWED_ORIGINS } from './logic/origin.js';
 
 export const MSG_SOURCE = 'attic-booth';
 
+// ANNOUNCE: Firefox has no location.ancestorOrigins, and the embedding page may withhold the referrer, so the
+// parent's origin can be unknown at first. Then only "ready" (which carries no private data) goes to '*'; the
+// page's reply is checked against the allowlist and fixes the origin for every later message. Without this,
+// Firefox never said ready and the Wix pages (which wait for it) left the embed on "Opening...".
+export const ANNOUNCE_TYPES = Object.freeze(['ready']);
+
 export class Bridge {
   #host;
   #allowed;
@@ -39,6 +45,7 @@ export class Bridge {
     this.#host.dispatchEvent(new CustomEvent('attic-booth:event', { detail: msg, bubbles: true, composed: true }));
     if (!this.hasParent) return;
     if (this.#parentOrigin) window.parent.postMessage(msg, this.#parentOrigin);
+    else if (ANNOUNCE_TYPES.includes(type)) window.parent.postMessage(msg, '*'); // see ANNOUNCE above
     else console.warn('[attic-booth] parent origin not allowed; message not sent', type);
   }
 

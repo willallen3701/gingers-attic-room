@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 85 100" width="85" height="100">
+  <!-- Placeholder brass thimble for tests and demos (2 in tall: drawn at the 4 in minimum). Drawn for this app. -->
+  <defs>
+    <linearGradient id="b" x1="0" x2="1"><stop offset="0" stop-color="#8a6420"/><stop offset=".35" stop-color="#f1d686"/><stop offset=".7" stop-color="#c39a3f"/><stop offset="1" stop-color="#6e4f18"/></linearGradient>
+    <pattern id="dots" width="7" height="7" patternUnits="userSpaceOnUse"><circle cx="3.5" cy="3.5" r="1.6" fill="#7a5a1c" opacity=".55"/></pattern>
+  </defs>
+  <path d="M14 84 L18 30 Q20 6 42.5 6 Q65 6 67 30 L71 84 Z" fill="url(#b)"/>
+  <path d="M14 84 L18 30 Q20 6 42.5 6 Q65 6 67 30 L71 84 Z" fill="url(#dots)"/>
+  <rect x="9" y="80" width="67" height="14" rx="5" fill="url(#b)" stroke="#6e4f18" stroke-width="1.5"/>
+  <path d="M22 70 Q42 76 63 70" stroke="#fff6d0" stroke-width="2" fill="none" opacity=".6"/>
+</svg>

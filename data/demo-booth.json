@@ -57,7 +57,6 @@
       "description": "Roman-style bronze oil lamp with a heart-shaped handle and a lidded fill hole.",
       "price": 38,
       "shippingPrice": 9,
-      "localPickupOnly": false,
       "condition": "Good, dark patina",
       "era": "Antique",
       "dims": {
@@ -85,7 +84,6 @@
       "description": "Pink lotus-petal cup with a gilded interior, sitting on a green leaf saucer.",
       "price": 18,
       "shippingPrice": 7,
-      "localPickupOnly": false,
       "condition": "Excellent",
       "era": "Early 1900s",
       "dims": {
@@ -113,7 +111,6 @@
       "description": "Black-ground porcelain painted with gilt chinoiserie scenes.",
       "price": 22,
       "shippingPrice": 7,
-      "localPickupOnly": false,
       "condition": "Very good",
       "era": "1800s",
       "dims": {
@@ -141,7 +138,6 @@
       "description": "White porcelain with a wide gold rim and a gilded laurel sprig.",
       "price": 20,
       "shippingPrice": 7,
-      "localPickupOnly": false,
       "condition": "Good, tiny rim wear",
       "era": "1870s",
       "dims": {
@@ -169,7 +165,6 @@
       "description": "Salt-glazed stoneware with a brown dipped top and a pewter rim.",
       "price": 12,
       "shippingPrice": 7,
-      "localPickupOnly": false,
       "condition": "Good",
       "era": "1800s",
       "dims": {
@@ -197,7 +192,6 @@
       "description": "Rusted farrier's horseshoe, nail holes intact.",
       "price": 9,
       "shippingPrice": 6,
-      "localPickupOnly": false,
       "condition": "Rusty, as found",
       "era": "Early 1900s",
       "dims": {
@@ -225,7 +219,6 @@
       "description": "Tall copper-and-brass goblet on an ornate cast foot.",
       "price": 26,
       "shippingPrice": 8,
-      "localPickupOnly": false,
       "condition": "Good",
       "era": "1960s",
       "dims": {
@@ -253,7 +246,6 @@
       "description": "Lithographed tin toy motorcycle with rider and a bright sidecar.",
       "price": 64,
       "shippingPrice": 9,
-      "localPickupOnly": false,
       "condition": "Very good, works",
       "era": "1960s",
       "dims": {
@@ -281,7 +273,6 @@
       "description": "Marbled-paper print in blue and gold, cream mat, black wood frame.",
       "price": 120,
       "shippingPrice": 22,
-      "localPickupOnly": false,
       "condition": "Excellent",
       "era": "Contemporary",
       "dims": {
@@ -309,7 +300,6 @@
       "description": "White profile cameo on black, in a red-and-gilt oval frame with a ribbon bow.",
       "price": 55,
       "shippingPrice": 9,
-      "localPickupOnly": false,
       "condition": "Good",
       "era": "Victorian revival",
       "dims": {
@@ -337,7 +327,6 @@
       "description": "Bronze lily lamp with seven iridescent amber glass shades.",
       "price": 85,
       "shippingPrice": 18,
-      "localPickupOnly": false,
       "condition": "Very good, rewired",
       "era": "Early 1900s style",
       "dims": {
@@ -365,7 +354,6 @@
       "description": "Heavy black Bakelite desk phone with a coiled cord.",
       "price": 70,
       "shippingPrice": 14,
-      "localPickupOnly": false,
       "condition": "Good, untested",
       "era": "1950s",
       "dims": {
@@ -393,7 +381,6 @@
       "description": "White cab and red tipper bed, nicely play-worn.",
       "price": 95,
       "shippingPrice": 16,
-      "localPickupOnly": false,
       "condition": "Play-worn paint",
       "era": "1960s",
       "dims": {
@@ -421,7 +408,6 @@
       "description": "Wingback armchair in buttery yellow damask on carved cabriole legs.",
       "price": 245,
       "shippingPrice": null,
-      "localPickupOnly": true,
       "condition": "Very good, reupholstered",
       "era": "1950s Queen Anne revival",
       "dims": {
@@ -449,7 +435,6 @@
       "description": "Wool rug with dragons and clouds and fringed ends, about 5 x 3 ft.",
       "price": 40,
       "shippingPrice": 15,
-      "localPickupOnly": false,
       "condition": "Good, light wear",
       "era": "Early 1900s",
       "dims": {
@@ -478,7 +463,6 @@
       "description": "Seven cloth-bound children's books and readers, sold as a set.",
       "price": 30,
       "shippingPrice": 10,
-      "localPickupOnly": false,
       "condition": "Worn, sound bindings",
       "era": "1900s-1940s",
       "dims": {

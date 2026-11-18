@@ -19,9 +19,12 @@ import * as ops from './logic/editops.js';
 import { Bridge } from './bridge.js';
 import { ItemSheet } from './item-sheet.js';
 import {
-  esc, money, ensureFonts, roomInnerHtml, placeablesHtml, fixturesHtml, decorHtml, itemsHtml, tagsHtml, lampsHtml, paintSurfaces, SIGN_STYLES,
+  esc, money, ensureFonts, roomInnerHtml, placeablesHtml, fixturesHtml, decorHtml, boxesHtml, itemsHtml, tagsHtml, lampsHtml, paintSurfaces, SIGN_STYLES,
 } from './room-render.js';
 import { isLampDef } from './logic/lamps.js';
+import { tweakRange, itemSizeIn } from './logic/scale.js';
+import { BOX_STYLES, BOX_LININGS, BOX_GRID_MIN, BOX_GRID_MAX, MAX_BOXES, boxOfItem, boxedItemIds, placedPieces, styleOf, liningOf } from './logic/boxes.js';
+import { Lens } from './lens.js';
 
 const NARROW_EDIT_PX = 768;
 const AUTOSAVE_MS = 1500;
@@ -98,6 +101,9 @@ const timeFmt = (iso) => {
 };
 const icon = (paths) => `<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${paths}</svg>`;
 const inches = (w, h) => `${+w.toFixed(1)} &times; ${+h.toFixed(1)} in`;
+/** A small picture of a collectibles box (panel cards, selection bar). */
+const miniBox = (style, lining, cols, rows) =>
+  `<span class="minibox style-${esc(styleOf(style).id)}" style="grid-template-columns:repeat(${cols},1fr);--lining:${esc(liningOf(lining).color)}" aria-hidden="true">${'<i></i>'.repeat(cols * rows)}</span>`;
 
 export class AtticEditor extends HTMLElement {
   #root;
@@ -130,6 +136,8 @@ export class AtticEditor extends HTMLElement {
   #narrow = false;
   #ro = null;
   #raf = 0;
+  #lens = null; // magnifier over items (hover)
+  #boxSheet = null; // { boxId, slot } while the "Fill the compartments" sheet is open
 
   /** Adding items needs Phase 3 site code; the page says so with meta.itemsEnabled (standalone: always on). */
   get #itemsOn() {
@@ -143,7 +151,7 @@ export class AtticEditor extends HTMLElement {
   constructor() {
     super();
     this.#root = this.attachShadow({ mode: 'open' });
-    this.#root.innerHTML = `<style>${roomCss}${editorCss}</style><div class="ed loading"><p class="loadmsg">Opening your booth editor...</p></div><div class="sheethost"></div>`;
+    this.#root.innerHTML = `<style>${roomCss}${editorCss}</style><div class="ed loading"><p class="loadmsg">Opening your booth editor...</p></div><div class="sheethost"></div><div class="boxhost"></div>`;
   }
 
   connectedCallback() {
@@ -179,6 +187,9 @@ export class AtticEditor extends HTMLElement {
     this.#ro = new ResizeObserver(() => this.#onResize());
     this.#ro.observe(this);
     this.#root.addEventListener('keydown', (e) => this.#onKey(e));
+    const boxhost = this.#root.querySelector('.boxhost');
+    boxhost.addEventListener('click', (e) => this.#boxSheetClick(e));
+    boxhost.addEventListener('change', (e) => this.#boxSheetChange(e));
   }
 
   disconnectedCallback() {
@@ -213,7 +224,7 @@ export class AtticEditor extends HTMLElement {
     const room = { ...defaultRoom(lib), ...(booth.room ?? {}) };
     if (!Array.isArray(room.placeables)) room.placeables = [];
     if (!Array.isArray(room.architecture)) room.architecture = [];
-    this.#booth = { ...booth, room, fixtures: booth.fixtures ?? [], decor: booth.decor ?? [], items: booth.items ?? [] };
+    this.#booth = { ...booth, room, fixtures: booth.fixtures ?? [], decor: booth.decor ?? [], items: booth.items ?? [], boxes: booth.boxes ?? [] };
     this.#meta = { ...this.#meta, ...meta, maxPlaced: meta.maxPlaced ?? ROOM.maxPlacedItems };
     this.#uploads = Array.isArray(uploads) ? uploads : [];
     this.#history.reset(toDraft(this.#booth));
@@ -471,12 +482,12 @@ export class AtticEditor extends HTMLElement {
         eraNote: L.eraNote,
         mount: L.mount,
         dims: { h: L.heightIn, w: L.widthIn, d: L.depthIn },
+        depthIn: L.depthIn,
         heightIn: flat ? undefined : L.heightIn,
         widthIn: L.widthIn,
         flat,
         weightLb: L.weightLb,
         shippingPrice: L.shippingPrice,
-        localPickupOnly: L.localPickupOnly,
         image: L.cutout?.url ?? old?.image,
         aspect: L.cutout?.aspect ?? old?.aspect,
         photos: L.photos.map((x) => x.url),
@@ -545,7 +556,8 @@ export class AtticEditor extends HTMLElement {
 
   #itemListHtml(items, { placeable = true } = {}) {
     const max = this.#meta.maxPlaced ?? ROOM.maxPlacedItems;
-    const full = this.#booth.items.filter((i) => i.placement).length >= max;
+    const full = placedPieces(this.#booth) >= max;
+    const boxed = boxedItemIds(this.#booth);
     return `<ul class="itemlist">${items
       .map((it) => {
         const inRoom = !!it.placement;
@@ -555,8 +567,9 @@ export class AtticEditor extends HTMLElement {
         return `
         <li class="itemrow${!inRoom && placeable ? ' src' : ''}" ${!inRoom && placeable ? `data-src-kind="item" data-src-id="${esc(it.id)}"` : ''}>
           <span class="thumb"><img src="${esc(it.image)}" alt="" draggable="false"></span>
-          <span class="txt"><span class="nm">${esc(it.title)}</span><span class="dim">${it.status === 'sold' ? 'Sold' : esc(money(it.price))}</span>${this.#itemBadge(it)}
+          <span class="txt"><span class="nm">${esc(it.title)}</span><span class="dim">${it.status === 'sold' ? 'Sold' : esc(money(it.price))}${boxed.has(it.id) ? ' &middot; in a collectibles box' : ''}</span>${this.#itemBadge(it)}
             <span class="rowacts">
+              ${placeable && (inRoom || boxed.has(it.id)) ? `<button class="lnk" type="button" data-act="show-item" data-id="${esc(it.id)}">Show me</button>` : ''}
               ${it.status !== 'sold' ? `<button class="lnk" type="button" data-act="edit-item" data-id="${esc(it.id)}">Edit</button>` : ''}
               ${canDelete ? (asking
                 ? `<button class="lnk danger" type="button" data-act="delete-item-yes" data-id="${esc(it.id)}">${delLabel}: are you sure?</button><button class="lnk" type="button" data-act="delete-item-no">Keep</button>`
@@ -565,8 +578,8 @@ export class AtticEditor extends HTMLElement {
             ${it.status === 'rejected' && it.rejectionNote ? `<span class="rownote">GingersAttic: ${esc(it.rejectionNote)}</span>` : ''}
           </span>
           ${placeable
-            ? inRoom
-              ? `<button class="mini" type="button" data-act="store" data-id="${esc(it.id)}">Store</button>`
+            ? inRoom || boxed.has(it.id)
+              ? `<button class="mini" type="button" data-act="store" data-id="${esc(it.id)}">${inRoom ? 'Store' : 'Take out'}</button>`
               : `<button class="mini" type="button" data-act="place" data-id="${esc(it.id)}" ${full ? 'disabled' : ''}>Place</button>`
             : ''}
         </li>`;
@@ -656,6 +669,7 @@ export class AtticEditor extends HTMLElement {
     this.#renderStatus();
     this.#renderSelbar();
     this.#renderOverlay();
+    if (this.#boxSheet) this.#renderBoxSheet();
   }
 
   #renderTabs() {
@@ -684,7 +698,7 @@ export class AtticEditor extends HTMLElement {
     if (!room) return;
     const L = this.#layoutFor(booth);
     const opts = { edit: true, selectedId: this.#sel?.id, badIds: extra.badIds };
-    room.querySelector('.layer').innerHTML = placeablesHtml(L, opts) + fixturesHtml(L, opts) + decorHtml(L, opts) + itemsHtml(L, opts);
+    room.querySelector('.layer').innerHTML = placeablesHtml(L, opts) + fixturesHtml(L, opts) + decorHtml(L, opts) + boxesHtml(L, opts) + itemsHtml(L, opts);
     room.querySelector('.tags').innerHTML = tagsHtml(L);
     const lamps = room.querySelector('.lamps');
     if (lamps) lamps.outerHTML = lampsHtml(L); // a lit lamp's glow follows it while it is dragged
@@ -843,8 +857,15 @@ export class AtticEditor extends HTMLElement {
       return `<section><h3>${label}</h3><div class="srcgrid">${list.map((f) => this.#srcCard('fixture', f, `${inches(f.widthIn, f.heightIn)} &middot; ${f.mount === 'wall' ? 'on the wall' : 'on the floor'}`)).join('')}</div></section>`;
     }).join('');
     const placed = this.#booth.fixtures.length;
+    const nb = this.#booth.boxes.length;
+    const boxes = `<section><h3>Collectibles boxes</h3>
+      <p class="note">For small things: a box with 2 &times; 2 up to 4 &times; 4 compartments, one item in each. Up to ${MAX_BOXES} boxes; each counts as one piece of your ${this.#meta.maxPlaced ?? ROOM.maxPlacedItems}. Shoppers click a box to see it up close.</p>
+      <div class="srcgrid">${BOX_STYLES.map((st) => `<button class="srccard" type="button" data-src-kind="box" data-src-id="${st.id}" title="Click to add, or drag into your booth" ${nb >= MAX_BOXES ? 'disabled' : ''}>
+        <span class="thumb">${miniBox(st.id, st.lining, 3, 3)}</span><span class="nm">${esc(st.name)}</span><span class="dim">shelf, table or floor</span></button>`).join('')}</div>
+      <p class="foot">${nb} of ${MAX_BOXES} boxes in your booth</p></section>`;
     return `<p class="lede">Shelves and tables hold your items. Click to add one, or drag it into your booth. Drag it in the room to move it; anything on it moves too.</p>
       ${groups || '<p class="empty">No fixtures in the library yet.</p>'}
+      ${boxes}
       <p class="foot">${placed} fixture${placed === 1 ? '' : 's'} in your booth</p>`;
   }
 
@@ -864,13 +885,17 @@ export class AtticEditor extends HTMLElement {
 
   #itemsPanelHtml() {
     const items = this.#booth.items;
-    const stored = items.filter((i) => !i.placement);
+    const boxed = boxedItemIds(this.#booth);
+    const stored = items.filter((i) => !i.placement && !boxed.has(i.id));
     const placed = items.filter((i) => i.placement);
+    const inBoxes = items.filter((i) => boxed.has(i.id));
     const max = this.#meta.maxPlaced ?? ROOM.maxPlacedItems;
-    const full = placed.length >= max;
+    const pieces = placedPieces(this.#booth);
+    const full = pieces >= max;
+    const nb = this.#booth.boxes.length;
     return `
       ${this.#itemsOn ? '<button class="primary additem" type="button" data-act="add-item">+ Add an item</button>' : ''}
-      <div class="count${full ? ' full' : ''}"><b>${placed.length}</b> of ${max} items out in your booth</div>
+      <div class="count${full ? ' full' : ''}"><b>${pieces}</b> of ${max} pieces out in your booth${nb ? ` <small>(a collectibles box counts as one)</small>` : ''}</div>
       <section class="crate"><h3>${icon('<path d="M3 8h18v12H3z M3 8l3-4h12l3 4 M9 12h6"/>')} Storage crate <small>(${stored.length})</small></h3>
         ${stored.length ? this.#itemListHtml(stored) : items.length ? '<p class="empty">Your crate is empty: everything is out on display.</p>' : '<p class="empty">No items yet. Click "Add an item" to photograph your first one.</p>'}
         ${full && stored.length ? '<p class="note">Your booth is full. Store something to make room.</p>' : ''}
@@ -878,6 +903,7 @@ export class AtticEditor extends HTMLElement {
       <section><h3>In your booth <small>(${placed.length})</small></h3>
         ${placed.length ? this.#itemListHtml(placed) : '<p class="empty">Nothing out yet. Drag items from the crate onto a shelf.</p>'}
       </section>
+      ${inBoxes.length ? `<section><h3>In collectibles boxes <small>(${inBoxes.length})</small></h3>${this.#itemListHtml(inBoxes)}</section>` : ''}
       <p class="foot">${this.#itemsOn ? 'Items marked Private are only visible to you until GingersAttic approves them.' : 'Adding new items with photos and prices comes in the next update.'}</p>`;
   }
 
@@ -904,12 +930,23 @@ export class AtticEditor extends HTMLElement {
     const b = this.#booth;
     if (s.kind === 'item') {
       const it = b.items.find((i) => i.id === s.id);
-      return it?.placement ? { ...s, name: it.title, img: it.image, scale: it.sizeTweak ?? it.placement.scaleAdj ?? 1 } : null;
+      if (!it?.placement) return null;
+      const scale = it.sizeTweak ?? it.placement.scaleAdj ?? 1;
+      const drawn = itemSizeIn(it, scale);
+      return { ...s, name: it.title, img: it.image, scale, range: tweakRange(it), dims: `shown ${inches(drawn.w, drawn.h)}` };
     }
     if (s.kind === 'decor') {
       const d = b.decor.find((x) => x.id === s.id);
       const def = d && byId(this.#lib.decor)[d.decorId];
-      return def ? { ...s, name: def.name, img: def.src, scale: d.placement?.scaleAdj ?? 1, lamp: isLampDef(def), lit: d.lit === true } : null;
+      if (!def) return null;
+      const shape = { heightIn: def.heightIn, widthIn: def.widthIn, aspect: def.aspect, flat: def.mount === 'flat', mount: def.mount };
+      return { ...s, name: def.name, img: def.src, scale: d.placement?.scaleAdj ?? 1, range: tweakRange(shape), lamp: isLampDef(def), lit: d.lit === true };
+    }
+    if (s.kind === 'box') {
+      const bx = (b.boxes ?? []).find((x) => x.id === s.id);
+      if (!bx) return null;
+      const n = bx.slots.filter(Boolean).length;
+      return { ...s, name: styleOf(bx.style).name, box: bx, dims: `${bx.cols} &times; ${bx.rows} &middot; ${n} of ${bx.slots.length} filled` };
     }
     if (s.kind === 'fixture') {
       const f = b.fixtures.find((x) => x.id === s.id);
@@ -935,13 +972,19 @@ export class AtticEditor extends HTMLElement {
       return;
     }
     const sizable = s.kind === 'item' || s.kind === 'decor';
-    const pctv = Math.round((s.scale ?? 1) * 100);
+    // The slider offers only the sizes this thing can be drawn at (real size +/-20 %, 4 in minimum, room-sized maximum).
+    const lo = Math.ceil((s.range?.lo ?? 0.8) * 100 - 1e-6);
+    const hi = Math.floor((s.range?.hi ?? 1.2) * 100 + 1e-6);
+    const pctv = Math.min(hi, Math.max(lo, Math.round((s.scale ?? 1) * 100)));
+    const fixed = hi - lo < 1;
+    const why = fixed ? (lo >= 100 ? 'Shown at the smallest size that can be seen' : 'Shown at the largest size that fits the room') : 'Size';
     bar.className = 'selbar';
     bar.innerHTML = `
-      <span class="thumb">${s.img ? `<img src="${esc(s.img)}" alt="">` : ''}</span>
+      <span class="thumb">${s.box ? miniBox(s.box.style, s.box.lining, s.box.cols, s.box.rows) : s.img ? `<img src="${esc(s.img)}" alt="">` : ''}</span>
       <span class="selname"><b>${esc(s.name)}</b>${s.dims ? `<small>${s.dims}</small>` : ''}</span>
       ${s.lamp ? `<button class="lampswitch" type="button" role="switch" aria-checked="${s.lit}" data-act="lamp-toggle" title="Switch this lamp on or off"><span class="track" aria-hidden="true"><span class="knob"></span></span><span class="lbl">${s.lit ? 'On' : 'Off'}</span></button>` : ''}
-      ${sizable ? `<label class="range small">Size<input type="range" min="80" max="120" step="5" value="${pctv}" data-act="sel-scale" aria-label="Size"><output>${pctv}%</output></label>` : ''}
+      ${s.box ? '<button class="tb primaryish" type="button" data-act="box-fill">Fill the compartments</button>' : ''}
+      ${sizable ? `<label class="range small" title="${why}">Size<input type="range" min="${lo}" max="${Math.max(hi, lo)}" step="1" value="${pctv}" data-act="sel-scale" aria-label="${why}" ${fixed ? 'disabled' : ''}><output>${pctv}%</output></label>` : ''}
       <span class="nudges" role="group" aria-label="Nudge">
         <button class="tb" type="button" data-act="nudge" data-dx="-1" data-dy="0" aria-label="Nudge left">&#9664;</button>
         ${s.kind === 'fixture' || s.kind === 'placeable' ? '<button class="tb" type="button" data-act="nudge" data-dx="0" data-dy="-1" aria-label="Nudge up">&#9650;</button><button class="tb" type="button" data-act="nudge" data-dx="0" data-dy="1" aria-label="Nudge down">&#9660;</button>' : ''}
@@ -949,7 +992,7 @@ export class AtticEditor extends HTMLElement {
       </span>
       ${s.kind === 'item'
         ? '<button class="tb" type="button" data-act="sel-store">Move to storage</button>'
-        : `<button class="tb danger" type="button" data-act="sel-remove">Remove${s.kind === 'fixture' ? ' fixture' : ''}</button>`}
+        : `<button class="tb danger" type="button" data-act="sel-remove">Remove${s.kind === 'fixture' ? ' fixture' : s.kind === 'box' ? ' box' : ''}</button>`}
       <button class="tb" type="button" data-act="sel-done">Done</button>`;
   }
 
@@ -1040,6 +1083,17 @@ export class AtticEditor extends HTMLElement {
       }
     });
     const room = ed.querySelector('.room.edit');
+    this.#lens = new Lens(ed);
+    room.addEventListener('pointerover', (e) => {
+      const el = e.target.closest?.('.item[data-kind="item"]');
+      if (!el || this.#drag || e.pointerType === 'touch') return;
+      const it = this.#booth.items.find((i) => i.id === el.dataset.id);
+      if (it) this.#lens.show(el, { id: it.id, src: it.image, title: it.title, sub: it.status === 'sold' ? 'Sold' : money(it.price) });
+    });
+    room.addEventListener('pointerout', (e) => {
+      if (e.target.closest?.('.item[data-kind="item"]') && !e.relatedTarget?.closest?.('.item[data-kind="item"]')) this.#lens.hide();
+    });
+    room.addEventListener('pointerdown', () => this.#lens.hide(), true);
     room.addEventListener('pointerdown', (e) => this.#roomPointerDown(e));
     room.addEventListener('pointermove', (e) => this.#roomPointerMove(e));
     room.addEventListener('pointerup', (e) => this.#roomPointerUp(e));
@@ -1091,6 +1145,15 @@ export class AtticEditor extends HTMLElement {
       case 'add-item':
         this.#openSheet(null);
         break;
+      case 'show-item': {
+        // Select an item from the list: handy when it sits behind something in the room.
+        const inBox = boxOfItem(this.#booth, id);
+        this.#sel = inBox ? { kind: 'box', id: inBox.boxId } : { kind: 'item', id };
+        this.#renderAll();
+        this.#root.querySelector('.room.edit')?.focus({ preventScroll: true });
+        if (inBox) this.#openBoxSheet(inBox.boxId, inBox.slot);
+        break;
+      }
       case 'light-preview':
         this.#lightsOff = !this.#lightsOff;
         this.#root.querySelector('.room.edit')?.classList.toggle('lights-off', this.#lightsOff);
@@ -1181,6 +1244,9 @@ export class AtticEditor extends HTMLElement {
       case 'sel-remove':
         this.#removeSelected();
         break;
+      case 'box-fill':
+        this.#openBoxSheet(s.id);
+        break;
       case 'lamp-toggle':
         this.#setLampLit(s.id, el.getAttribute('aria-checked') !== 'true');
         break;
@@ -1212,13 +1278,20 @@ export class AtticEditor extends HTMLElement {
     if (out) out.textContent = `${el.value}%`;
     const v = Number(el.value) / 100;
     const r = this.#sel.kind === 'item' ? ops.setItemScale(this.#booth, this.#lib, this.#sel.id, v) : ops.setDecorScale(this.#booth, this.#lib, this.#sel.id, v);
+    // A size that doesn't fit here is clamped to the largest that does (r.limited), so nothing snaps back.
+    if (r.ok && out) out.textContent = `${Math.round(r.tweak * 100)}%`;
     if (!final) {
-      this.#renderLayer(r.ok ? r.booth : this.#booth, { badIds: r.ok ? null : new Set([this.#sel.id]) });
+      this.#renderLayer(r.ok ? r.booth : this.#booth);
       return;
     }
-    if (r.ok) this.#commit(r.booth);
-    else {
-      this.#toast(`Can't make it that size here. ${ops.reasonFor(r.errors)}`);
+    if (r.ok) {
+      const hadFocus = this.#root.activeElement === el;
+      this.#commit(r.booth);
+      // The selection bar was redrawn: keep the keyboard on the slider so arrow keys keep working.
+      if (hadFocus) this.#root.querySelector('.selbar input[data-act="sel-scale"]')?.focus();
+      if (r.limited) this.#toast("That's as big as it fits here. Move it somewhere roomier to make it bigger.");
+    } else {
+      this.#toast(ops.reasonFor(r.errors));
       this.#renderAll();
     }
   }
@@ -1231,11 +1304,16 @@ export class AtticEditor extends HTMLElement {
       this.#commit(ops.storeItem(this.#booth, s.id).booth);
       this.#toast('Moved to your storage crate.');
     } else if (s.kind === 'decor') this.#commit(ops.removeDecor(this.#booth, s.id).booth);
+    else if (s.kind === 'box') {
+      const r = ops.removeBox(this.#booth, s.id);
+      this.#commit(r.booth);
+      if (r.freedIds.length) this.#toast(`Box removed. ${r.freedIds.length} item${r.freedIds.length === 1 ? '' : 's'} went back to your storage crate.`);
+    }
     else if (s.kind === 'placeable') this.#commit(ops.removePlaceable(this.#booth, s.id).booth);
     else if (s.kind === 'fixture') {
       const r = ops.deleteFixture(this.#booth, s.id);
       this.#commit(r.booth);
-      if (r.storedIds.length) this.#toast(`${r.storedIds.length} item${r.storedIds.length === 1 ? '' : 's'} on it went back to your storage crate.`);
+      if (r.storedIds.length) this.#toast(`${r.storedIds.length} item${r.storedIds.length === 1 ? '' : 's'} on it went back to your storage crate${r.removedBoxIds.length ? ' (with the collectibles box on it removed)' : ''}.`);
     }
   }
 
@@ -1261,6 +1339,10 @@ export class AtticEditor extends HTMLElement {
       const p = b.room.placeables.find((x) => x.id === id);
       return p ? { x: p.x, y: p.y } : null;
     }
+    if (kind === 'box') {
+      const e = this.#layoutFor(b).boxes.find((x) => x.box.id === id);
+      return e ? { x: e.x + e.size.w / 2, y: e.y } : null;
+    }
     return null;
   }
 
@@ -1274,6 +1356,7 @@ export class AtticEditor extends HTMLElement {
       return ops.placeDecor(b, lib, d.decorId, { x: o.x + dx, y: o.y + dy }, id);
     }
     if (kind === 'fixture') return ops.moveFixtureTo(b, lib, id, { x: o.x + dx, y: o.y + dy });
+    if (kind === 'box') return ops.placeBox(b, lib, id, { x: o.x + dx, y: o.y + dy });
     if (kind === 'placeable') {
       const p = b.room.placeables.find((x) => x.id === id);
       return ops.placePlaceable(b, lib, p.archId, { x: o.x + dx, y: o.y + dy }, id);
@@ -1349,8 +1432,8 @@ export class AtticEditor extends HTMLElement {
     const room = this.#root.querySelector('.room.edit');
     room.classList.add('dragging');
     let guide = null;
-    if (r.ok && (kind === 'item' || kind === 'decor')) {
-      const list = kind === 'item' ? r.booth.items : r.booth.decor;
+    if (r.ok && (kind === 'item' || kind === 'decor' || kind === 'box')) {
+      const list = kind === 'item' ? r.booth.items : kind === 'box' ? r.booth.boxes : r.booth.decor;
       guide = list.find((x) => x.id === id)?.placement?.surfaceId ?? null;
     }
     this.#renderLayer(r.ok ? r.booth : this.#booth, { badIds: r.ok ? null : new Set([id]), guide });
@@ -1441,6 +1524,7 @@ export class AtticEditor extends HTMLElement {
     let r;
     if (kind === 'item') r = ops.placeItem(b, lib, id, { x: p.x, y: p.y });
     else if (kind === 'decor') r = ops.placeDecor(b, lib, id, { x: p.x, y: p.y });
+    else if (kind === 'box') r = ops.addBox(b, lib, id, { x: p.x, y: p.y });
     else if (kind === 'fixture') {
       const def = byId(lib.fixtures)[id];
       r = ops.addFixture(b, lib, id, { x: p.x - def.widthIn / 2, y: p.y - def.heightIn / 2 });
@@ -1456,13 +1540,13 @@ export class AtticEditor extends HTMLElement {
     const lib = this.#lib;
     let r;
     if (kind === 'item') {
-      const it = b.items.find((i) => i.id === id);
-      r = ops.firstThatFits(ops.autoDrops(b, lib, it?.mount), (d) => ops.placeItem(b, lib, id, d));
+      r = ops.autoPlaceItem(b, lib, id); // a spot that hides nothing, when there is one
     } else if (kind === 'decor') {
       const def = byId(lib.decor)[id];
       const mount = def?.mount === 'floor' ? 'floor' : def?.mount;
       r = ops.firstThatFits(ops.autoDrops(b, lib, mount), (d) => ops.placeDecor(b, lib, id, d));
     } else if (kind === 'fixture') r = ops.addFixture(b, lib, id);
+    else if (kind === 'box') r = ops.addBox(b, lib, id);
     else if (kind === 'placeable') r = ops.placePlaceable(b, lib, id, null);
     this.#finishAdd(kind, id, r);
   }
@@ -1479,8 +1563,165 @@ export class AtticEditor extends HTMLElement {
 
   // ---------------------------------------------------------------- keyboard
 
+  // ---------------------------------------------------------------- collectibles box: fill the compartments
+
+  #openBoxSheet(boxId, slot = null) {
+    const bx = this.#booth.boxes.find((b) => b.id === boxId);
+    if (!bx) return;
+    const firstEmpty = bx.slots.indexOf(null);
+    this.#boxSheet = { boxId, slot: slot ?? (firstEmpty >= 0 ? firstEmpty : 0) };
+    this.#lens?.hide();
+    this.#renderBoxSheet();
+    this.#root.querySelector('.boxhost .sheetcard')?.focus({ preventScroll: true });
+    this.#bridge.emit('scroll-into-view', {}); // like the item sheet: the page scrolls the editor into view
+  }
+
+  #closeBoxSheet() {
+    this.#boxSheet = null;
+    this.#root.querySelector('.boxhost').innerHTML = '';
+    this.#root.querySelector('.room.edit')?.focus({ preventScroll: true });
+  }
+
+  #renderBoxSheet() {
+    const host = this.#root.querySelector('.boxhost');
+    const st = this.#boxSheet;
+    const bx = st && this.#booth.boxes.find((b) => b.id === st.boxId);
+    if (!bx) {
+      this.#boxSheet = null;
+      host.innerHTML = '';
+      return;
+    }
+    const keep = { list: host.querySelector('.bxitems')?.scrollTop ?? 0, body: host.querySelector('.sheetbody')?.scrollTop ?? 0 };
+    st.slot = Math.min(Math.max(0, st.slot), bx.slots.length - 1);
+    const byIdMap = new Map(this.#booth.items.map((i) => [i.id, i]));
+    const boxNo = (id) => this.#booth.boxes.findIndex((b) => b.id === id) + 1;
+    const where = (it) => {
+      const ib = boxOfItem(this.#booth, it.id);
+      if (ib) return ib.boxId === bx.id ? `In this box, compartment ${ib.slot + 1}` : `In collectibles box ${boxNo(ib.boxId)}`;
+      return it.placement ? 'Out in your booth' : 'In your storage crate';
+    };
+    // Smallest things first: they're what boxes are for.
+    const realH = (it) => it.heightIn ?? it.dims?.h ?? 999;
+    const choices = this.#booth.items.filter((i) => i.status !== 'sold').sort((a, b) => realH(a) - realH(b));
+    const dimOpts = (cur) => Array.from({ length: BOX_GRID_MAX - BOX_GRID_MIN + 1 }, (_, i) => BOX_GRID_MIN + i).map((n) => `<option value="${n}"${n === cur ? ' selected' : ''}>${n}</option>`).join('');
+    const current = bx.slots[st.slot] ? byIdMap.get(bx.slots[st.slot]) : null;
+    host.innerHTML = `
+      <div class="sheet boxsheet" role="dialog" aria-modal="true" aria-labelledby="bx-title">
+        <div class="sheetcard" tabindex="-1">
+          <header class="sheethead"><h2 id="bx-title">${esc(styleOf(bx.style).name)}: fill the compartments</h2><button class="sheetx" type="button" data-bx="close" aria-label="Close">&times;</button></header>
+          <div class="sheetbody">
+            <div class="bxcols">
+              <div class="bxleft">
+                <div class="bvbox bxgrid style-${esc(styleOf(bx.style).id)}" style="grid-template-columns:repeat(${bx.cols},1fr);--lining:${esc(liningOf(bx.lining).color)}">
+                  ${bx.slots
+                    .map((id, i) => {
+                      const it = id ? byIdMap.get(id) : null;
+                      return `<div class="bxcellwrap"><button class="bxcell${i === st.slot ? ' sel' : ''}" type="button" data-bx-slot="${i}" aria-pressed="${i === st.slot}" aria-label="Compartment ${i + 1}: ${it ? esc(it.title) : 'empty'}">${it ? `<img src="${esc(it.image)}" alt="">` : `<span>${i + 1}</span>`}</button>${it ? `<button class="bxclear" type="button" data-bx-clear="${i}" aria-label="Empty compartment ${i + 1}" title="Empty it (the item goes back to your crate)">&times;</button>` : ''}</div>`;
+                    })
+                    .join('')}
+                </div>
+                <p class="hint">Pick a compartment, then the item to put in it. One item per compartment; the &times; puts it back in your crate.</p>
+              </div>
+              <div class="bxright">
+                <fieldset class="bxfs"><legend>Style</legend><div class="seg">${BOX_STYLES.map((o) => `<button type="button" data-bx-style="${o.id}" aria-pressed="${bx.style === o.id}">${esc(o.name)}</button>`).join('')}</div></fieldset>
+                <fieldset class="bxfs"><legend>Lining</legend><div class="linings">${BOX_LININGS.map((l) => `<button type="button" class="lining${bx.lining === l.id ? ' on' : ''}" data-bx-lining="${l.id}" aria-pressed="${bx.lining === l.id}" title="${esc(l.name)}" aria-label="${esc(l.name)}"><i style="background:${l.color}"></i></button>`).join('')}</div></fieldset>
+                <fieldset class="bxfs"><legend>Compartments</legend><div class="bxdims"><label>Across<select data-bx-dim="cols">${dimOpts(bx.cols)}</select></label><span aria-hidden="true">&times;</span><label>Down<select data-bx-dim="rows">${dimOpts(bx.rows)}</select></label></div></fieldset>
+                <h3 class="bxh">Put in compartment ${st.slot + 1}${current ? ` <small>(now: ${esc(current.title)})</small>` : ''}</h3>
+                <ul class="bxitems">${
+                  choices
+                    .map((it) => `<li><button type="button" class="bxitem${bx.slots[st.slot] === it.id ? ' here' : ''}" data-bx-item="${esc(it.id)}"><span class="thumb"><img src="${esc(it.image)}" alt=""></span><span class="txt"><span class="nm">${esc(it.title)}</span><span class="dim">${esc(where(it))}</span></span></button></li>`)
+                    .join('') || '<li class="empty">No items yet. Add some on the My Items tab.</li>'
+                }</ul>
+              </div>
+            </div>
+            <div class="sheetbtns"><button class="primary" type="button" data-bx="close">Done</button></div>
+          </div>
+        </div>
+      </div>`;
+    const list = host.querySelector('.bxitems');
+    if (list) list.scrollTop = keep.list;
+    const body = host.querySelector('.sheetbody');
+    if (body) body.scrollTop = keep.body;
+  }
+
+  #boxSheetClick(e) {
+    const t = e.target;
+    if (t.classList?.contains('boxsheet') || t.closest('[data-bx="close"]')) {
+      this.#closeBoxSheet();
+      return;
+    }
+    const st = this.#boxSheet;
+    if (!st) return;
+    const slotBtn = t.closest('[data-bx-slot]');
+    if (slotBtn) {
+      st.slot = Number(slotBtn.dataset.bxSlot);
+      this.#renderBoxSheet();
+      this.#root.querySelector(`.boxhost [data-bx-slot="${st.slot}"]`)?.focus();
+      return;
+    }
+    const clear = t.closest('[data-bx-clear]');
+    if (clear) {
+      const r = ops.clearBoxSlot(this.#booth, st.boxId, Number(clear.dataset.bxClear));
+      if (r.ok) this.#commit(r.booth);
+      return;
+    }
+    const style = t.closest('[data-bx-style]');
+    if (style) {
+      this.#commit(ops.setBoxLook(this.#booth, st.boxId, { style: style.dataset.bxStyle }).booth);
+      return;
+    }
+    const lining = t.closest('[data-bx-lining]');
+    if (lining) {
+      this.#commit(ops.setBoxLook(this.#booth, st.boxId, { lining: lining.dataset.bxLining }).booth);
+      return;
+    }
+    const pick = t.closest('[data-bx-item]');
+    if (pick) {
+      const itemId = pick.dataset.bxItem;
+      const r = ops.assignToBox(this.#booth, st.boxId, st.slot, itemId);
+      if (!r.ok) {
+        this.#toast(ops.reasonFor(r.errors));
+        return;
+      }
+      const bx = r.booth.boxes.find((b) => b.id === st.boxId);
+      const after = bx.slots.findIndex((x, i) => !x && i > st.slot);
+      const any = bx.slots.indexOf(null);
+      if (after >= 0) st.slot = after;
+      else if (any >= 0) st.slot = any;
+      if (this.#sel?.kind === 'item' && this.#sel.id === itemId) this.#sel = null; // it left the room
+      this.#commit(r.booth);
+      if (r.freedIds.length) {
+        const gone = this.#booth.items.find((i) => i.id === r.freedIds[0]);
+        this.#toast(`${gone?.title ?? 'The item'} went back to your storage crate.`);
+      }
+    }
+  }
+
+  #boxSheetChange(e) {
+    const dim = e.target.dataset?.bxDim;
+    const st = this.#boxSheet;
+    if (!dim || !st) return;
+    const bx = this.#booth.boxes.find((b) => b.id === st.boxId);
+    if (!bx) return;
+    const cols = dim === 'cols' ? Number(e.target.value) : bx.cols;
+    const rows = dim === 'rows' ? Number(e.target.value) : bx.rows;
+    const r = ops.setBoxGrid(this.#booth, this.#lib, st.boxId, cols, rows);
+    if (!r.ok) {
+      this.#toast(`That size doesn't fit where the box is. ${ops.reasonFor(r.errors)}`);
+      this.#renderBoxSheet();
+      return;
+    }
+    this.#commit(r.booth);
+    if (r.freedIds.length) this.#toast(`${r.freedIds.length} item${r.freedIds.length === 1 ? '' : 's'} went back to your storage crate.`);
+  }
+
   #onKey(e) {
     if (this.#narrow || !this.#booth) return;
+    if (this.#boxSheet) {
+      // The box sheet is open: Escape closes it; nothing else moves things in the room behind it.
+      if (e.key === 'Escape') this.#closeBoxSheet();
+      return;
+    }
     const t = e.composedPath()[0];
     const typing = t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable);
     const mod = e.ctrlKey || e.metaKey;

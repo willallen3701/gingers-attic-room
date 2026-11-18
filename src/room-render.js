@@ -6,6 +6,7 @@ import { ROOM, pct } from './logic/room.js';
 import { backgroundFor } from './logic/tile.js';
 import { stripTopIn } from './logic/library.js';
 import { litLamps } from './logic/lamps.js';
+import { liningOf, styleOf } from './logic/boxes.js';
 
 export const esc = (s) =>
   String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
@@ -97,6 +98,29 @@ export function decorHtml(layout, opts = {}) {
         `data-kind="decor" data-id="${esc(decor.id)}" aria-hidden="true" style="${box(x, top, size.w, size.h, z)}">` +
         `<span class="contact"></span><img src="${esc(def.src)}" alt="" draggable="false"></div>`,
     )
+    .join('');
+}
+
+/**
+ * Collectibles boxes: a framed grid of compartments in the box's lining colour, one item in each.
+ * View mode: a button that opens the close-up (attic-booth). Edit mode: movable like everything else.
+ */
+export function boxesHtml(layout, opts = {}) {
+  return (layout.boxes ?? [])
+    .map(({ box: bx, size, x, top, z, cells }) => {
+      const n = cells.filter(Boolean).length;
+      const label = `${styleOf(bx.style).name} with ${n} item${n === 1 ? '' : 's'}${opts.edit ? '' : '. Open it to look closer.'}`;
+      const grid = `grid-template-columns:repeat(${bx.cols},1fr);grid-template-rows:repeat(${bx.rows},1fr)`;
+      return (
+        `<button class="box style-${esc(styleOf(bx.style).id)}${opts.edit ? ' movable' : ''}${stateCls(bx.id, opts)}" type="button" data-kind="box" data-id="${esc(bx.id)}" ` +
+        `aria-label="${esc(label)}" style="${box(x, top, size.w, size.h, z)};--lining:${esc(liningOf(bx.lining).color)}">` +
+        `<span class="contact"></span><span class="boxin" style="${grid}">` +
+        cells
+          .map((it) => `<span class="cell${it?.status === 'sold' ? ' sold' : ''}">${it ? `<img src="${esc(it.image)}" alt="" draggable="false" loading="lazy">` : ''}</span>`)
+          .join('') +
+        `</span></button>`
+      );
+    })
     .join('');
 }
 
@@ -239,7 +263,7 @@ export function roomInnerHtml(booth, lib, layout, opts = {}) {
     `<div class="wall"></div>` +
     `<div class="floor"><div class="floor-plane"></div></div>` +
     stripsHtml(booth, lib) +
-    `<div class="layer">${placeablesHtml(layout, opts)}${fixturesHtml(layout, opts)}${decorHtml(layout, opts)}${itemsHtml(layout, opts)}</div>` +
+    `<div class="layer">${placeablesHtml(layout, opts)}${fixturesHtml(layout, opts)}${decorHtml(layout, opts)}${boxesHtml(layout, opts)}${itemsHtml(layout, opts)}</div>` +
     signHtml(booth) +
     lightHtml(booth, lib) +
     lampsHtml(layout) +
