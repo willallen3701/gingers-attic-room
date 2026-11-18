@@ -307,7 +307,7 @@ describe('the Christmas cutoff (offered until January 1, 2027)', () => {
   });
 });
 
-describe('the Christmas layout (v4): every piece places, and nothing lies on top of anything else', () => {
+describe('the Christmas layout (v5): every piece places, and nothing lies on top of anything else', () => {
   const made = () => applyTemplate(demoBooth(), rawLib, 'christmas', { now: NOV });
   const defs = byId(lib.decor);
   const fxDefs = byId(lib.fixtures);
@@ -327,7 +327,7 @@ describe('the Christmas layout (v4): every piece places, and nothing lies on top
     expectValidBooth(r.booth);
   });
 
-  it('the wall pieces (two swags, stockings, wreath) are clear of each other, of the shelf, and sit above the wainscoting', () => {
+  it('the wall pieces (the garland, the stockings, the wreath) are clear of each other, of the shelf, and sit above the wainscoting', () => {
     const b = made().booth;
     const wall = b.decor.filter((d) => defs[d.decorId].mount === 'wall').map(rectOf);
     expect(wall.map((r) => r.id).sort()).toEqual(['xmas-garland', 'xmas-stockings', 'xmas-wreath']);

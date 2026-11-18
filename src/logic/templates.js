@@ -133,7 +133,7 @@ export const TEMPLATES = Object.freeze([
   {
     id: 'christmas',
     name: 'Christmas',
-    blurb: 'Deep red damask walls, a full tree with gifts, draped garlands, stockings, a wreath and glowing candles.',
+    blurb: 'Deep red damask walls, a full tree with gifts, a draped garland with stockings, a wreath and glowing candles.',
     until: '2027-01-01',
     wall: { wallpaper: 'wp-crimson-damask' },
     floor: 'fl-wood-dark',
@@ -145,11 +145,13 @@ export const TEMPLATES = Object.freeze([
       { k: 'stackR', id: 'shelf-stack-3-cream', x: 89, y: 8 },
       { k: 'console', id: 'table-console-carved', x: 4, base: 108 },
     ],
-    // On the wall x is the centre of the piece and base is its bottom edge. Left wall: a swag over the top, then the
-    // stockings garland as a mantel swag over the console. Right wall: the wreath above the tree.
+    // On the wall x is the centre of the piece and base is its bottom edge. Left wall: ONE garland (the medium length), with
+    // the stockings hanging just under its low run (the stockings' box starts where the garland's ends: pieces can't
+    // overlap, so the little twine loops at the top of the stockings are what reach up to the fir). Right wall: the
+    // wreath above the tree.
     decor: [
-      { id: 'xmas-garland', on: { wall: true, x: 26, base: 18 } },
-      { id: 'xmas-stockings', on: { wall: true, x: 34, base: 52 } },
+      { id: 'xmas-garland', on: { wall: true, x: 33, base: 34 } },
+      { id: 'xmas-stockings', on: { wall: true, x: 39, base: 49.8 } },
       { id: 'xmas-wreath', on: { wall: true, x: 76, base: 46 } },
       { id: 'xmas-candles', on: { fx: 'console', s: 's0', u: 0.42 }, lit: true },
       { id: 'lamp-oil', on: { fx: 'console', s: 's0', u: 0.05 }, lit: true },

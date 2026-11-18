@@ -233,6 +233,16 @@ kbd { padding: 0 4px; border: 1px solid #cbb385; border-bottom-width: 2px; borde
 .selbar .thumb img { max-width: 34px; max-height: 34px; object-fit: contain; }
 .selname { display: flex; flex-direction: column; margin-right: auto; font: 15px/1.15 var(--serif); }
 .selname small { font: 11.5px var(--type); color: var(--ink-soft); }
+.variants { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+.variants .vlabel { margin-right: 2px; font: 12px var(--type); color: var(--plum-dark); }
+.variant {
+  display: flex; flex-direction: column; align-items: center; gap: 2px; width: 74px; padding: 3px 3px 2px; cursor: pointer;
+  border: 2px solid #d8c59c; border-radius: 6px; background: #fffaf0; font: 10px/1.15 var(--type); color: var(--ink-soft);
+}
+.variant img { width: 100%; height: 30px; object-fit: contain; }
+.variant span { max-width: 100%; text-align: center; }
+.variant:hover { border-color: var(--plum-soft); }
+.variant.on { border-color: var(--plum); box-shadow: 0 0 0 1px var(--plum); color: var(--plum-dark); font-weight: 700; }
 .range.small { gap: 6px; font: 12px var(--type); color: var(--plum-dark); }
 .range.small input { width: 110px; }
 .nudges { display: flex; gap: 3px; }

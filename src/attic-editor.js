@@ -11,7 +11,7 @@ import { css as roomCss } from './styles.js';
 import { editorCss } from './editor-styles.js';
 import { ROOM, pct } from './logic/room.js';
 import { buildLayout } from './logic/layout.js';
-import { normalizeLibrary, byId, pickerWallpapers } from './logic/library.js';
+import { normalizeLibrary, byId, pickerWallpapers, decorFamily, pickerDecor } from './logic/library.js';
 import { createHistory } from './logic/history.js';
 import { toDraft, applyDraft, defaultRoom } from './logic/draft.js';
 import { encodePlan, dataUrlBytes, MAX_BYTES, uploadTileIn } from './logic/downscale.js';
@@ -934,13 +934,18 @@ export class AtticEditor extends HTMLElement {
 
   #decorPanelHtml(lib) {
     const openings = lib.architecture.filter((a) => a.kind === 'placeable');
-    const cats = [...new Set(lib.decor.map((d) => d.category))];
+    const listed = pickerDecor(lib); // a piece that comes in choices (garland length, stocking design) is listed once
+    const cats = [...new Set(listed.map((d) => d.category))];
     return `<p class="lede">Decor is just for atmosphere: it's never for sale and has no price tag.</p>
       ${openings.length ? `<section><h3>Windows &amp; doors</h3><div class="srcgrid">${openings.map((a) => this.#srcCard('placeable', a, inches(a.widthIn, a.heightIn))).join('')}</div></section>` : ''}
       ${cats
-        .map((c) => `<section><h3>${esc(c.charAt(0).toUpperCase() + c.slice(1))}</h3>${c === 'lighting' ? '<p class="note lampnote">Lamps start off. Click one in your booth to switch it on.</p>' : ''}<div class="srcgrid">${lib.decor
+        .map((c) => `<section><h3>${esc(c.charAt(0).toUpperCase() + c.slice(1))}</h3>${c === 'lighting' ? '<p class="note lampnote">Lamps start off. Click one in your booth to switch it on.</p>' : ''}<div class="srcgrid">${listed
           .filter((d) => d.category === c)
-          .map((d) => this.#srcCard('decor', d, `${+d.heightIn.toFixed(1)} in tall &middot; ${d.mount === 'wall' ? 'wall' : d.mount === 'floor' ? 'floor' : 'shelf or floor'}`))
+          .map((d) => {
+            const fam = decorFamily(lib, d.id);
+            const where = d.mount === 'wall' ? 'wall' : d.mount === 'floor' ? 'floor' : 'shelf or floor';
+            return this.#srcCard('decor', d, fam ? `${fam.members.length} ${esc(fam.label.toLowerCase())}s to pick from &middot; ${where}` : `${+d.heightIn.toFixed(1)} in tall &middot; ${where}`);
+          })
           .join('')}</div></section>`)
         .join('')}
       ${!openings.length && !lib.decor.length ? '<p class="empty">More decor is on its way: plants, clocks, curtains and lamps.</p>' : ''}`;
@@ -1015,7 +1020,9 @@ export class AtticEditor extends HTMLElement {
       const def = d && byId(this.#lib.decor)[d.decorId];
       if (!def) return null;
       const shape = { heightIn: def.heightIn, widthIn: def.widthIn, aspect: def.aspect, flat: def.mount === 'flat', mount: def.mount };
-      return { ...s, name: def.name, img: def.src, scale: d.placement?.scaleAdj ?? 1, range: tweakRange(shape), lamp: isLampDef(def), lit: d.lit === true };
+      const fam = decorFamily(this.#lib, def.id);
+      const choices = fam && fam.members.map((m) => ({ id: m.id, choice: m.family.choice, src: m.src, swatch: m.family.swatch ?? null, widthIn: m.widthIn, on: m.id === def.id }));
+      return { ...s, name: def.name, img: def.src, scale: d.placement?.scaleAdj ?? 1, range: tweakRange(shape), lamp: isLampDef(def), lit: d.lit === true, family: fam ? { label: fam.label, choices } : null };
     }
     if (s.kind === 'box') {
       const bx = (b.boxes ?? []).find((x) => x.id === s.id);
@@ -1059,6 +1066,9 @@ export class AtticEditor extends HTMLElement {
       <span class="selname"><b>${esc(s.name)}</b>${s.dims ? `<small>${s.dims}</small>` : ''}</span>
       ${s.lamp ? `<button class="lampswitch" type="button" role="switch" aria-checked="${s.lit}" data-act="lamp-toggle" title="Switch this lamp on or off"><span class="track" aria-hidden="true"><span class="knob"></span></span><span class="lbl">${s.lit ? 'On' : 'Off'}</span></button>` : ''}
       ${s.box ? '<button class="tb primaryish" type="button" data-act="box-fill">Fill the compartments</button>' : ''}
+      ${s.family ? `<div class="variants" role="group" aria-label="${esc(s.family.label)}"><span class="vlabel">${esc(s.family.label)}</span>${s.family.choices
+        .map((c) => `<button type="button" class="variant${c.on ? ' on' : ''}" data-act="decor-variant" data-decor-id="${esc(c.id)}" aria-pressed="${c.on}" title="${esc(c.choice)}"><img src="${esc(c.src)}" alt="" draggable="false"><span>${esc(c.choice)}</span></button>`)
+        .join('')}</div>` : ''}
       ${sizable ? `<label class="range small" title="${why}">Size<input type="range" min="${lo}" max="${Math.max(hi, lo)}" step="1" value="${pctv}" data-act="sel-scale" aria-label="${why}" ${fixed ? 'disabled' : ''}><output>${pctv}%</output></label>` : ''}
       <span class="nudges" role="group" aria-label="Nudge">
         <button class="tb" type="button" data-act="nudge" data-dx="-1" data-dy="0" aria-label="Nudge left">&#9664;</button>
@@ -1338,6 +1348,15 @@ export class AtticEditor extends HTMLElement {
       case 'lamp-toggle':
         this.#setLampLit(s.id, el.getAttribute('aria-checked') !== 'true');
         break;
+      case 'decor-variant': {
+        // A garland's length, or a stocking set's design: swap in place (the booth just stores the chosen piece's id).
+        const r = ops.setDecorVariant(this.#booth, this.#lib, s.id, el.dataset.decorId);
+        if (r.ok) {
+          this.#commit(r.booth);
+          this.#root.querySelector(`.selbar [data-decor-id="${CSS.escape(el.dataset.decorId)}"]`)?.focus();
+        } else this.#toast(ops.reasonFor(r.errors));
+        break;
+      }
       case 'sel-done':
         this.#sel = null;
         this.#renderAll();

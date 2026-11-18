@@ -8,7 +8,7 @@ import { snapToSurface } from './snap.js';
 import { snapFixture, moveFixture, removeFixture, nextId, FLOOR_BAND } from './fixtures.js';
 import { itemSizeIn, clampItemTweak } from './scale.js';
 import { itemTweak } from './draft.js';
-import { normalizeLibrary, byId } from './library.js';
+import { normalizeLibrary, byId, decorFamily } from './library.js';
 import { isLampDef } from './lamps.js';
 import { MAX_BOXES, newBox, normalizeBox, regrid, boxSizeIn, unbox, roomForAnother, styleOf, liningOf } from './boxes.js';
 
@@ -189,6 +189,28 @@ export function setDecorScale(booth, libIn, instanceId, scaleAdj) {
     return judge(booth, next, lib, [instanceId]);
   };
   return fitResize(attempt, current, clampItemTweak(decorShape(def), scaleAdj));
+}
+
+/**
+ * Swap a placed decor piece for another choice of its family (a garland's length, a stocking set's design; see
+ * library.js decorFamily). It keeps its bottom-centre, its size tweak (within what the new choice allows) and its other
+ * fields. If the new choice would overlap something or leave the room, nothing changes and the errors say why.
+ */
+export function setDecorVariant(booth, libIn, instanceId, decorId) {
+  const lib = normalizeLibrary(libIn);
+  const defs = byId(lib.decor);
+  const d = (booth.decor ?? []).find((x) => x.id === instanceId);
+  const from = d && defs[d.decorId];
+  const to = defs[decorId];
+  const fam = from && decorFamily(lib, d.decorId);
+  if (!d?.placement || !to || !fam || !fam.members.some((m) => m.id === decorId)) return fail('UNKNOWN', booth);
+  if (d.decorId === decorId) return ok(booth);
+  const tweak = clampItemTweak(decorShape(to), d.placement.scaleAdj ?? 1);
+  const oldSize = decorSize(from, d.placement.scaleAdj ?? 1);
+  const newSize = decorSize(to, tweak);
+  const x = Math.round((d.placement.x + (oldSize.w - newSize.w) / 2) * 100) / 100;
+  const next = { ...booth, decor: booth.decor.map((x0) => (x0.id === instanceId ? { ...x0, decorId, placement: { ...x0.placement, x, scaleAdj: tweak } } : x0)) };
+  return judge(booth, next, lib, [instanceId]);
 }
 
 // ------------------------------------------------------------------ collectibles boxes (logic/boxes.js)
