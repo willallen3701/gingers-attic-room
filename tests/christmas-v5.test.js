@@ -1,4 +1,4 @@
-// Christmas v5: ONE adjustable garland (three lengths + the size slider), stockings in six swatch designs that hang under
+// Christmas v5: ONE real-photo garland (sized with the slider), stockings in six swatch designs that hang under
 // it, a warmer nutcracker, and the wall-hung shadow. Choices are library entries of one `family`, stored as plain decorIds,
 // so the live site (cleanDraft keeps decorId, x, y, scaleAdj) needs no change.
 import { describe, it, expect } from 'vitest';
@@ -24,14 +24,14 @@ const sizeOf = (d) => itemSizeIn({ heightIn: defs[d.decorId].heightIn, widthIn: 
 const emptyBooth = (decor = []) => ({ id: 'b', name: 'T', boothNumber: 1, room: { wall: { type: 'paint', paintId: 'paint-bottle-green' }, floor: {}, light: null, architecture: [], placeables: [] }, fixtures: [], decor, items: [], boxes: [] });
 const wallDecor = (decorId, x = 40, y = 40, id = 'dc1') => ({ id, decorId, placement: { surfaceId: 'wall', x, y, scaleAdj: 1 } });
 
-describe('the garland is one piece with three lengths', () => {
-  const fam = decorFamily(lib, 'xmas-garland');
-  it('is one family: short, medium and long, in that order, labelled Length', () => {
-    expect(fam.label).toBe('Length');
-    expect(fam.members.map((m) => m.family.choice)).toEqual(['Short', 'Medium', 'Long']);
-    const w = fam.members.map((m) => m.widthIn);
-    expect([...w].sort((a, b) => a - b)).toEqual(w);
-    expect(decorFamily(lib, 'xmas-garland-long').members.map((m) => m.id)).toEqual(fam.members.map((m) => m.id)); // same from any member
+describe('the garland is one real photographed swag, sized with the slider', () => {
+  const g = defs['xmas-garland'];
+  it('is a single library entry (no mirrored or lengthened versions, no family), 34 in wide', () => {
+    expect(g.family).toBeUndefined();
+    expect(decorFamily(lib, 'xmas-garland')).toBeNull();
+    expect(lib.decor.filter((d) => /garland/i.test(d.name))).toHaveLength(1);
+    expect(lib.decor.some((d) => d.id === 'xmas-garland-short' || d.id === 'xmas-garland-long')).toBe(false);
+    expect(g.widthIn).toBe(34);
   });
   it('the Decor tab lists it once, and the old separate "stockings garland" is gone', () => {
     const listed = pickerDecor(lib).map((d) => d.id);
@@ -40,43 +40,31 @@ describe('the garland is one piece with three lengths', () => {
     expect(lib.decor.some((d) => /garland/i.test(d.name) && d.family?.id === 'xmas-stockings')).toBe(false);
     for (const m of decorFamily(lib, 'xmas-stockings').members) expect(m.name.toLowerCase()).not.toContain('garland');
   });
-  it('lengths and the size slider together cover a short mantel to most of the wall, with no gap over 6 in', () => {
-    const spans = fam.members
-      .map((m) => {
-        const r = tweakRange({ heightIn: m.heightIn, widthIn: m.widthIn, aspect: m.aspect, mount: 'wall' });
-        return [m.widthIn * r.lo, m.widthIn * r.hi];
-      })
-      .sort((a, b) => a[0] - b[0]);
-    expect(spans[0][0]).toBeLessThanOrEqual(28);
-    expect(spans.at(-1)[1]).toBeGreaterThanOrEqual(95);
-    for (let i = 1; i < spans.length; i++) expect(spans[i][0] - spans[i - 1][1]).toBeLessThan(6);
-  });
-  it('the size slider changes the width of every length, 80 % to 120 %', () => {
-    for (const m of fam.members) {
-      const b = emptyBooth([wallDecor(m.id, 20, 40)]);
-      const small = setDecorScale(b, rawLib, 'dc1', 0.8);
-      const big = setDecorScale(b, rawLib, 'dc1', 1.2);
-      expect(small.ok && big.ok, m.id).toBe(true);
-      expect(sizeOf(small.booth.decor[0]).w).toBeCloseTo(m.widthIn * 0.8, 1);
-      expect(sizeOf(big.booth.decor[0]).w).toBeCloseTo(m.widthIn * 1.2, 1);
-    }
+  it('the size slider changes its width, 80 % to 120 % (27 to 41 in)', () => {
+    const b = emptyBooth([wallDecor('xmas-garland', 20, 40)]);
+    const small = setDecorScale(b, rawLib, 'dc1', 0.8);
+    const big = setDecorScale(b, rawLib, 'dc1', 1.2);
+    expect(small.ok && big.ok).toBe(true);
+    expect(sizeOf(small.booth.decor[0]).w).toBeCloseTo(g.widthIn * 0.8, 1);
+    expect(sizeOf(big.booth.decor[0]).w).toBeCloseTo(g.widthIn * 1.2, 1);
+    const r = tweakRange({ heightIn: g.heightIn, widthIn: g.widthIn, aspect: g.aspect, mount: 'wall' });
+    expect([r.lo, r.hi]).toEqual([0.8, 1.2]);
   });
 });
 
 describe('setDecorVariant: choosing a length or a stocking design', () => {
   it('swaps in place: same bottom-centre, same size tweak, same instance id', () => {
-    const b0 = emptyBooth([{ ...wallDecor('xmas-garland', 40, 40), placement: { surfaceId: 'wall', x: 30, y: 40, scaleAdj: 1.1 } }]);
-    const r = setDecorVariant(b0, rawLib, 'dc1', 'xmas-garland-short');
+    const b0 = emptyBooth([{ ...wallDecor('xmas-stockings', 40, 40), placement: { surfaceId: 'wall', x: 30, y: 40, scaleAdj: 1.1 } }]);
+    const r = setDecorVariant(b0, rawLib, 'dc1', 'xmas-stockings-burgundy');
     expect(r.ok).toBe(true);
     const d = r.booth.decor[0];
     expect(d.id).toBe('dc1');
-    expect(d.decorId).toBe('xmas-garland-short');
+    expect(d.decorId).toBe('xmas-stockings-burgundy');
     expect(d.placement.scaleAdj).toBe(1.1);
     expect(d.placement.y).toBe(40);
-    const centre = (dd, def) => dd.placement.x + (def.widthIn * 1.1) / 2;
-    expect(centre(d, defs['xmas-garland-short'])).toBeCloseTo(centre(b0.decor[0], defs['xmas-garland']), 1);
+    expect(d.placement.x).toBe(30);
     expect(buildLayout(r.booth, lib).problems).toEqual({});
-    expect(b0.decor[0].decorId).toBe('xmas-garland'); // the input is untouched
+    expect(b0.decor[0].decorId).toBe('xmas-stockings'); // the input is untouched
   });
   it('every stocking design can be chosen from every other, and nothing else about the piece changes', () => {
     const ids = decorFamily(lib, 'xmas-stockings').members.map((m) => m.id);
@@ -91,19 +79,15 @@ describe('setDecorVariant: choosing a length or a stocking design', () => {
       b = r.booth;
     }
   });
-  it('refuses a piece from another family, an unknown id, and a choice that would overlap or leave the room (nothing changes)', () => {
-    const b = emptyBooth([wallDecor('xmas-garland-short', 5, 40), wallDecor('xmas-stockings', 40, 70, 'dc2')]);
-    expect(setDecorVariant(b, rawLib, 'dc1', 'xmas-stockings').ok).toBe(false);
-    expect(setDecorVariant(b, rawLib, 'dc1', 'nope').ok).toBe(false);
+  it('refuses a piece from another family, an unknown id, a piece with no choices, and a choice that would leave the room (nothing changes)', () => {
+    const b = emptyBooth([wallDecor('xmas-garland', 5, 40), wallDecor('xmas-stockings', 40, 70, 'dc2')]);
     expect(setDecorVariant(b, rawLib, 'dc2', 'xmas-garland').ok).toBe(false);
-    expect(setDecorVariant(b, rawLib, 'dc9', 'xmas-garland').ok).toBe(false);
-    expect(setDecorVariant(emptyBooth([wallDecor('lamp-oil', 20, 60)]), rawLib, 'dc1', 'xmas-garland').ok).toBe(false);
-    const edge = emptyBooth([wallDecor('xmas-garland-short', 4, 40)]);
-    const r = setDecorVariant(edge, rawLib, 'dc1', 'xmas-garland-long'); // 84 in wide from a 34 in piece at the left edge
-    expect(r.ok).toBe(false);
-    expect(r.errors.length).toBeGreaterThan(0);
-    const blocked = emptyBooth([wallDecor('xmas-garland-short', 30, 40), wallDecor('xmas-wreath', 62, 46, 'dc2')]);
-    expect(setDecorVariant(blocked, rawLib, 'dc1', 'xmas-garland-long').ok).toBe(false);
+    expect(setDecorVariant(b, rawLib, 'dc2', 'nope').ok).toBe(false);
+    expect(setDecorVariant(b, rawLib, 'dc1', 'xmas-stockings').ok).toBe(false);
+    expect(setDecorVariant(b, rawLib, 'dc9', 'xmas-stockings').ok).toBe(false);
+    expect(setDecorVariant(emptyBooth([wallDecor('lamp-oil', 20, 60)]), rawLib, 'dc1', 'xmas-stockings').ok).toBe(false);
+    const wide = emptyBooth([wallDecor('xmas-stockings', 0, 70)]);
+    expect(setDecorVariant(wide, rawLib, 'dc1', 'xmas-stockings-plaid').ok).toBe(true);
   });
   it('a variant keeps the other fields on the entry', () => {
     const b = emptyBooth([{ ...wallDecor('xmas-stockings', 40, 60), note: 'keep' }]);
@@ -112,30 +96,29 @@ describe('setDecorVariant: choosing a length or a stocking design', () => {
 });
 
 describe('save and reload', () => {
-  it('the chosen length and stocking design survive a draft round trip (plain decorIds, no new field)', () => {
+  it('the chosen stocking design and the garland size survive a draft round trip (plain decorIds, no new field)', () => {
     let b = xmas();
     const g = find(b, 'xmas-garland');
     const s = find(b, 'xmas-stockings');
     b = setDecorVariant(b, rawLib, s.id, 'xmas-stockings-green').booth;
-    b = setDecorVariant(b, rawLib, g.id, 'xmas-garland-short').booth;
     b = setDecorScale(b, rawLib, g.id, 0.9).booth;
     const draft = JSON.parse(JSON.stringify(toDraft(b)));
     for (const d of draft.decor) expect(Object.keys(d).sort()).toEqual(d.lit ? ['decorId', 'id', 'lit', 'placement'] : ['decorId', 'id', 'placement']);
     const back = applyDraft({ ...JSON.parse(JSON.stringify(demo)), decor: [], fixtures: [], boxes: [] }, draft);
     expect(back.decor).toEqual(b.decor);
     expect(find(back, 'xmas-stockings-green')).toBeTruthy();
-    expect(find(back, 'xmas-garland-short').placement.scaleAdj).toBe(0.9);
+    expect(find(back, 'xmas-garland').placement.scaleAdj).toBe(0.9);
     expect(buildLayout(back, lib).problems).toEqual({});
   });
-  it('the live site keeps every garland length and stocking design as saved: cleanDraft needs no change', () => {
-    const ids = [...decorFamily(lib, 'xmas-garland').members, ...decorFamily(lib, 'xmas-stockings').members].map((m) => m.id);
+  it('the live site keeps the garland and every stocking design as saved: cleanDraft needs no change', () => {
+    const ids = [{ id: 'xmas-garland' }, ...decorFamily(lib, 'xmas-stockings').members].map((m) => m.id);
     const decor = ids.map((id, i) => ({ id: `dc${i + 1}`, decorId: id, placement: { surfaceId: 'wall', x: 10 + i, y: 40, scaleAdj: 1.2 } }));
     const r = cleanDraft({ room: {}, placements: {}, decor }, { lib: rawLib, itemIds: [], uploadSrcs: [] });
     expect(r.ok, r.message).toBe(true);
     expect(r.draft.decor.map((d) => d.decorId)).toEqual(ids);
     for (const d of r.draft.decor) expect(d.placement).toMatchObject({ surfaceId: 'wall', scaleAdj: 1.2 });
   });
-  it('the site clamps the size to 80-120 %, which is why the garland gets its range from lengths, not a wider slider', () => {
+  it('the site clamps the size to 80-120 %, so the garland range is that slider, not a wider one', () => {
     const r = cleanDraft({ room: {}, placements: {}, decor: [{ id: 'dc1', decorId: 'xmas-garland', placement: { surfaceId: 'wall', x: 10, y: 40, scaleAdj: 1.8 } }] }, { lib: rawLib, itemIds: [], uploadSrcs: [] });
     expect(r.draft.decor[0].placement.scaleAdj).toBe(1.2);
   });
@@ -162,15 +145,15 @@ describe('the Christmas template: ONE garland with the stockings hanging just un
     expect(s.placement.x + ss.w).toBeLessThanOrEqual(g.placement.x + gs.w);
     expect(buildLayout(b, lib).problems).toEqual({});
   });
-  it('the stockings can be re-dressed and the garland re-lengthened in the finished layout, and removed again', () => {
+  it('the stockings can be re-dressed and the garland resized in the finished layout, and removed again', () => {
     let b = xmas();
     const s = find(b, 'xmas-stockings');
     b = setDecorVariant(b, rawLib, s.id, 'xmas-stockings-burgundy').booth;
     expect(find(b, 'xmas-stockings-burgundy')).toBeTruthy();
     const g = find(b, 'xmas-garland');
-    const short = setDecorVariant(b, rawLib, g.id, 'xmas-garland-short');
-    expect(short.ok).toBe(true);
-    expect(buildLayout(short.booth, lib).problems).toEqual({});
+    const small = setDecorScale(b, rawLib, g.id, 0.8);
+    expect(small.ok).toBe(true);
+    expect(buildLayout(small.booth, lib).problems).toEqual({});
     expect(removeDecor(b, s.id).booth.decor.some((d) => d.decorId.startsWith('xmas-stockings'))).toBe(false);
   });
 });

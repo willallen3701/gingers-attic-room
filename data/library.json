@@ -2151,51 +2151,11 @@
    "name": "Draped fir garland with red bows",
    "category": "christmas",
    "mount": "wall",
-   "heightIn": 15.29,
-   "widthIn": 52.0,
-   "aspect": 3.4019,
-   "image": "assets/decor/xmas-garland.webp",
-   "src": "assets/decor/xmas-garland.webp",
-   "family": {
-    "id": "xmas-garland",
-    "label": "Length",
-    "choice": "Medium",
-    "order": 2
-   }
-  },
-  {
-   "id": "xmas-garland-short",
-   "name": "Draped fir garland with red bows, short",
-   "category": "christmas",
-   "mount": "wall",
    "heightIn": 13.64,
    "widthIn": 34.0,
    "aspect": 2.4921,
-   "image": "assets/decor/xmas-garland-short.webp",
-   "src": "assets/decor/xmas-garland-short.webp",
-   "family": {
-    "id": "xmas-garland",
-    "label": "Length",
-    "choice": "Short",
-    "order": 1
-   }
-  },
-  {
-   "id": "xmas-garland-long",
-   "name": "Draped fir garland with red bows, long",
-   "category": "christmas",
-   "mount": "wall",
-   "heightIn": 13.07,
-   "widthIn": 84.0,
-   "aspect": 6.4262,
-   "image": "assets/decor/xmas-garland-long.webp",
-   "src": "assets/decor/xmas-garland-long.webp",
-   "family": {
-    "id": "xmas-garland",
-    "label": "Length",
-    "choice": "Long",
-    "order": 3
-   }
+   "image": "assets/decor/xmas-garland.webp",
+   "src": "assets/decor/xmas-garland.webp"
   },
   {
    "id": "xmas-gifts",

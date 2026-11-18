@@ -129,7 +129,7 @@ try {
   s = await state();
   check('Escape closes the picker', !s.sheet);
 
-  // 5. Christmas v5: the garland's length and the stockings' design are picked on the placed piece (real clicks).
+  // 5. Christmas v5: the stockings' design is picked on the placed piece (real clicks).
   await open('now=2026-11-18T12:00:00');
   await click('.usetpl');
   await click('[data-tpl-id="christmas"]');
@@ -156,15 +156,9 @@ try {
   check('Undo brings the first design back', (await decorSrc(stId)).includes('xmas-stockings.webp'));
   await click(`.room.edit [data-kind="decor"][data-id="${gaId}"]`);
   c = await chips();
-  check('selecting the garland shows three lengths, Medium picked', c.length === 3 && c.map((x) => x[0]).join() === 'Short,Medium,Long' && c[1][1] === 'true', c.map((x) => x[0]).join(', '));
-  const wMed = await decorW(gaId);
-  await click('.selbar [data-act="decor-variant"][title="Short"]');
-  const wShort = await decorW(gaId);
-  check('Short is a shorter garland (34 of 52 in wide)', Math.abs(wShort / wMed - 34 / 52) < 0.02, `${wShort.toFixed(0)} / ${wMed.toFixed(0)}`);
+  check('selecting the garland shows no length choices (it is one real swag)', c.length === 0, c.map((x) => x[0]).join(', '));
   const slider = await evaluate(`(() => { const i = ${q('.selbar input[data-act="sel-scale"]')}; return i ? [i.min, i.max] : null; })()`);
   check('the Size slider is still there for fine adjustment (80-120 %)', !!slider && slider[0] === '80' && slider[1] === '120', String(slider));
-  await click('.selbar [data-act="decor-variant"][title="Long"]');
-  check('a length that would run into something is refused, with a reason, and nothing moves', Math.abs((await decorW(gaId)) / wShort - 1) < 0.01 && /overlap|in the way|room/i.test(await evaluate(`${q('.toast')}?.textContent ?? ''`)));
   const sh = await evaluate(`(() => { const e = ${q(`.room.edit [data-kind="decor"][data-id="${gaId}"]`)}; return { contact: !!e.querySelector('.contact'), filter: getComputedStyle(e.querySelector('img')).filter }; })()`);
   check('a wall piece has a drop shadow on the wall and no floor-style contact shadow', !sh.contact && /drop-shadow/.test(sh.filter), sh.filter.slice(0, 60));
   const fl = await evaluate(`(() => { const e = ${SR}.querySelector('.room.edit .item.decor.mount-stand'); return e ? !!e.querySelector('.contact') : null; })()`);

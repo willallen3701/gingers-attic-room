@@ -142,10 +142,10 @@ items the site rejected stay there too. It keeps the booth sign, sound and highl
   (Christmas: through December 31, 2026; gone on January 1, 2027). Nothing about a template is stored in the booth, so a booth
   already using the Christmas layout keeps it. Edit `TEMPLATES` to rename a look or change its pieces.
 - Uses library ids only, so the site's `cleanDraft` accepts the result unchanged (30 fixtures / 30 decor / 3 boxes / 40 pieces limits hold).
-- Decor that comes in choices (the Christmas garland's length, the stockings' design) is one library entry per choice sharing
+- Decor that comes in choices (the Christmas stockings' design) is one library entry per choice sharing
   `family: {id, label, choice, swatch?, order?}`. The Decor tab lists a family once; selecting the placed piece shows the choices
   in the selection bar (`setDecorVariant` swaps `decorId` in place). The booth just stores the chosen entry's id, so the site
-  needs no change. The Size slider stays 80-120 % (the site clamps `scaleAdj` to that), so a wider range comes from more lengths.
+  needs no change. The Size slider stays 80-120 % (the site clamps `scaleAdj` to that), so a wider range would need more choices (the Christmas garland has none: it is one real photographed swag, sized with the slider, because every longer version had to repeat or mirror its fir).
 - Standalone harness options: `editor.html?fresh=1` (empty booth) and `?now=2026-12-31T23:30:00` (pretend date).
   `node scripts/template-smoke.mjs` clicks through the picker; `node scripts/template-shots.mjs [dir]` saves the screenshots.
 

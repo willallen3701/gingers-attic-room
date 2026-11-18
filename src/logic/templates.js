@@ -145,13 +145,13 @@ export const TEMPLATES = Object.freeze([
       { k: 'stackR', id: 'shelf-stack-3-cream', x: 89, y: 8 },
       { k: 'console', id: 'table-console-carved', x: 4, base: 108 },
     ],
-    // On the wall x is the centre of the piece and base is its bottom edge. Left wall: ONE garland (the medium length), with
+    // On the wall x is the centre of the piece and base is its bottom edge. Left wall: ONE garland (one real swag), with
     // the stockings hanging just under its low run (the stockings' box starts where the garland's ends: pieces can't
     // overlap, so the little twine loops at the top of the stockings are what reach up to the fir). Right wall: the
     // wreath above the tree.
     decor: [
       { id: 'xmas-garland', on: { wall: true, x: 33, base: 34 } },
-      { id: 'xmas-stockings', on: { wall: true, x: 39, base: 49.8 } },
+      { id: 'xmas-stockings', on: { wall: true, x: 33, base: 49.8 } },
       { id: 'xmas-wreath', on: { wall: true, x: 76, base: 46 } },
       { id: 'xmas-candles', on: { fx: 'console', s: 's0', u: 0.42 }, lit: true },
       { id: 'lamp-oil', on: { fx: 'console', s: 's0', u: 0.05 }, lit: true },
