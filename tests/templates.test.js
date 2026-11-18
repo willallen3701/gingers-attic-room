@@ -317,20 +317,20 @@ describe('the Christmas layout (v5): every piece places, and nothing lies on top
   };
   const hit = (a, b) => Math.min(a.x2, b.x2) - Math.max(a.x1, b.x1) > 0 && Math.min(a.y2, b.y2) - Math.max(a.y1, b.y1) > 0;
 
-  it('places all eight pieces and skips nothing', () => {
+  it('places all seven pieces and skips nothing', () => {
     const r = made();
     expect(r.ok).not.toBe(false);
     expect(r.report.skipped).toEqual([]);
     expect(r.booth.decor.map((d) => d.decorId).sort()).toEqual(
-      ['lamp-oil', 'xmas-candles', 'xmas-garland', 'xmas-gifts', 'xmas-nutcracker', 'xmas-stockings', 'xmas-tree', 'xmas-wreath'],
+      ['lamp-oil', 'xmas-candles', 'xmas-garland', 'xmas-gifts', 'xmas-nutcracker', 'xmas-tree', 'xmas-wreath'],
     );
     expectValidBooth(r.booth);
   });
 
-  it('the wall pieces (the garland, the stockings, the wreath) are clear of each other, of the shelf, and sit above the wainscoting', () => {
+  it('the wall pieces (the garland, the wreath) are clear of each other, of the shelf, and sit above the wainscoting', () => {
     const b = made().booth;
     const wall = b.decor.filter((d) => defs[d.decorId].mount === 'wall').map(rectOf);
-    expect(wall.map((r) => r.id).sort()).toEqual(['xmas-garland', 'xmas-stockings', 'xmas-wreath']);
+    expect(wall.map((r) => r.id).sort()).toEqual(['xmas-garland', 'xmas-wreath']);
     const shelf = b.fixtures.find((f) => fxDefs[f.fixtureId].mount === 'wall');
     const sd = fxDefs[shelf.fixtureId];
     const rects = [...wall, { id: 'shelf', x1: shelf.x, x2: shelf.x + sd.widthIn, y1: shelf.y, y2: shelf.y + sd.heightIn }];

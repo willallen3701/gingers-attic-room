@@ -84,7 +84,7 @@ export function pickerWallpapers(lib, wallCfg = null) {
 }
 
 /**
- * Decor that comes in a few choices (a garland's length, a stocking set's colour or pattern) is one library entry per
+ * Decor that comes in a few choices (a garland's length, a set's colour or pattern) is one library entry per
  * choice, all carrying the same `family.id`. The seller sees ONE piece in the Decor tab (the family's first entry in the
  * library) and picks the choice on the placed piece; the booth just stores the chosen entry's id as `decorId`, so nothing
  * new is saved (an old site that only knows decor ids stores it unchanged).

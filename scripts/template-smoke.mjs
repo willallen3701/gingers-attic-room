@@ -129,31 +129,17 @@ try {
   s = await state();
   check('Escape closes the picker', !s.sheet);
 
-  // 5. Christmas v5: the stockings' design is picked on the placed piece (real clicks).
+  // 5. Christmas: one garland on the wall, no stockings (the owner scratched them).
   await open('now=2026-11-18T12:00:00');
   await click('.usetpl');
   await click('[data-tpl-id="christmas"]');
   await click('[data-tpl="yes"]');
   await evaluate(`(() => { window.__drafts = []; document.querySelector('attic-editor').addEventListener('attic-booth:event', (e) => { if (e.detail.type === 'save-draft') window.__drafts.push(e.detail.draft); }); })()`);
   const decorBy = (part) => evaluate(`(() => { const e = [...${SR}.querySelectorAll('.room.edit [data-kind="decor"]')].find((x) => (x.querySelector('img')?.getAttribute('src') ?? '').includes(${JSON.stringify(part)})); return e ? e.dataset.id : null; })()`);
-  const decorW = (id) => evaluate(`${q(`.room.edit [data-kind="decor"][data-id="${id}"]`)}.getBoundingClientRect().width`);
-  const decorSrc = (id) => evaluate(`${q(`.room.edit [data-kind="decor"][data-id="${id}"] img`)}.getAttribute('src')`);
   const chips = () => evaluate(`[...${SR}.querySelectorAll('.selbar .variant')].map((b) => [b.title, b.getAttribute('aria-pressed')])`);
-  const stId = await decorBy('xmas-stockings');
   const gaId = await decorBy('xmas-garland');
-  check('the template put one garland and one set of stockings on the wall', !!stId && !!gaId && (await evaluate(`[...${SR}.querySelectorAll('.room.edit [data-kind="decor"] img')].filter((i) => i.getAttribute('src').includes('garland')).length`)) === 1);
-  await click(`.room.edit [data-kind="decor"][data-id="${stId}"]`);
-  let c = await chips();
-  check('selecting the stockings shows six design swatches, Classic red picked', c.length === 6 && c[0][0] === 'Classic red' && c[0][1] === 'true', c.map((x) => x[0]).join(', '));
-  await click('.selbar [data-act="decor-variant"][title="Evergreen"]');
-  check('choosing Evergreen swaps the picture in place', (await decorSrc(stId)).includes('xmas-stockings-green'));
-  c = await chips();
-  check('and the swatch row follows (Evergreen picked)', c.find((x) => x[1] === 'true')?.[0] === 'Evergreen');
-  await sleep(2600);
-  const last = await evaluate('window.__drafts.at(-1)');
-  check('the autosaved draft holds the chosen design as a plain decorId (nothing new to save)', !!last && last.decor.some((d) => d.decorId === 'xmas-stockings-green') && last.decor.every((d) => !('variant' in d) && !('family' in d)));
-  await click('.undo');
-  check('Undo brings the first design back', (await decorSrc(stId)).includes('xmas-stockings.webp'));
+  check('the template put one garland on the wall and no stockings', !!gaId && !(await decorBy('xmas-stockings')) && (await evaluate(`[...${SR}.querySelectorAll('.room.edit [data-kind="decor"] img')].filter((i) => i.getAttribute('src').includes('garland')).length`)) === 1);
+  let c;
   await click(`.room.edit [data-kind="decor"][data-id="${gaId}"]`);
   c = await chips();
   check('selecting the garland shows no length choices (it is one real swag)', c.length === 0, c.map((x) => x[0]).join(', '));

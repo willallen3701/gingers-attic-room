@@ -934,7 +934,7 @@ export class AtticEditor extends HTMLElement {
 
   #decorPanelHtml(lib) {
     const openings = lib.architecture.filter((a) => a.kind === 'placeable');
-    const listed = pickerDecor(lib); // a piece that comes in choices (garland length, stocking design) is listed once
+    const listed = pickerDecor(lib); // a piece that comes in choices (e.g. a length or design) is listed once
     const cats = [...new Set(listed.map((d) => d.category))];
     return `<p class="lede">Decor is just for atmosphere: it's never for sale and has no price tag.</p>
       ${openings.length ? `<section><h3>Windows &amp; doors</h3><div class="srcgrid">${openings.map((a) => this.#srcCard('placeable', a, inches(a.widthIn, a.heightIn))).join('')}</div></section>` : ''}
@@ -1349,7 +1349,7 @@ export class AtticEditor extends HTMLElement {
         this.#setLampLit(s.id, el.getAttribute('aria-checked') !== 'true');
         break;
       case 'decor-variant': {
-        // A garland's length, or a stocking set's design: swap in place (the booth just stores the chosen piece's id).
+        // A piece's length or design: swap in place (the booth just stores the chosen piece's id).
         const r = ops.setDecorVariant(this.#booth, this.#lib, s.id, el.dataset.decorId);
         if (r.ok) {
           this.#commit(r.booth);

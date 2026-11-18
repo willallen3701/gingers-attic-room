@@ -192,7 +192,7 @@ export function setDecorScale(booth, libIn, instanceId, scaleAdj) {
 }
 
 /**
- * Swap a placed decor piece for another choice of its family (a garland's length, a stocking set's design; see
+ * Swap a placed decor piece for another choice of its family (a garland's length, a pattern choice; see
  * library.js decorFamily). It keeps its bottom-centre, its size tweak (within what the new choice allows) and its other
  * fields. If the new choice would overlap something or leave the room, nothing changes and the errors say why.
  */

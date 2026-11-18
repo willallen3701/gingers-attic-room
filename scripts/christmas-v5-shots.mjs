@@ -99,26 +99,10 @@ try {
   await sleep(200);
   await save('raw-shadow-before.png', { x: rr.x, y: rr.y, w: rr.w * 0.78, h: rr.h * 0.62 }, 2);
 
-  // stocking swatches
+  // the garland is one real swag: clear the wall of the wreath, centre it, then size it 80 / 100 / 120 %
   await openChristmas();
   await hideToast();
-  await selectDecor('xmas-stockings');
-  await sleep(200);
-  const barRect = await rectOf('.selbar');
-  await save('raw-stock-bar.png', { x: barRect.x, y: barRect.y, w: barRect.w, h: barRect.h }, 1);
-  const designs = await evaluate(`[...${ED}.querySelectorAll('.selbar .variant')].map((b) => b.dataset.decorId)`);
-  console.log('stocking designs', designs.join(', '));
-  const r2 = await roomRect();
-  for (let i = 0; i < designs.length; i++) {
-    await click(`.selbar [data-decor-id="${designs[i]}"]`);
-    await sleep(350);
-    await save(`raw-stock-${i}.png`, { x: r2.x + r2.w * 0.04, y: r2.y + r2.h * 0.11, w: r2.w * 0.5, h: r2.h * 0.34 }, 2);
-  }
-
-  // the garland is one real swag: clear the wall of the stockings and the wreath, centre it, then size it 80 / 100 / 120 %
-  await openChristmas();
-  await hideToast();
-  for (const id of ['xmas-stockings', 'xmas-wreath']) { await selectDecor(id); await click('[data-act="sel-remove"]'); await sleep(200); }
+  for (const id of ['xmas-wreath']) { await selectDecor(id); await click('[data-act="sel-remove"]'); await sleep(200); }
   await selectDecor('xmas-garland');
   for (let i = 0; i < 22; i++) await click('.selbar [data-act="nudge"][data-dx="1"]');
   const r3 = await roomRect();
