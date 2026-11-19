@@ -943,7 +943,7 @@ export class AtticEditor extends HTMLElement {
           .filter((d) => d.category === c)
           .map((d) => {
             const fam = decorFamily(lib, d.id);
-            const where = d.mount === 'wall' ? 'wall' : d.mount === 'floor' ? 'floor' : 'shelf or floor';
+            const where = d.hang ? 'hangs from the top' : d.mount === 'wall' ? 'wall' : d.mount === 'floor' ? 'floor' : 'shelf or floor';
             return this.#srcCard('decor', d, fam ? `${fam.members.length} ${esc(fam.label.toLowerCase())}s to pick from &middot; ${where}` : `${+d.heightIn.toFixed(1)} in tall &middot; ${where}`);
           })
           .join('')}</div></section>`)

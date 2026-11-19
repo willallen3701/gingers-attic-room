@@ -220,6 +220,11 @@ button { font: inherit; color: inherit; }
 .placeable img { width: 100%; height: 100%; display: block; filter: drop-shadow(0 .3cqw .3cqw rgba(40,25,10,.3)); }
 .item.decor { cursor: default; pointer-events: none; }
 .item.decor:hover img { transform: none; }
+/* overhead lights: the cord from the top of the wall to the piece (room-render hangCordHtml); x/width/colour come from the library */
+.item.decor .cord { position: absolute; bottom: 100%; width: .3%; min-width: 1px; transform: translateX(-50%); background: var(--cord, #6b5a3a); pointer-events: none;
+  box-shadow: .12cqw 0 .15cqw rgba(20,10,5,.3); }
+.item.decor .cord .rose { position: absolute; left: 50%; top: -.1cqw; width: 2.6cqw; height: .8cqw; transform: translateX(-50%); border-radius: .5cqw .5cqw .2cqw .2cqw;
+  background: var(--cord, #6b5a3a); box-shadow: 0 .15cqw .25cqw rgba(20,10,5,.35); }
 
 /* ---------- light overlays ---------- */
 .light { position: absolute; inset: 0; pointer-events: none; z-index: 3500; transition: opacity .45s ease; }

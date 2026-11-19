@@ -2121,6 +2121,272 @@
      "y": 0.38
     }
    ]
+  },
+  {
+   "id": "pie-safe-spindle",
+   "name": "Spindle-door pie safe",
+   "category": "cabinet",
+   "kind": "cabinet",
+   "mount": "floor",
+   "group": "Pie safe",
+   "variant": "Dark wood",
+   "widthIn": 32.71,
+   "heightIn": 20.79,
+   "image": "assets/fixtures/pie-safe-spindle.webp",
+   "src": "assets/fixtures/pie-safe-spindle.webp",
+   "boardThicknessIn": 1.8,
+   "surfaces": [
+    {
+     "id": "s0",
+     "x1": 2.3,
+     "x2": 30.38,
+     "y": 0.0
+    }
+   ]
+  },
+  {
+   "id": "bench-painted",
+   "name": "Painted bench with a back rail",
+   "category": "table",
+   "kind": "table",
+   "mount": "floor",
+   "group": "Bench",
+   "variant": "Red paint",
+   "widthIn": 45.86,
+   "heightIn": 36.57,
+   "image": "assets/fixtures/bench-painted.webp",
+   "src": "assets/fixtures/bench-painted.webp",
+   "boardThicknessIn": 1.4,
+   "surfaces": [
+    {
+     "id": "s0",
+     "x1": 3.18,
+     "x2": 42.67,
+     "y": 9.4
+    },
+    {
+     "id": "s1",
+     "x1": 3.22,
+     "x2": 42.64,
+     "y": 26.81
+    }
+   ]
+  },
+  {
+   "id": "table-round-cupboard",
+   "name": "Round table with cupboard base",
+   "category": "table",
+   "kind": "table",
+   "mount": "floor",
+   "group": "Round table",
+   "variant": "Dark wood",
+   "widthIn": 31.36,
+   "heightIn": 31.36,
+   "image": "assets/fixtures/table-round-cupboard.webp",
+   "src": "assets/fixtures/table-round-cupboard.webp",
+   "boardThicknessIn": 1.4,
+   "surfaces": [
+    {
+     "id": "s0",
+     "x1": 1.64,
+     "x2": 29.7,
+     "y": 0.0
+    }
+   ]
+  },
+  {
+   "id": "cabinet-display-lacquer",
+   "name": "Lacquered display cabinet",
+   "category": "cabinet",
+   "kind": "cabinet",
+   "mount": "floor",
+   "group": "Display cabinet",
+   "variant": "Lacquer and wood",
+   "widthIn": 32.29,
+   "heightIn": 74.29,
+   "image": "assets/fixtures/cabinet-display-lacquer.webp",
+   "src": "assets/fixtures/cabinet-display-lacquer.webp",
+   "boardThicknessIn": 1.8,
+   "surfaces": [
+    {
+     "id": "s0",
+     "x1": 1.77,
+     "x2": 30.54,
+     "y": 0.0
+    },
+    {
+     "id": "s1",
+     "x1": 3.1,
+     "x2": 29.59,
+     "y": 13.63
+    },
+    {
+     "id": "s8",
+     "x1": 3.1,
+     "x2": 29.72,
+     "y": 30.47
+    }
+   ]
+  },
+  {
+   "id": "rack-metal-worn",
+   "name": "Worn metal shelving",
+   "category": "cabinet",
+   "kind": "cabinet",
+   "mount": "floor",
+   "group": "Open shelving",
+   "variant": "Worn green-grey",
+   "widthIn": 36.07,
+   "heightIn": 76.57,
+   "image": "assets/fixtures/rack-metal-worn.webp",
+   "src": "assets/fixtures/rack-metal-worn.webp",
+   "boardThicknessIn": 1.8,
+   "surfaces": [
+    {
+     "id": "s0",
+     "x1": 1.6,
+     "x2": 34.46,
+     "y": 0.0
+    },
+    {
+     "id": "s1",
+     "x1": 2.88,
+     "x2": 33.14,
+     "y": 19.22
+    },
+    {
+     "id": "s2",
+     "x1": 2.88,
+     "x2": 33.14,
+     "y": 38.44
+    },
+    {
+     "id": "s3",
+     "x1": 2.88,
+     "x2": 33.14,
+     "y": 57.65
+    },
+    {
+     "id": "s4",
+     "x1": 2.8,
+     "x2": 33.26,
+     "y": 72.3
+    }
+   ]
+  },
+  {
+   "id": "stand-tiered",
+   "name": "Tiered display stand",
+   "category": "table",
+   "kind": "table",
+   "mount": "floor",
+   "group": "Tiered stand",
+   "variant": "3 tiers · Walnut",
+   "widthIn": 25.0,
+   "heightIn": 47.36,
+   "image": "assets/fixtures/stand-tiered.webp",
+   "src": "assets/fixtures/stand-tiered.webp",
+   "boardThicknessIn": 1.4,
+   "surfaces": [
+    {
+     "id": "t0",
+     "x1": 1.25,
+     "x2": 23.75,
+     "y": 31.67
+    },
+    {
+     "id": "t1",
+     "x1": 4.25,
+     "x2": 20.75,
+     "y": 17.49
+    },
+    {
+     "id": "t2",
+     "x1": 7.25,
+     "x2": 17.75,
+     "y": 3.31
+    }
+   ]
+  },
+  {
+   "id": "rack-plate-30",
+   "name": "Wall plate rack, 30 in",
+   "category": "shelf",
+   "kind": "shelf",
+   "mount": "wall",
+   "group": "Plate rack",
+   "variant": "30 in · Walnut",
+   "widthIn": 30.0,
+   "heightIn": 28.14,
+   "image": "assets/fixtures/rack-plate-30.webp",
+   "src": "assets/fixtures/rack-plate-30.webp",
+   "boardThicknessIn": 1.8,
+   "surfaces": [
+    {
+     "id": "s0",
+     "x1": 1.55,
+     "x2": 28.45,
+     "y": 13.03
+    },
+    {
+     "id": "s1",
+     "x1": 1.55,
+     "x2": 28.45,
+     "y": 26.03
+    }
+   ]
+  },
+  {
+   "id": "case-curio-tall",
+   "name": "Tall glass curio cabinet",
+   "category": "cabinet",
+   "kind": "cabinet",
+   "mount": "floor",
+   "group": "Glass display case",
+   "variant": "30 in tall · Walnut",
+   "widthIn": 30.79,
+   "heightIn": 81.0,
+   "image": "assets/fixtures/case-curio-tall.webp",
+   "src": "assets/fixtures/case-curio-tall.webp",
+   "boardThicknessIn": 1.8,
+   "surfaces": [
+    {
+     "id": "g0",
+     "x1": 1.9,
+     "x2": 28.9,
+     "y": 60.22
+    },
+    {
+     "id": "g1",
+     "x1": 1.9,
+     "x2": 28.9,
+     "y": 45.68
+    },
+    {
+     "id": "g2",
+     "x1": 1.9,
+     "x2": 28.9,
+     "y": 31.13
+    },
+    {
+     "id": "g3",
+     "x1": 1.9,
+     "x2": 28.9,
+     "y": 16.59
+    },
+    {
+     "id": "floor",
+     "x1": 1.9,
+     "x2": 28.9,
+     "y": 74.77
+    },
+    {
+     "id": "top",
+     "x1": 0.65,
+     "x2": 30.15,
+     "y": 0.0
+    }
+   ]
   }
  ],
  "decor": [
@@ -2155,7 +2421,10 @@
    "widthIn": 34.0,
    "aspect": 2.4921,
    "image": "assets/decor/xmas-garland.webp",
-   "src": "assets/decor/xmas-garland.webp"
+   "src": "assets/decor/xmas-garland.webp",
+   "mayOverlap": [
+    "window"
+   ]
   },
   {
    "id": "xmas-gifts",
@@ -2210,7 +2479,10 @@
    "widthIn": 25.0,
    "aspect": 0.72,
    "image": "assets/decor/xmas-wreath.webp",
-   "src": "assets/decor/xmas-wreath.webp"
+   "src": "assets/decor/xmas-wreath.webp",
+   "mayOverlap": [
+    "window"
+   ]
   },
   {
    "id": "clock-grandfather",
@@ -2443,6 +2715,228 @@
    "aspect": 0.5638,
    "image": "assets/decor/vase-blue-white.webp",
    "src": "assets/decor/vase-blue-white.webp"
+  },
+  {
+   "id": "spinning-wheel",
+   "name": "Antique spinning wheel",
+   "category": "furniture",
+   "mount": "floor",
+   "heightIn": 38.14,
+   "widthIn": 19.29,
+   "aspect": 0.5058,
+   "image": "assets/decor/spinning-wheel.webp",
+   "src": "assets/decor/spinning-wheel.webp"
+  },
+  {
+   "id": "basket-sewing",
+   "name": "Lidded wicker sewing basket",
+   "category": "basket",
+   "mount": "stand",
+   "heightIn": 8.36,
+   "widthIn": 13.64,
+   "aspect": 1.6316,
+   "image": "assets/decor/basket-sewing.webp",
+   "src": "assets/decor/basket-sewing.webp"
+  },
+  {
+   "id": "candlestick-wooden",
+   "name": "Turned wooden candlestick",
+   "category": "lighting",
+   "mount": "stand",
+   "heightIn": 8.79,
+   "widthIn": 3.86,
+   "aspect": 0.4391,
+   "image": "assets/decor/candlestick-wooden.webp",
+   "src": "assets/decor/candlestick-wooden.webp"
+  },
+  {
+   "id": "jug-floral",
+   "name": "Floral porcelain milk jug",
+   "category": "vase",
+   "mount": "stand",
+   "heightIn": 8.5,
+   "widthIn": 10.86,
+   "aspect": 1.2776,
+   "image": "assets/decor/jug-floral.webp",
+   "src": "assets/decor/jug-floral.webp"
+  },
+  {
+   "id": "lantern-kerosene",
+   "name": "Old kerosene lantern",
+   "category": "lighting",
+   "mount": "stand",
+   "heightIn": 11.71,
+   "widthIn": 4.79,
+   "aspect": 0.4091,
+   "image": "assets/decor/lantern-kerosene.webp",
+   "src": "assets/decor/lantern-kerosene.webp"
+  },
+  {
+   "id": "trunk-ironbound",
+   "name": "Iron-bound wooden trunk",
+   "category": "furniture",
+   "mount": "floor",
+   "heightIn": 25.21,
+   "widthIn": 37.79,
+   "aspect": 1.499,
+   "image": "assets/decor/trunk-ironbound.webp",
+   "src": "assets/decor/trunk-ironbound.webp"
+  },
+  {
+   "id": "kettle-vintage",
+   "name": "Vintage tin kettle",
+   "category": "kitchen",
+   "mount": "stand",
+   "heightIn": 12.36,
+   "widthIn": 12.64,
+   "aspect": 1.0227,
+   "image": "assets/decor/kettle-vintage.webp",
+   "src": "assets/decor/kettle-vintage.webp"
+  },
+  {
+   "id": "milk-can",
+   "name": "Galvanised milk can",
+   "category": "kitchen",
+   "mount": "stand",
+   "heightIn": 11.86,
+   "widthIn": 7.71,
+   "aspect": 0.6501,
+   "image": "assets/decor/milk-can.webp",
+   "src": "assets/decor/milk-can.webp"
+  },
+  {
+   "id": "suitcase-stickers",
+   "name": "Travel-sticker suitcase",
+   "category": "luggage",
+   "mount": "stand",
+   "heightIn": 22.71,
+   "widthIn": 27.29,
+   "aspect": 1.2017,
+   "image": "assets/decor/suitcase-stickers.webp",
+   "src": "assets/decor/suitcase-stickers.webp"
+  },
+  {
+   "id": "print-chrysanthemum",
+   "name": "Framed chrysanthemum print",
+   "category": "frame",
+   "mount": "wall",
+   "heightIn": 11.79,
+   "widthIn": 17.79,
+   "aspect": 1.5089,
+   "image": "assets/decor/print-chrysanthemum.webp",
+   "src": "assets/decor/print-chrysanthemum.webp"
+  },
+  {
+   "id": "print-white-eye",
+   "name": "Framed songbird print",
+   "category": "frame",
+   "mount": "wall",
+   "heightIn": 19.79,
+   "widthIn": 14.0,
+   "aspect": 0.7074,
+   "image": "assets/decor/print-white-eye.webp",
+   "src": "assets/decor/print-white-eye.webp"
+  },
+  {
+   "id": "chandelier-brass-shades",
+   "name": "Brass chandelier with shades",
+   "category": "lighting",
+   "mount": "wall",
+   "heightIn": 31.21,
+   "widthIn": 26.71,
+   "aspect": 0.8558,
+   "image": "assets/decor/chandelier-brass-shades.webp",
+   "src": "assets/decor/chandelier-brass-shades.webp",
+   "hang": {
+    "x": 0.5,
+    "widthIn": 0.36,
+    "color": "#846647",
+    "maxDropIn": 30
+   }
+  },
+  {
+   "id": "chandelier-candle",
+   "name": "Candle chandelier",
+   "category": "lighting",
+   "mount": "wall",
+   "heightIn": 30.43,
+   "widthIn": 24.57,
+   "aspect": 0.8074,
+   "image": "assets/decor/chandelier-candle.webp",
+   "src": "assets/decor/chandelier-candle.webp",
+   "hang": {
+    "x": 0.497,
+    "widthIn": 0.79,
+    "color": "#32312f",
+    "maxDropIn": 30
+   }
+  },
+  {
+   "id": "pendant-opal-globe",
+   "name": "Opal glass pendant",
+   "category": "lighting",
+   "mount": "wall",
+   "heightIn": 28.86,
+   "widthIn": 13.57,
+   "aspect": 0.4702,
+   "image": "assets/decor/pendant-opal-globe.webp",
+   "src": "assets/decor/pendant-opal-globe.webp",
+   "hang": {
+    "x": 0.503,
+    "widthIn": 0.28,
+    "color": "#7d7a77",
+    "maxDropIn": 36
+   }
+  },
+  {
+   "id": "pendant-factory",
+   "name": "Factory pendant lamp",
+   "category": "lighting",
+   "mount": "wall",
+   "heightIn": 31.14,
+   "widthIn": 13.0,
+   "aspect": 0.4175,
+   "image": "assets/decor/pendant-factory.webp",
+   "src": "assets/decor/pendant-factory.webp",
+   "hang": {
+    "x": 0.555,
+    "widthIn": 0.43,
+    "color": "#484543",
+    "maxDropIn": 36
+   }
+  },
+  {
+   "id": "sconce-bulkhead",
+   "name": "Oval bulkhead wall lamp",
+   "category": "lighting",
+   "mount": "wall",
+   "heightIn": 16.93,
+   "widthIn": 10.79,
+   "aspect": 0.6373,
+   "image": "assets/decor/sconce-bulkhead.webp",
+   "src": "assets/decor/sconce-bulkhead.webp"
+  },
+  {
+   "id": "lamp-pipe-edison",
+   "name": "Edison pipe table lamp",
+   "category": "lighting",
+   "mount": "stand",
+   "heightIn": 14.5,
+   "widthIn": 7.21,
+   "aspect": 0.4972,
+   "image": "assets/decor/lamp-pipe-edison.webp",
+   "src": "assets/decor/lamp-pipe-edison.webp"
+  },
+  {
+   "id": "radio-field",
+   "name": "Vintage field radio",
+   "category": "electronics",
+   "mount": "stand",
+   "heightIn": 6.0,
+   "widthIn": 12.43,
+   "aspect": 2.0717,
+   "image": "assets/decor/radio-field.webp",
+   "src": "assets/decor/radio-field.webp"
   }
  ]
 }

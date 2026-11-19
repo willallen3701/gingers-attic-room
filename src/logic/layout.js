@@ -15,6 +15,16 @@ import { boxSizeIn, boxedItemIds } from './boxes.js';
 //   booth.room.placeables[]   {id, archId, x, y}               (windows/doors; x = left, y = BASE)
 //   booth.boxes[]             {id, style, lining, cols, rows, placement, slots}  (collectibles boxes, logic/boxes.js)
 
+/**
+ * Kinds of window/door ('window', 'door') a decor piece may overlap on the wall: the library entry's `mayOverlap` list
+ * (data-driven; only wall decor, and only the garland and the wreath carry it). It never frees a piece from overlapping
+ * other decor, items, boxes or wall fixtures.
+ */
+export function decorMayOverlap(def) {
+  if (!def || def.mount !== 'wall' || !Array.isArray(def.mayOverlap)) return [];
+  return def.mayOverlap.filter((k) => k === 'window' || k === 'door');
+}
+
 const Z = Object.freeze({ placeable: 40, wall: 100, flat: 900, depth: 1000 });
 
 /** Item/decor mount -> the mount the snapping/validation code understands. */
@@ -63,6 +73,8 @@ export function buildLayout(booth, libraryIn) {
     })
     .filter(Boolean);
   const placeableRects = placeables.map((p) => ({ id: p.id, x1: p.x, x2: p.x + p.w, y1: p.top, y2: p.y }));
+  // What a placeable is, for decor that may hang over some kinds of them (library `mayOverlap`, see decorMayOverlap).
+  const placeableKind = Object.fromEntries(placeables.map((p) => [p.id, p.def.category]));
   const fixtureRects = [...fixtures.map((f) => fixtureRect({ id: f.id, x: f.x, y: f.y }, f.def)), ...placeableRects];
 
   let wallN = 0;
@@ -121,8 +133,12 @@ export function buildLayout(booth, libraryIn) {
     ...decor.map((e) => ({ id: e.decor.id, mount: e.mount, size: e.size, placement: e.decor.placement })),
     ...boxes.map((e) => ({ id: e.box.id, mount: 'stand', size: e.size, placement: e.box.placement })),
   ];
+  const decorDefOf = Object.fromEntries(decor.map((e) => [e.decor.id, e.def]));
   for (const o of others) {
-    const errs = validatePlacement(o, { surfaces, others, fixtureRects });
+    // A garland or wreath (library `mayOverlap: ['window']`) may hang over a window; every other wall piece may not.
+    const may = decorMayOverlap(decorDefOf[o.id]);
+    const rects = may.length ? fixtureRects.filter((r) => !may.includes(placeableKind[r.id])) : fixtureRects;
+    const errs = validatePlacement(o, { surfaces, others, fixtureRects: rects });
     if (errs.length) problems[o.id] = errs;
   }
   for (const pf of knownFixtures) {

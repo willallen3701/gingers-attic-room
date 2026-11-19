@@ -222,4 +222,10 @@ The allowlist covers `https://*.wixsite.com`, `https://*.wix.com` (the editor an
 - `scripts/make-sample-peeks.mjs`: arranges the sample booths' rooms with the editor's own operations and writes their
   peeks (through the site's `publicPeek()`) into `data/sample-directory.json` (`--check` only compares)
 - `data/library.json`: wallpapers, floors, paints, lights, architecture (strips and placeables), fixtures and decor
+  - Decor flags (all optional, data-driven, no change to the saved booth): `mayOverlap: ['window']` lets a wall piece hang over a
+    window (the Christmas garland and wreath; they still may not overlap other decor, items or shelves, and windows only, not
+    doors); `hang: {x, widthIn, color, maxDropIn}` marks an overhead light: it is ordinary wall decor, and the app draws a cord
+    from the top of the wall down to it (`room-render.js` `hangCordHtml`); the editor keeps it within `maxDropIn` of the top.
+    Lighting decor (`category: 'lighting'`) needs an entry in `LAMP_LIGHTS` (`logic/lamps.js`) for its glow.
+  - Licences for pieces added in November 2026: `LICENSES-library-additions.md`.
 - `data/demo-booth.json`: demo booth

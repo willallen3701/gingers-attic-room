@@ -49,6 +49,69 @@ export const LAMP_LIGHTS = Object.freeze({
     haloIn: 2.4,
     poolIn: 14,
   },
+  // Wick flame on the tip of the candle in the wooden candlestick (the candle stands in the top fifth of the artwork).
+  'candlestick-wooden': {
+    kind: 'flame',
+    points: [{ x: 0.49, y: 0.03 }],
+    coreIn: 0.35,
+    haloIn: 1.8,
+    poolIn: 9,
+  },
+  // Old kerosene lantern: the flame glows in the middle of the dark glass globe (just under 2/3 of the way down).
+  'lantern-kerosene': {
+    kind: 'flame',
+    points: [{ x: 0.5, y: 0.655 }],
+    coreIn: 0.7,
+    haloIn: 3,
+    poolIn: 12,
+  },
+  // Overhead lights (library `hang`: they hang from the top of the wall). Fractions are of the cropped artwork box (canopy removed).
+  // Six pleated shades and the alabaster bowl under them: each glows.
+  'chandelier-brass-shades': {
+    kind: 'shade',
+    points: [{ x: 0.110, y: 0.738, rx: 2.6, ry: 1.9 }, { x: 0.255, y: 0.657, rx: 2.4, ry: 1.7 }, { x: 0.330, y: 0.732, rx: 2.6, ry: 1.9 }, { x: 0.670, y: 0.657, rx: 2.4, ry: 1.7 }, { x: 0.655, y: 0.727, rx: 2.6, ry: 1.9 }, { x: 0.890, y: 0.727, rx: 2.6, ry: 1.9 }, { x: 0.5, y: 0.914, rx: 3, ry: 1.4 }],
+    haloIn: 5,
+    poolIn: 22,
+  },
+  // Sixteen-candle fixture, twelve flames shown, on the candle tips.
+  'chandelier-candle': {
+    kind: 'flame',
+    points: [{ x: 0.065, y: 0.634 }, { x: 0.197, y: 0.569 }, { x: 0.178, y: 0.677 }, { x: 0.343, y: 0.539 }, { x: 0.353, y: 0.591 }, { x: 0.399, y: 0.669 }, { x: 0.634, y: 0.539 }, { x: 0.626, y: 0.589 }, { x: 0.580, y: 0.691 }, { x: 0.778, y: 0.563 }, { x: 0.800, y: 0.682 }, { x: 0.914, y: 0.658 }],
+    coreIn: 0.5,
+    haloIn: 2.2,
+    poolIn: 20,
+  },
+  // Opal glass globe: the whole globe glows.
+  'pendant-opal-globe': {
+    kind: 'shade',
+    points: [{ x: 0.5, y: 0.83, rx: 5.4, ry: 4.9 }],
+    haloIn: 11,
+    poolIn: 24,
+  },
+  // Factory shade: the bulb is seen through the glass lens at the bottom.
+  'pendant-factory': {
+    kind: 'bulb',
+    points: [{ x: 0.5, y: 0.892 }],
+    coreIn: 1.5,
+    haloIn: 6,
+    poolIn: 20,
+  },
+  // Oval bulkhead lamp on the wall: the frosted glass glows.
+  'sconce-bulkhead': {
+    kind: 'bulb',
+    points: [{ x: 0.5, y: 0.5 }],
+    coreIn: 2,
+    haloIn: 6.5,
+    poolIn: 16,
+  },
+  // Edison bulb under the pipe lamp's metal shade.
+  'lamp-pipe-edison': {
+    kind: 'bulb',
+    points: [{ x: 0.5, y: 0.19 }],
+    coreIn: 0.8,
+    haloIn: 3.6,
+    poolIn: 14,
+  },
   // The bulb is visible through the open front of the lantern cage.
   'lantern-hanging': {
     kind: 'bulb',

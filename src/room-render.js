@@ -95,14 +95,31 @@ export function itemsHtml(layout, opts = {}) {
     .join('');
 }
 
+/**
+ * The cord of an overhead light (library `hang`): a thin line from the top of the wall down to the top of the piece,
+ * with a small ceiling rose at its upper end. Positioned inside the piece's own box, above it, so it needs no placement
+ * data of its own. Nothing when the piece already touches the top of the wall.
+ */
+export function hangCordHtml(def, size, top) {
+  const h = def?.hang;
+  if (!h || !(top > 0.05) || !(size.h > 0)) return '';
+  const w = Math.max(0.3, Number(h.widthIn) || 0.3);
+  const color = /^#[0-9a-f]{3,8}$/i.test(h.color ?? '') ? h.color : '#6b5a3a';
+  const left = Math.min(1, Math.max(0, Number(h.x) || 0.5)) * 100;
+  return (
+    `<span class="cord" style="left:${left.toFixed(2)}%;height:${((top / size.h) * 100).toFixed(2)}%;` +
+    `width:${((w / size.w) * 100).toFixed(3)}%;--cord:${color}"><span class="rose"></span></span>`
+  );
+}
+
 /** Decor props: drawn like items, but never for sale (no tag, no card). */
 export function decorHtml(layout, opts = {}) {
   return (layout.decor ?? [])
     .map(
       ({ decor, def, mount, size, x, top, z }) =>
-        `<div class="item decor mount-${esc(mount === 'floor' ? 'stand' : mount)}${opts.edit ? ' movable' : ''}${stateCls(decor.id, opts)}" ` +
+        `<div class="item decor mount-${esc(mount === 'floor' ? 'stand' : mount)}${def?.hang ? ' hanging' : ''}${opts.edit ? ' movable' : ''}${stateCls(decor.id, opts)}" ` +
         `data-kind="decor" data-id="${esc(decor.id)}" aria-hidden="true" style="${box(x, top, size.w, size.h, z)}">` +
-        `${contactHtml(mount)}<img src="${esc(def.src)}" alt="" draggable="false"></div>`,
+        `${hangCordHtml(def, size, top)}${contactHtml(mount)}<img src="${esc(def.src)}" alt="" draggable="false"></div>`,
     )
     .join('');
 }

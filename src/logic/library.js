@@ -5,7 +5,12 @@ import { ROOM } from './room.js';
 //   fixtures[]     {id, name, category:'shelf'|'table'|'cabinet'|'hanger', mount:'wall'|'floor',
 //                   widthIn, heightIn, src, surfaces:[{id,x1,x2,y}], boardThicknessIn}
 //   decor[]        {id, name, category, mount:'wall'|'floor'|'stand'|'flat', heightIn, widthIn?, aspect, src,
-//                   family?: {id, label, choice, swatch?, order?}}   (pieces of one family are choices of ONE piece: see decorFamily)
+//                   family?: {id, label, choice, swatch?, order?},   (pieces of one family are choices of ONE piece: see decorFamily)
+//                   mayOverlap?: ['window'|'door', ...]}   (wall decor only: may hang over these architecture kinds, e.g. a garland
+//                   or wreath over a window; it still may not overlap other decor, items, boxes or shelves. See layout.decorMayOverlap)
+//                   hang?: {x, widthIn, color, maxDropIn}   (wall decor drawn hanging from the top of the wall: an overhead light. The app draws a
+//                   cord of that width and colour at `x` (fraction of the piece's width) from the top of the wall to the piece; the piece's
+//                   own top is the rod/chain end. Placement is the ordinary wall placement; the editor keeps it within maxDropIn of the top)
 //   architecture[] {id, name, kind:'strip'|'placeable', ...}
 //                  strip:     spans the wall; top from topIn, or anchor 'top'|'bottom' + offsetIn; heightIn;
 //                             color and/or src (repeat-x image); group (mutually exclusive set)

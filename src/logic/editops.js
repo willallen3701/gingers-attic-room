@@ -159,6 +159,9 @@ export function placeDecor(booth, libIn, decorId, drop, instanceId = null) {
   const { surfaces } = buildLayout(booth, lib);
   const p = snapToSurface(drop, size, surfaces, decorMount(def.mount));
   if (!p) return fail('NO_SURFACE', booth);
+  // An overhead light hangs from the top of the wall on a cord drawn by the app: it may sit no further down than its `hang.maxDropIn`.
+  const maxDrop = Number(def.hang?.maxDropIn);
+  if (def.mount === 'wall' && maxDrop > 0) p.y = Math.min(p.y, size.h + maxDrop);
   const id = existing?.id ?? nextId('dc', decor.map((d) => d.id));
   // Moving keeps the entry's other fields (a lamp's `lit` switch); a new lamp starts switched off.
   const entry = existing
