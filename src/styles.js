@@ -124,7 +124,10 @@ button { font: inherit; color: inherit; }
   transition: transform .18s ease, filter .18s ease;
   pointer-events: none;
 }
-.item.mount-wall img { filter: drop-shadow(.35cqw .55cqw .35cqw rgba(30,20,10,.35)); }
+/* Wall-hung things (decor, wall items, frames): a soft shadow on the wall just behind them, down and to the right
+   (the booth's light comes from the upper left), following the silhouette. No floor-style contact ellipse. */
+.item.mount-wall img { filter: drop-shadow(.35cqw .5cqw .5cqw rgba(30,15,8,.46)); }
+.item.mount-wall .contact { display: none; }
 .item .contact {
   position: absolute; left: 6%; right: 6%; bottom: -0.5cqw; height: 1.1cqw;
   border-radius: 50%;
@@ -174,6 +177,7 @@ button { font: inherit; color: inherit; }
   font: 900 clamp(8px, 1.05cqw, 13px)/1 var(--serif); letter-spacing: .12em;
 }
 .item.sold img { filter: saturate(.75) brightness(.95); }
+.item.sold.mount-wall img { filter: saturate(.75) brightness(.95) drop-shadow(.35cqw .5cqw .5cqw rgba(30,15,8,.46)); }
 
 /* ---------- sign ---------- */
 .sign { position: absolute; z-index: 3000; pointer-events: none; text-align: center; }

@@ -73,6 +73,12 @@ export function fixturesHtml(layout, opts = {}) {
     .join('');
 }
 
+/**
+ * The grounding shadow under a standing item is a flat ellipse on the floor or the shelf. Something hanging on the wall
+ * has no floor under it: its shadow is the soft drop shadow on the wall behind it (styles.js, .item.mount-wall img).
+ */
+export const contactHtml = (mount) => (mount === 'wall' ? '' : '<span class="contact"></span>');
+
 export function itemsHtml(layout, opts = {}) {
   return layout.items
     .map(({ item, size, x, top, z }) => {
@@ -83,7 +89,7 @@ export function itemsHtml(layout, opts = {}) {
       return (
         `<button class="item mount-${esc(item.mount)}${sold ? ' sold' : ''}${unapproved ? ' unapproved' : ''}${opts.edit ? ' movable' : ''}${stateCls(item.id, opts)}" type="button" ` +
         `data-kind="item" data-id="${esc(item.id)}" aria-label="${esc(label)}" style="${box(x, top, size.w, size.h, z)}">` +
-        `<span class="contact"></span><img src="${esc(item.image)}" alt="" draggable="false"></button>`
+        `${contactHtml(item.mount)}<img src="${esc(item.image)}" alt="" draggable="false"></button>`
       );
     })
     .join('');
@@ -96,7 +102,7 @@ export function decorHtml(layout, opts = {}) {
       ({ decor, def, mount, size, x, top, z }) =>
         `<div class="item decor mount-${esc(mount === 'floor' ? 'stand' : mount)}${opts.edit ? ' movable' : ''}${stateCls(decor.id, opts)}" ` +
         `data-kind="decor" data-id="${esc(decor.id)}" aria-hidden="true" style="${box(x, top, size.w, size.h, z)}">` +
-        `<span class="contact"></span><img src="${esc(def.src)}" alt="" draggable="false"></div>`,
+        `${contactHtml(mount)}<img src="${esc(def.src)}" alt="" draggable="false"></div>`,
     )
     .join('');
 }

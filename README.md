@@ -128,6 +128,27 @@ seller's tick, sent as `lightWeightConfirmed: true`. There is no local pickup: e
 `data/agreement.json`. Background removal runs in a worker (`src/cutout-worker.js`) with the model in `assets/models/`
 (see `src/cutout-spec.js` and CREDITS.md).
 
+### Use a template (`src/logic/templates.js`)
+The editor's top bar has a **Use a template** button. It opens a picker with five looks (Cozy Cottage, Victorian Parlor,
+Farmhouse, Antique Library, and a Christmas look). A look sets the wall (wallpaper or paint), floor, wall strips, light
+preset, a window where it suits, shelving and furniture, and a lamp or two (lamps start on), then places the seller's items by
+size: rugs on the floor, wall hangings on the wall, tiny things (longest side 5.5 in or less) in collectibles boxes, big things
+on tables and the floor, small things on shelves. It is built only from the editor's own operations, so every result passes
+`buildLayout`/`boxProblems`; whatever does not fit (or would pass 40 pieces, or has no size) waits in the storage crate, and
+items the site rejected stay there too. It keeps the booth sign, sound and highlights.
+- Over an existing layout (`hasExistingLayout()`) the picker asks first ("Replace what's in your booth?"); Undo brings the old
+  booth back. On a new booth it applies at once. The result is an ordinary draft change: nothing reaches shoppers until Update booth.
+- Seasonal looks carry `until: 'YYYY-MM-DD'` and are offered while the visitor's local time is before that date's midnight
+  (Christmas: through December 31, 2026; gone on January 1, 2027). Nothing about a template is stored in the booth, so a booth
+  already using the Christmas layout keeps it. Edit `TEMPLATES` to rename a look or change its pieces.
+- Uses library ids only, so the site's `cleanDraft` accepts the result unchanged (30 fixtures / 30 decor / 3 boxes / 40 pieces limits hold).
+- Decor that comes in choices (no library piece uses this at present; the mechanism and its tests stay) is one library entry per choice sharing
+  `family: {id, label, choice, swatch?, order?}`. The Decor tab lists a family once; selecting the placed piece shows the choices
+  in the selection bar (`setDecorVariant` swaps `decorId` in place). The booth just stores the chosen entry's id, so the site
+  needs no change. The Size slider stays 80-120 % (the site clamps `scaleAdj` to that), so a wider range would need more choices (the Christmas garland has none: it is one real photographed swag, sized with the slider, because every longer version had to repeat or mirror its fir).
+- Standalone harness options: `editor.html?fresh=1` (empty booth) and `?now=2026-12-31T23:30:00` (pretend date).
+  `node scripts/template-smoke.mjs` clicks through the picker; `node scripts/template-shots.mjs [dir]` saves the screenshots.
+
 ### Booth directory (`<attic-directory>`, `directory.html`, the Booths page)
 **Out:** `ready` {mode:'directory'} (about every second until `load-directory`), `open-booth` {slug, itemId?} (itemId from
 the listing reel; the Booths page opens `/booth?b=<slug>&i=<itemId>` and the booth page sends `open-item`),

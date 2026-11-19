@@ -11,7 +11,7 @@ import { css as roomCss } from './styles.js';
 import { editorCss } from './editor-styles.js';
 import { ROOM, pct } from './logic/room.js';
 import { buildLayout } from './logic/layout.js';
-import { normalizeLibrary, byId } from './logic/library.js';
+import { normalizeLibrary, byId, pickerWallpapers, decorFamily, pickerDecor } from './logic/library.js';
 import { createHistory } from './logic/history.js';
 import { toDraft, applyDraft, defaultRoom } from './logic/draft.js';
 import { encodePlan, dataUrlBytes, MAX_BYTES, uploadTileIn } from './logic/downscale.js';
@@ -27,6 +27,7 @@ import { BOX_STYLES, BOX_LININGS, BOX_GRID_MIN, BOX_GRID_MAX, MAX_BOXES, boxOfIt
 import { Lens } from './lens.js';
 import { SOUNDS, SOUND_VOLUME, SOUNDS_ENABLED, soundOf, roomSoundId } from './logic/sounds.js';
 import { MAX_HIGHLIGHTS, cleanHighlights, setHighlight, canHighlight } from './logic/reel.js';
+import { applyTemplate, availableTemplates, hasExistingLayout, templateSummary } from './logic/templates.js';
 
 const NARROW_EDIT_PX = 768;
 const AUTOSAVE_MS = 1500;
@@ -141,6 +142,8 @@ export class AtticEditor extends HTMLElement {
   #raf = 0;
   #lens = null; // magnifier over items (hover)
   #boxSheet = null; // { boxId, slot } while the "Fill the compartments" sheet is open
+  #tpl = null; // { step:'pick'|'confirm', id } while the "Use a template" sheet is open
+  #nowOverride = null; // standalone/test hook: the date the template cutoff is judged against
 
   /** Adding items needs Phase 3 site code; the page says so with meta.itemsEnabled (standalone: always on). */
   get #itemsOn() {
@@ -154,7 +157,7 @@ export class AtticEditor extends HTMLElement {
   constructor() {
     super();
     this.#root = this.attachShadow({ mode: 'open' });
-    this.#root.innerHTML = `<style>${roomCss}${editorCss}</style><div class="ed loading"><p class="loadmsg">Opening your booth editor...</p></div><div class="sheethost"></div><div class="boxhost"></div>`;
+    this.#root.innerHTML = `<style>${roomCss}${editorCss}</style><div class="ed loading"><p class="loadmsg">Opening your booth editor...</p></div><div class="sheethost"></div><div class="boxhost"></div><div class="tplhost"></div>`;
   }
 
   connectedCallback() {
@@ -193,6 +196,7 @@ export class AtticEditor extends HTMLElement {
     const boxhost = this.#root.querySelector('.boxhost');
     boxhost.addEventListener('click', (e) => this.#boxSheetClick(e));
     boxhost.addEventListener('change', (e) => this.#boxSheetChange(e));
+    this.#root.querySelector('.tplhost').addEventListener('click', (e) => this.#tplClick(e));
   }
 
   disconnectedCallback() {
@@ -653,6 +657,7 @@ export class AtticEditor extends HTMLElement {
         <div class="topbar">
           <div class="status" aria-live="polite"></div>
           <div class="acts">
+            <button class="tb usetpl" type="button" title="Set up your booth with a ready-made look">Use a template</button>
             <button class="tb undo" type="button" title="Undo (Ctrl+Z)">&#8630; Undo</button>
             <button class="tb redo" type="button" title="Redo (Ctrl+Y)">&#8631; Redo</button>
             <button class="primary open" type="button"></button>
@@ -680,6 +685,7 @@ export class AtticEditor extends HTMLElement {
     this.#renderSelbar();
     this.#renderOverlay();
     if (this.#boxSheet) this.#renderBoxSheet();
+    if (this.#tpl) this.#renderTpl();
   }
 
   #renderTabs() {
@@ -809,7 +815,7 @@ export class AtticEditor extends HTMLElement {
     const strips = lib.architecture.filter((a) => a.kind === 'strip');
     return `
       <p class="lede">Pick your back wall: wallpaper, paint or your own photo.</p>
-      <section><h3>Wallpaper</h3>${this.#texSwatches(lib.wallpapers, wall, 'wallpaper')}</section>
+      <section><h3>Wallpaper</h3>${this.#texSwatches(pickerWallpapers(lib, wall), wall, 'wallpaper')}</section>
       ${this.#scaleSection('wall', wall)}
       <section><h3>Paint</h3><div class="swatches paints">${lib.paints
         .map((p) => {
@@ -928,13 +934,18 @@ export class AtticEditor extends HTMLElement {
 
   #decorPanelHtml(lib) {
     const openings = lib.architecture.filter((a) => a.kind === 'placeable');
-    const cats = [...new Set(lib.decor.map((d) => d.category))];
+    const listed = pickerDecor(lib); // a piece that comes in choices (e.g. a length or design) is listed once
+    const cats = [...new Set(listed.map((d) => d.category))];
     return `<p class="lede">Decor is just for atmosphere: it's never for sale and has no price tag.</p>
       ${openings.length ? `<section><h3>Windows &amp; doors</h3><div class="srcgrid">${openings.map((a) => this.#srcCard('placeable', a, inches(a.widthIn, a.heightIn))).join('')}</div></section>` : ''}
       ${cats
-        .map((c) => `<section><h3>${esc(c.charAt(0).toUpperCase() + c.slice(1))}</h3>${c === 'lighting' ? '<p class="note lampnote">Lamps start off. Click one in your booth to switch it on.</p>' : ''}<div class="srcgrid">${lib.decor
+        .map((c) => `<section><h3>${esc(c.charAt(0).toUpperCase() + c.slice(1))}</h3>${c === 'lighting' ? '<p class="note lampnote">Lamps start off. Click one in your booth to switch it on.</p>' : ''}<div class="srcgrid">${listed
           .filter((d) => d.category === c)
-          .map((d) => this.#srcCard('decor', d, `${+d.heightIn.toFixed(1)} in tall &middot; ${d.mount === 'wall' ? 'wall' : d.mount === 'floor' ? 'floor' : 'shelf or floor'}`))
+          .map((d) => {
+            const fam = decorFamily(lib, d.id);
+            const where = d.mount === 'wall' ? 'wall' : d.mount === 'floor' ? 'floor' : 'shelf or floor';
+            return this.#srcCard('decor', d, fam ? `${fam.members.length} ${esc(fam.label.toLowerCase())}s to pick from &middot; ${where}` : `${+d.heightIn.toFixed(1)} in tall &middot; ${where}`);
+          })
           .join('')}</div></section>`)
         .join('')}
       ${!openings.length && !lib.decor.length ? '<p class="empty">More decor is on its way: plants, clocks, curtains and lamps.</p>' : ''}`;
@@ -1009,7 +1020,9 @@ export class AtticEditor extends HTMLElement {
       const def = d && byId(this.#lib.decor)[d.decorId];
       if (!def) return null;
       const shape = { heightIn: def.heightIn, widthIn: def.widthIn, aspect: def.aspect, flat: def.mount === 'flat', mount: def.mount };
-      return { ...s, name: def.name, img: def.src, scale: d.placement?.scaleAdj ?? 1, range: tweakRange(shape), lamp: isLampDef(def), lit: d.lit === true };
+      const fam = decorFamily(this.#lib, def.id);
+      const choices = fam && fam.members.map((m) => ({ id: m.id, choice: m.family.choice, src: m.src, swatch: m.family.swatch ?? null, widthIn: m.widthIn, on: m.id === def.id }));
+      return { ...s, name: def.name, img: def.src, scale: d.placement?.scaleAdj ?? 1, range: tweakRange(shape), lamp: isLampDef(def), lit: d.lit === true, family: fam ? { label: fam.label, choices } : null };
     }
     if (s.kind === 'box') {
       const bx = (b.boxes ?? []).find((x) => x.id === s.id);
@@ -1053,6 +1066,9 @@ export class AtticEditor extends HTMLElement {
       <span class="selname"><b>${esc(s.name)}</b>${s.dims ? `<small>${s.dims}</small>` : ''}</span>
       ${s.lamp ? `<button class="lampswitch" type="button" role="switch" aria-checked="${s.lit}" data-act="lamp-toggle" title="Switch this lamp on or off"><span class="track" aria-hidden="true"><span class="knob"></span></span><span class="lbl">${s.lit ? 'On' : 'Off'}</span></button>` : ''}
       ${s.box ? '<button class="tb primaryish" type="button" data-act="box-fill">Fill the compartments</button>' : ''}
+      ${s.family ? `<div class="variants" role="group" aria-label="${esc(s.family.label)}"><span class="vlabel">${esc(s.family.label)}</span>${s.family.choices
+        .map((c) => `<button type="button" class="variant${c.on ? ' on' : ''}" data-act="decor-variant" data-decor-id="${esc(c.id)}" aria-pressed="${c.on}" title="${esc(c.choice)}"><img src="${esc(c.src)}" alt="" draggable="false"><span>${esc(c.choice)}</span></button>`)
+        .join('')}</div>` : ''}
       ${sizable ? `<label class="range small" title="${why}">Size<input type="range" min="${lo}" max="${Math.max(hi, lo)}" step="1" value="${pctv}" data-act="sel-scale" aria-label="${why}" ${fixed ? 'disabled' : ''}><output>${pctv}%</output></label>` : ''}
       <span class="nudges" role="group" aria-label="Nudge">
         <button class="tb" type="button" data-act="nudge" data-dx="-1" data-dy="0" aria-label="Nudge left">&#9664;</button>
@@ -1134,6 +1150,7 @@ export class AtticEditor extends HTMLElement {
     body.addEventListener('change', (e) => this.#panelInput(e, true));
     body.addEventListener('submit', (e) => this.#signSubmit(e));
     body.addEventListener('pointerdown', (e) => this.#panelPointerDown(e));
+    ed.querySelector('.usetpl').addEventListener('click', () => this.#openTpl());
     ed.querySelector('.undo').addEventListener('click', () => this.#undo());
     ed.querySelector('.redo').addEventListener('click', () => this.#redo());
     ed.querySelector('.open').addEventListener('click', () => this.#open());
@@ -1331,6 +1348,15 @@ export class AtticEditor extends HTMLElement {
       case 'lamp-toggle':
         this.#setLampLit(s.id, el.getAttribute('aria-checked') !== 'true');
         break;
+      case 'decor-variant': {
+        // A piece's length or design: swap in place (the booth just stores the chosen piece's id).
+        const r = ops.setDecorVariant(this.#booth, this.#lib, s.id, el.dataset.decorId);
+        if (r.ok) {
+          this.#commit(r.booth);
+          this.#root.querySelector(`.selbar [data-decor-id="${CSS.escape(el.dataset.decorId)}"]`)?.focus();
+        } else this.#toast(ops.reasonFor(r.errors));
+        break;
+      }
       case 'sel-done':
         this.#sel = null;
         this.#renderAll();
@@ -1644,6 +1670,131 @@ export class AtticEditor extends HTMLElement {
 
   // ---------------------------------------------------------------- keyboard
 
+  // ---------------------------------------------------------------- "Use a template" (logic/templates.js)
+
+  get #now() {
+    return this.#nowOverride ?? new Date();
+  }
+
+  #openTpl() {
+    if (this.#narrow || !this.#booth) return;
+    this.#tpl = { step: 'pick', id: null };
+    this.#lens?.hide();
+    this.#renderTpl();
+    this.#root.querySelector('.tplhost .sheetcard')?.focus({ preventScroll: true });
+    this.#bridge.emit('scroll-into-view', {}); // like the other sheets: the page scrolls the editor into view
+  }
+
+  #closeTpl() {
+    this.#tpl = null;
+    this.#root.querySelector('.tplhost').innerHTML = '';
+    this.#root.querySelector('.room.edit')?.focus({ preventScroll: true });
+  }
+
+  /** A small drawing of what a look is made of: wall, floor, and its shelves and furniture where they stand. */
+  #tplThumb(t) {
+    const lib = this.#lib;
+    const wallDef = t.wall.paint ? byId(lib.paints)[t.wall.paint] : byId(lib.wallpapers)[t.wall.wallpaper];
+    const floorDef = byId(lib.floors)[t.floor];
+    const wall = wallDef?.src
+      ? `background-image:url('${esc(wallDef.src)}');background-size:${pct(wallDef.tileIn?.w ?? 16)}% auto`
+      : `background:${esc(wallDef?.color ?? '#efe6d2')}`;
+    const floor = floorDef?.src ? `background-image:url('${esc(floorDef.src)}');background-size:${pct((floorDef.tileIn?.w ?? 16) * 1.4)}% auto` : 'background:#b98b55';
+    const fx = byId(lib.fixtures);
+    const pieces = (t.fixtures ?? [])
+      .map((f) => {
+        const d = fx[f.id];
+        if (!d?.src) return '';
+        const y = f.base != null ? f.base - d.heightIn : f.y;
+        return `<img src="${esc(d.src)}" alt="" draggable="false" style="left:${pct(f.x)}%;top:${pct(y)}%;width:${pct(d.widthIn)}%">`;
+      })
+      .join('');
+    return `<span class="tplthumb" aria-hidden="true"><span class="tplwall" style="${wall}"></span><span class="tplfloor" style="${floor}"></span>${pieces}</span>`;
+  }
+
+  #untilLabel(t) {
+    if (!t.until) return '';
+    const [y, m, d] = t.until.split('-').map(Number);
+    return `Until ${new Date(y, m - 1, d - 1).toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}`;
+  }
+
+  #renderTpl() {
+    const host = this.#root.querySelector('.tplhost');
+    const st = this.#tpl;
+    if (!st) {
+      host.innerHTML = '';
+      return;
+    }
+    const list = availableTemplates(this.#now);
+    const chosen = list.find((t) => t.id === st.id);
+    let body;
+    if (st.step === 'confirm' && chosen) {
+      body = `
+        <div class="tplconfirm" role="alert">
+          <h3>Replace what's in your booth?</h3>
+          <p>Using <b>${esc(chosen.name)}</b> will swap your wall, floor, shelves, furniture and decor for this look, and set your items out again. Your items are never deleted.</p>
+          <p>If you change your mind right after, press Undo (or Ctrl+Z) and your booth comes straight back.</p>
+          <div class="sheetbtns"><button class="wb2" type="button" data-tpl="back">Keep my booth as it is</button><button class="primary" type="button" data-tpl="yes">Yes, use ${esc(chosen.name)}</button></div>
+        </div>`;
+    } else {
+      body = `
+        <p class="lede">Not in the mood to design? Pick a look and we'll set up your booth: wallpaper or paint, floor, shelves, a lamp or two, and your items placed by size (big things on the floor and tables, small things on shelves, tiny things in a collectibles box).</p>
+        <ul class="tplgrid">${list
+          .map(
+            (t) => `<li><button class="tplcard" type="button" data-tpl-id="${esc(t.id)}">${this.#tplThumb(t)}<span class="nm">${esc(t.name)}${t.until ? ` <small class="tplseason">${esc(this.#untilLabel(t))}</small>` : ''}</span><span class="dim">${esc(t.blurb)}</span></button></li>`,
+          )
+          .join('')}</ul>
+        <p class="hint">It only changes your draft. Move anything you like afterwards, and nothing reaches shoppers until you press Update booth.</p>`;
+    }
+    host.innerHTML = `
+      <div class="sheet tplsheet" role="dialog" aria-modal="true" aria-labelledby="tpl-title">
+        <div class="sheetcard" tabindex="-1">
+          <header class="sheethead"><h2 id="tpl-title">Use a template</h2><button class="sheetx" type="button" data-tpl="close" aria-label="Close">&times;</button></header>
+          <div class="sheetbody">${body}</div>
+        </div>
+      </div>`;
+  }
+
+  #tplClick(e) {
+    const t = e.target;
+    const st = this.#tpl;
+    if (!st) return;
+    if (t.classList?.contains('tplsheet') || t.closest('[data-tpl="close"]')) {
+      this.#closeTpl();
+      return;
+    }
+    if (t.closest('[data-tpl="back"]')) {
+      st.step = 'pick';
+      this.#renderTpl();
+      return;
+    }
+    const card = t.closest('[data-tpl-id]');
+    if (card) {
+      st.id = card.dataset.tplId;
+      if (hasExistingLayout(this.#booth, this.#lib)) {
+        st.step = 'confirm'; // never silently replace the seller's work
+        this.#renderTpl();
+        this.#root.querySelector('.tplhost .primary')?.focus({ preventScroll: true });
+      } else this.#applyTpl(st.id);
+      return;
+    }
+    if (t.closest('[data-tpl="yes"]')) this.#applyTpl(st.id);
+  }
+
+  #applyTpl(id) {
+    const def = availableTemplates(this.#now).find((x) => x.id === id);
+    const r = applyTemplate(this.#booth, this.#lib, id, { now: this.#now, maxPlaced: this.#meta.maxPlaced });
+    if (!r.ok || !def) {
+      this.#closeTpl();
+      this.#toast(r.errors?.[0]?.code === 'TEMPLATE_ENDED' ? "That look isn't offered any more." : "That template can't be used right now.");
+      return;
+    }
+    this.#sel = null;
+    this.#closeTpl();
+    this.#commit(r.booth);
+    this.#toast(templateSummary(def.name, r.report), 7000);
+  }
+
   // ---------------------------------------------------------------- collectibles box: fill the compartments
 
   #openBoxSheet(boxId, slot = null) {
@@ -1798,6 +1949,10 @@ export class AtticEditor extends HTMLElement {
 
   #onKey(e) {
     if (this.#narrow || !this.#booth) return;
+    if (this.#tpl) {
+      if (e.key === 'Escape') this.#closeTpl();
+      return;
+    }
     if (this.#boxSheet) {
       // The box sheet is open: Escape closes it; nothing else moves things in the room behind it.
       if (e.key === 'Escape') this.#closeBoxSheet();
@@ -1833,20 +1988,20 @@ export class AtticEditor extends HTMLElement {
     }
   }
 
-  #toast(text) {
+  #toast(text, ms = 3200) {
     const t = this.#root.querySelector('.toast');
     if (!t) return;
     t.textContent = text;
     t.classList.add('show');
     clearTimeout(this._toastTimer);
-    this._toastTimer = setTimeout(() => t.classList.remove('show'), 3200);
+    this._toastTimer = setTimeout(() => t.classList.remove('show'), ms);
   }
 
   // ================================================================ standalone harness hooks
 
   /**
    * Test/demo hook for the standalone page and screenshots (no effect on the Wix flow):
-   * { tab, wizard:stepIndex, coach:bool, select:{kind,id}, storage:[itemIds], drag:{kind,id,dx,dy} }
+   * { tab, wizard:stepIndex, coach:bool, select:{kind,id}, storage:[itemIds], drag:{kind,id,dx,dy}, fresh:bool, now:dateString }
    */
   debugSetup(opts = {}) {
     if (!this.#booth) return;
@@ -1856,10 +2011,16 @@ export class AtticEditor extends HTMLElement {
       this.#booth = b;
       this.#history.reset(toDraft(b));
     }
+    if (opts.fresh) {
+      // A brand-new booth: default room, nothing placed, every item waiting in the crate.
+      this.#booth = { ...this.#booth, room: defaultRoom(this.#lib), fixtures: [], decor: [], boxes: [], items: this.#booth.items.map((i) => ({ ...i, placement: null, sizeTweak: 1 })) };
+      this.#history.reset(toDraft(this.#booth));
+    }
     if (typeof opts.wizard === 'number') this.#wizard = opts.wizard;
     if (opts.coach === false) this.#coach = false;
     if (opts.coach === true) this.#coach = true;
     if (opts.tab) this.#tab = opts.tab;
+    if (opts.now) this.#nowOverride = new Date(opts.now);
     if (opts.select) this.#sel = opts.select;
     this.#renderAll();
     if (opts.drag) {

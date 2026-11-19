@@ -41,6 +41,14 @@ export const LAMP_LIGHTS = Object.freeze({
     haloIn: 3.2,
     poolIn: 14,
   },
+  // Four unlit white advent pillar candles on a fir wreath: flames sit a little above the wick tips (left to right).
+  'xmas-candles': {
+    kind: 'flame',
+    points: [{ x: 0.1926, y: 0.1575 }, { x: 0.4325, y: 0.2825 }, { x: 0.5395, y: 0.0781 }, { x: 0.7203, y: 0.2344 }],
+    coreIn: 0.55,
+    haloIn: 2.4,
+    poolIn: 14,
+  },
   // The bulb is visible through the open front of the lantern cage.
   'lantern-hanging': {
     kind: 'bulb',
