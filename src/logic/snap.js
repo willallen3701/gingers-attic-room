@@ -61,3 +61,19 @@ export function snapToSurface(drop, size, surfaces, mount = 'stand') {
     y: baseY,
   };
 }
+
+/**
+ * A shelf or tabletop right under the drop point that is wide enough but too low (not enough headroom) for the item.
+ * Used only to explain a refusal: snapToSurface() silently skips such a shelf and falls back to the nearest other
+ * surface, so without this a too-tall item is refused with an unrelated "overlap" message.
+ * @returns {object|null} the nearest such surface, or null
+ */
+export function shelfTooShort(drop, size, surfaces, reach = 14) {
+  let best = null;
+  for (const s of surfaces) {
+    if (s.kind !== 'line' || s.x2 - s.x1 < size.w || s.headroomIn >= size.h) continue;
+    if (drop.x < s.x1 || drop.x > s.x2 || Math.abs(drop.y - s.y) > reach) continue;
+    if (!best || Math.abs(drop.y - s.y) < Math.abs(drop.y - best.y)) best = s;
+  }
+  return best;
+}

@@ -4,7 +4,7 @@
 
 import { ROOM } from './room.js';
 import { buildLayout } from './layout.js';
-import { snapToSurface } from './snap.js';
+import { snapToSurface, shelfTooShort } from './snap.js';
 import { snapFixture, moveFixture, removeFixture, nextId, FLOOR_BAND } from './fixtures.js';
 import { itemSizeIn, clampItemTweak } from './scale.js';
 import { itemTweak } from './draft.js';
@@ -15,6 +15,7 @@ import { MAX_BOXES, newBox, normalizeBox, regrid, boxSizeIn, unbox, roomForAnoth
 export const REASONS = Object.freeze({
   OVERLAP: 'That would overlap something already there.',
   NO_HEADROOM: 'Not enough room above that shelf.',
+  SHELF_TOO_LOW: 'That one is too tall for the space above that shelf. Try a shelf with a taller gap, a table or the floor, or make it a little smaller.',
   BLOCKED_BY_FIXTURE: 'Something on the wall is in the way.',
   BLOCKED: 'A window or door is in the way.',
   OUT_OF_REGION: "That spot is off the wall or floor.",
@@ -77,7 +78,13 @@ export function placeItem(booth, libIn, itemId, drop) {
   const tweak = clampItemTweak(item, itemTweak(item));
   let next = setItem(booth, itemId, { placement: { ...p, scaleAdj: tweak }, sizeTweak: tweak });
   if (booth.boxes) next = { ...next, boxes: unbox(booth.boxes, itemId) }; // out of its box, into the room
-  return judge(booth, next, lib, [itemId]);
+  const res = judge(booth, next, lib, [itemId]);
+  // Refused after skipping a shelf that was too low for it: say so (not "overlap" from the floor fallback).
+  if (!res.ok && item.mount !== 'wall' && item.mount !== 'flat' && item.mount !== 'floor') {
+    const low = shelfTooShort(drop, size, surfaces);
+    if (low) return { ...res, errors: [{ code: 'SHELF_TOO_LOW', headroomIn: low.headroomIn, heightIn: size.h }, ...res.errors] };
+  }
+  return res;
 }
 
 /** Back to the storage crate (out of the room or out of a box). Always allowed. */

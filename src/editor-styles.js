@@ -182,8 +182,10 @@ export const editorCss = /* css */ `
   display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 8px 12px;
   background: #f7efdc; border: 1px solid #d8c59c; border-radius: 6px;
 }
-.topbar { justify-content: space-between; }
-.status { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font: 13px var(--type); color: var(--ink); }
+.topbar { justify-content: space-between; flex-wrap: nowrap; } /* one line always: a wrap changes the editor's height by ~30px and the embed's scrollbar flickers */
+.status { display: flex; align-items: center; gap: 10px; flex-wrap: nowrap; min-width: 0; flex: 1 1 auto; font: 13px var(--type); color: var(--ink); }
+.status .savetext { flex: none; white-space: nowrap; }
+.status .chip { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .savedot { width: 9px; height: 9px; border-radius: 50%; background: #6f9e60; }
 .savedot.pending, .savedot.saving { background: #d1a24a; }
 .savedot.error { background: var(--sold); }
@@ -191,7 +193,8 @@ export const editorCss = /* css */ `
 .chip.on { color: #2f5d2a; border-color: #8cb37f; background: #eef6e9; }
 .chip.warn { color: #7a4a10; border-color: #d9a65a; background: #fbf0dc; }
 .chip.off { color: var(--ink-soft); border-color: #cbb385; background: #fbf5e6; }
-.acts { display: flex; align-items: center; gap: 8px; }
+.acts { display: flex; align-items: center; gap: 8px; flex: none; }
+.acts .tb, .acts .primary { white-space: nowrap; }
 .tb {
   padding: 7px 11px; border: 1px solid #cbb385; border-radius: 5px; background: #fbf5e6; cursor: pointer;
   font: 13px var(--type); color: var(--plum-dark);
