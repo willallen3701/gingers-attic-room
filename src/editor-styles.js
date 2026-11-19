@@ -182,11 +182,12 @@ export const editorCss = /* css */ `
   display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 8px 12px;
   background: #f7efdc; border: 1px solid #d8c59c; border-radius: 6px;
 }
-.topbar { justify-content: space-between; flex-wrap: nowrap; } /* one line always: a wrap changes the editor's height by ~30px and the embed's scrollbar flickers */
+.ed { --tbh: 52px; --selh: 56px; } /* heights of the top bar and the selection bar in the current layout (width tiers below); the room frame's cap subtracts both */
+.topbar { box-sizing: border-box; min-height: var(--tbh); justify-content: space-between; flex-wrap: nowrap; }
 .status { display: flex; align-items: center; gap: 10px; flex-wrap: nowrap; min-width: 0; flex: 1 1 auto; font: 13px var(--type); color: var(--ink); }
 .status .savetext { flex: none; white-space: nowrap; }
-.status .chip { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.savedot { width: 9px; height: 9px; border-radius: 50%; background: #6f9e60; }
+.status .chip { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } /* last resort only: the tiers below leave room for the full text */
+.savedot { flex: none; width: 9px; height: 9px; border-radius: 50%; background: #6f9e60; }
 .savedot.pending, .savedot.saving { background: #d1a24a; }
 .savedot.error { background: var(--sold); }
 .chip { padding: 3px 9px; border: 1px solid; border-radius: 12px; font: 12px var(--type); }
@@ -203,11 +204,33 @@ export const editorCss = /* css */ `
 .tb:disabled { opacity: .45; cursor: default; background: #fbf5e6; }
 .tb.danger { color: var(--sold); border-color: #d9a19a; }
 
+/* Top bar tiers. The bar's content is the same at every width; only its arrangement changes, and each arrangement
+   has a fixed number of lines, so the bar keeps one height whatever the save status says (a bar that wraps on
+   its own gained and lost a line as the status changed and the embed's scrollbar flickered). The breakpoints
+   are viewport widths: the stage is 370 px narrower than the viewport (330 px panel + gaps + padding). */
+@media (max-width: 1079px) { .ed { --selh: 98px; } } /* the selection bar's controls wrap onto a second line from here down (measured 95-98 px with an item selected) */
+@media (max-width: 1339px) { /* two lines: status, then the buttons on the right */
+  .ed { --tbh: 85px; }
+  .topbar { flex-direction: column; align-items: stretch; gap: 8px; }
+  .status { flex: none; }
+  .acts { justify-content: flex-end; }
+}
+@media (max-width: 919px) { /* three lines: save text, the "open to shoppers" chip, the buttons */
+  .ed { --tbh: 113px; }
+  .status { display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: 10px; row-gap: 6px; }
+  .status .chip { grid-column: 1 / -1; justify-self: start; max-width: 100%; }
+}
+@media (max-width: 859px) { /* four lines: the Open / Update button gets a line of its own */
+  .ed { --tbh: 154px; }
+  .acts { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; }
+  .acts .primary { grid-column: 1 / -1; }
+}
+
 .roomframe {
   position: relative; z-index: 0; isolation: isolate; /* keep the room's own z-indexes below the bubbles */
-  /* 166 px = padding + top bar + gaps + selection bar + frame shadow, with a few px to spare: if the
-     editor is even 1 px taller than its embed, a scrollbar flickers in and out while dragging. */
-  width: min(100%, calc(100vh - 166px)); min-width: 320px; align-self: center;
+  /* 58 px + the top bar (--tbh) + the selection bar (--selh) = padding + gaps + frame shadow, with a few px to
+     spare: if the editor is even 1 px taller than its embed, a scrollbar flickers in and out while dragging. */
+  width: min(100%, calc(100vh - 58px - var(--tbh) - var(--selh))); min-width: 320px; align-self: center;
   border-radius: 4px;
   box-shadow: 0 0 0 1px #b99a66, 0 0 0 5px #e3d1a8, 0 0 0 6px #b99a66, 0 10px 26px rgba(50,30,15,.25);
 }
@@ -229,7 +252,7 @@ export const editorCss = /* css */ `
 }
 .was { position: absolute; z-index: 6; pointer-events: none; border: 2px dashed rgba(107,58,92,.75); border-radius: .3cqw; background: rgba(107,58,92,.07); }
 
-.selbar { min-height: 56px; box-sizing: border-box; } /* same height selected or idle, so nothing jumps */
+.selbar { min-height: var(--selh); box-sizing: border-box; } /* same height selected or idle, so nothing jumps */
 .selbar.idle .hint { font: 12.5px/1.4 var(--type); color: var(--ink-soft); }
 kbd { padding: 0 4px; border: 1px solid #cbb385; border-bottom-width: 2px; border-radius: 3px; background: #fffaf0; font: 11px var(--type); }
 .selbar .thumb { width: 38px; height: 38px; display: grid; place-items: center; border: 1px solid #e0cfa8; border-radius: 4px; background: #fffaf0; }

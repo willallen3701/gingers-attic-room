@@ -270,6 +270,44 @@ try {
   await click(await rectOf('.room.edit .item:not(.decor)'));
   const hAfter = await evaluate('document.documentElement.scrollHeight');
   check('selecting something keeps the page height (no jumping)', hBefore === hAfter && hAfter <= (await evaluate('innerHeight')), `${hBefore} -> ${hAfter}`);
+
+  // 14. The top bar keeps one height whatever the save status says (2026-11-18: the "Use a template" button made it
+  // wrap at 1040-1280 px and the embed's scrollbar flickered). 980 px is the live My Booth embed; 1100 and 900 sit in
+  // the neighbouring layouts. Real autosave first, then the longest wordings forced into the bar.
+  for (const w of [1100, 980, 900]) {
+    await send('Emulation.setDeviceMetricsOverride', { width: w, height: 800, deviceScaleFactor: 1, mobile: false });
+    await send('Page.navigate', { url: `http://localhost:${port}/editor.html?coach=0&cb=${Date.now()}` });
+    await waitFor(`!!${S}?.querySelector('.room.edit .item')`, 10000);
+    await sleep(600);
+    const bar = () => evaluate(`Math.round(${S}.querySelector('.topbar').getBoundingClientRect().height * 10) / 10`);
+    const seenH = new Set([await bar()]);
+    const chair = await rectOf('.room.edit [data-id="it-yellow-chair"]');
+    const roomR = await rectOf('.room.edit');
+    await drag({ x: chair.x, y: chair.y + chair.h * 0.3 }, { x: chair.x + roomR.w * 0.1, y: chair.y + chair.h * 0.3 });
+    const texts = new Set();
+    for (let i = 0; i < 50; i++) {
+      seenH.add(await bar());
+      texts.add(await text('.status .savetext'));
+      await sleep(50);
+    }
+    check(`${w} px: the status changed during autosave (${texts.size} wordings seen)`, texts.size >= 2, [...texts].join(' | '));
+    check(`${w} px: the top bar keeps one height through autosave`, seenH.size === 1, [...seenH].join(', '));
+    const forced = new Set();
+    let allVisible = true;
+    for (const [st, cls, chipTx, prim] of [
+      ["Couldn't save – retrying", 'warn', 'Open · you have changes shoppers can’t see yet', 'Update booth'],
+      ['Draft saved 12:59 pm', 'on', 'Open · shoppers see this version', 'Booth is up to date'],
+      ['Saving...', 'off', 'Not open to shoppers yet', 'Open my booth'],
+      ['All changes saved', 'warn', 'Open · you have changes shoppers can’t see yet', 'Opening...'],
+    ]) {
+      await evaluate(`(() => { const R = ${S}; R.querySelector('.savetext').textContent = ${JSON.stringify(st)}; const c = R.querySelector('.status .chip'); c.className = 'chip ${cls}'; c.textContent = ${JSON.stringify(chipTx)}; R.querySelector('.open').textContent = ${JSON.stringify(prim)}; })()`);
+      forced.add(await bar());
+      allVisible &&= await evaluate(`(() => { const R = ${S}; const tb = R.querySelector('.topbar').getBoundingClientRect(); const c = R.querySelector('.status .chip'); return [...R.querySelectorAll('.topbar .acts button')].every((b) => { const r = b.getBoundingClientRect(); return r.width > 0 && r.left >= tb.left - 0.5 && r.right <= tb.right + 0.5 && b.scrollWidth <= b.clientWidth + 1; }) && c.scrollWidth <= c.clientWidth + 1; })()`);
+    }
+    check(`${w} px: the longest wordings do not change the bar's height`, forced.size === 1 && forced.has([...seenH][0]), `${[...forced].join(', ')} vs ${[...seenH][0]}`);
+    check(`${w} px: every button and the full status chip stay inside the bar`, allVisible);
+    check(`${w} px: the editor does not overflow its embed`, (await evaluate('document.scrollingElement.scrollHeight - document.scrollingElement.clientHeight')) <= 0);
+  }
 } catch (e) {
   console.error('ERROR', e.message);
   results.push({ name: 'harness', ok: false });
